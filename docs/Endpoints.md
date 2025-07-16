@@ -1,5 +1,3 @@
-# API Endpoints
-
 ## Auth Endpoints
 
 | Method | Endpoint                | Description                                                                 |
