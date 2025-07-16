@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
-import com.example.demo.model.LoginRequest;
-import com.example.demo.model.JwtResponse;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.JwtResponse;
 import com.example.demo.security.JwtUtil;
 
 @RestController

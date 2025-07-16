@@ -1,7 +1,7 @@
 package com.example.demo.security;
 
 import com.example.demo.model.User;
-import com.example.demo.model.UserRepository;
+import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

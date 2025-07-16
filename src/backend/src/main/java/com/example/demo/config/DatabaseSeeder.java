@@ -1,7 +1,7 @@
 package com.example.demo.config;
 
 import com.example.demo.model.User;
-import com.example.demo.model.UserRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
