@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -13,7 +12,6 @@ import java.util.function.Function;
 public class JwtUtil {
     private final String jwtSecret = "supersecretkeysupersecretkeysupersecretkey123"; // Use env var in prod
     private final long jwtExpirationMs = 1000 * 60 * 15; // 15 minutes
-    private final long refreshExpirationMs = 1000L * 60 * 60 * 24 * 7; // 7 days
 
     private SecretKey getSigningKey() {
         return (SecretKey) Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -21,19 +19,19 @@ public class JwtUtil {
 
     public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(getSigningKey())
                 .compact();
     }
 
     public String generateRefreshToken(String username) {
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(getSigningKey())
                 .compact();
     }
 
