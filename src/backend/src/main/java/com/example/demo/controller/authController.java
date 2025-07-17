@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 // import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Bean;
 
 import java.util.Optional;
 import com.example.demo.dto.LoginRequest;
@@ -15,6 +18,7 @@ import com.example.demo.security.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -72,5 +76,18 @@ public class authController {
         String newJwt = jwtUtil.generateToken(username);
         String newRefreshToken = jwtUtil.generateRefreshToken(username);
         return ResponseEntity.ok(new JwtResponse(newJwt, newRefreshToken));
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
+                registry.addMapping("/**")
+                    .allowedOrigins("http://localhost:3000") // your Next.js dev URL
+                    .allowedMethods("GET", "POST", "PUT", "DELETE")
+                    .allowCredentials(true);
+            }
+        };
     }
 } 
