@@ -120,7 +120,8 @@
     @apply bg-background text-foreground;
   }
 
-  a, button {
+  a,
+  button {
     cursor: pointer;
   }
 }

@@ -20,6 +20,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class authController {
@@ -39,7 +41,7 @@ public class authController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
         if (userOpt.isEmpty() || !userService.checkPassword(userOpt.get(), loginRequest.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
         }
         User user = userOpt.get();
         String jwt = jwtUtil.generateToken(user.getUsername());
@@ -58,8 +60,13 @@ public class authController {
         refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
         refreshCookie.setSecure("prod".equals(appEnv));
         response.addCookie(refreshCookie);
-        // Return a simple message or user info, not the tokens
-        return ResponseEntity.ok("Login successful");
+        // Return user info (not tokens)
+        return ResponseEntity.ok(Map.of(
+            "id", user.getId(),
+            "username", user.getUsername(),
+            "email", user.getEmail(),
+            "roles", user.getRoles()
+        ));
     }
 
     @PostMapping("/refresh")
@@ -76,6 +83,25 @@ public class authController {
         String newJwt = jwtUtil.generateToken(username);
         String newRefreshToken = jwtUtil.generateRefreshToken(username);
         return ResponseEntity.ok(new JwtResponse(newJwt, newRefreshToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie jwtCookie = new Cookie("jwt", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
+        jwtCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(jwtCookie);
+
+        Cookie refreshCookie = new Cookie("refreshToken", null);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(0);
+        refreshCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(Map.of("message", "Logged out"));
     }
 
     @Bean
