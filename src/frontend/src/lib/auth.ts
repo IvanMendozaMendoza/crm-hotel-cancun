@@ -1,8 +1,9 @@
+import { env } from "@/app/config/env";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -11,11 +12,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        // Call your Spring Boot backend
-        const res = await fetch("http://localhost:8080/api/v1/auth/login", {
+        const res = await fetch(`${env.API_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include", // Important: allow cookies to be set
+          credentials: "include",
           body: JSON.stringify({
             email: credentials?.email,
             password: credentials?.password,
@@ -24,17 +24,15 @@ export const authOptions: NextAuthOptions = {
 
         if (!res.ok) return null;
         const user = await res.json();
-        // user = { id, username, email, roles }
         return user;
       },
     }),
   ],
   session: {
-    strategy: "jwt", // or "database" if you want, but "jwt" is fine for this
+    strategy: "jwt",
   },
   callbacks: {
     async session({ session, token, user }) {
-      // Attach user info to session
       if (token) {
         session.user = token.user as any;
       }
@@ -48,6 +46,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/login", // Your custom login page if you have one
+    signIn: "/login",
   },
 };
