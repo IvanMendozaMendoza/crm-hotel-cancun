@@ -12,12 +12,18 @@ import java.util.Optional;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.JwtResponse;
 import com.example.demo.security.JwtUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class authController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
+
+    @Value("${app.env:dev}")
+    private String appEnv;
 
     @Autowired
     public authController(UserService userService, JwtUtil jwtUtil) {
@@ -26,7 +32,7 @@ public class authController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
         if (userOpt.isEmpty() || !userService.checkPassword(userOpt.get(), loginRequest.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -34,7 +40,22 @@ public class authController {
         User user = userOpt.get();
         String jwt = jwtUtil.generateToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-        return ResponseEntity.ok(new JwtResponse(jwt, refreshToken));
+        // Set JWT as HTTP-only cookie
+        Cookie jwtCookie = new Cookie("jwt", jwt);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(60 * 15); // 15 minutes
+        jwtCookie.setSecure("prod".equals(appEnv)); // Secure only in prod
+        response.addCookie(jwtCookie);
+        // Optionally, set refresh token as cookie too (if desired)
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
+        refreshCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(refreshCookie);
+        // Return a simple message or user info, not the tokens
+        return ResponseEntity.ok("Login successful");
     }
 
     @PostMapping("/refresh")
