@@ -14,7 +14,6 @@ public class DatabaseSeeder {
     @Bean
     public CommandLineRunner seedDatabase(UserRepository userRepository, UserService userService) {
         return args -> {
-            // Ensure admin user exists and has correct roles
             User admin = userRepository.findByUsername("admin").orElse(null);
             if (admin == null) {
                 admin = new User();
@@ -23,10 +22,9 @@ public class DatabaseSeeder {
                 admin.setPassword("admin123");
             }
             admin.setRoles(Set.of("ADMIN", "USER"));
-            admin.setPassword("admin123"); // Will be encoded by service
+            admin.setPassword("admin123"); 
             userService.registerUser(admin);
 
-            // Ensure regular user exists and has correct roles
             User user = userRepository.findByUsername("user").orElse(null);
             if (user == null) {
                 user = new User();
@@ -35,9 +33,8 @@ public class DatabaseSeeder {
                 user.setPassword("user123");
             }
             user.setRoles(Set.of("USER"));
-            user.setPassword("user123"); // Will be encoded by service
+            user.setPassword("user123"); 
             userService.registerUser(user);
-            // Add more seed logic here as needed
         };
     }
 } 

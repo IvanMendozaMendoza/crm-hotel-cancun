@@ -5,7 +5,6 @@ import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 
 import java.util.Optional;
 import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.JwtResponse;
 import com.example.demo.security.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +29,12 @@ public class authController {
     @Value("${app.env:dev}")
     private String appEnv;
 
+    @Value("${refresh.token.expiration.seconds:604800}")
+    private int refreshTokenExpirationSeconds;
+
+    @Value("${frontend.origin:http://localhost:3000}")
+    private String frontendOrigin;
+
     @Autowired
     public authController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
@@ -46,18 +50,54 @@ public class authController {
         User user = userOpt.get();
         String jwt = jwtUtil.generateToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-        // Set JWT as HTTP-only cookie
+
         Cookie jwtCookie = new Cookie("jwt", jwt);
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(60 * 15); // 15 minutes
-        jwtCookie.setSecure("prod".equals(appEnv)); // Secure only in prod
+        jwtCookie.setMaxAge(jwtUtil.getJwtExpirationSeconds());
+        jwtCookie.setSecure("prod".equals(appEnv));
         response.addCookie(jwtCookie);
-        // Optionally, set refresh token as cookie too (if desired)
+
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
+        refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
+        refreshCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "roles", user.getRoles()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request, HttpServletResponse response) {
+        String refreshToken = request.get("refreshToken");
+        if (!jwtUtil.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+        String username = jwtUtil.extractUsername(refreshToken);
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+        User user = userOpt.get();
+        String newJwt = jwtUtil.generateToken(username);
+        String newRefreshToken = jwtUtil.generateRefreshToken(username);
+        // Set new tokens as cookies
+        Cookie jwtCookie = new Cookie("jwt", newJwt);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(jwtUtil.getJwtExpirationSeconds());
+        jwtCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(jwtCookie);
+
+        Cookie refreshCookie = new Cookie("refreshToken", newRefreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
         refreshCookie.setSecure("prod".equals(appEnv));
         response.addCookie(refreshCookie);
         // Return user info (not tokens)
@@ -67,22 +107,6 @@ public class authController {
             "email", user.getEmail(),
             "roles", user.getRoles()
         ));
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody JwtResponse request) {
-        String refreshToken = request.getRefreshToken();
-        if (!jwtUtil.validateToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
-        }
-        String username = jwtUtil.extractUsername(refreshToken);
-        Optional<User> userOpt = userService.findByUsername(username);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-        }
-        String newJwt = jwtUtil.generateToken(username);
-        String newRefreshToken = jwtUtil.generateRefreshToken(username);
-        return ResponseEntity.ok(new JwtResponse(newJwt, newRefreshToken));
     }
 
     @PostMapping("/logout")
@@ -110,10 +134,10 @@ public class authController {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:3000") // your Next.js dev URL
-                    .allowedMethods("GET", "POST", "PUT", "DELETE")
-                    .allowCredentials(true);
+                        .allowedOrigins(frontendOrigin)
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowCredentials(true);
             }
         };
     }
-} 
+}

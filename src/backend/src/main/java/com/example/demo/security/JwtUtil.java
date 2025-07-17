@@ -2,6 +2,7 @@ package com.example.demo.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,18 +11,31 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private final String jwtSecret = "supersecretkeysupersecretkeysupersecretkey123"; // Use env var in prod
-    private final long jwtExpirationMs = 1000 * 60 * 15; // 15 minutes
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+    @Value("${jwt.expiration.seconds:900}")
+    private int jwtExpirationSeconds;
+
+    @Value("${refresh.token.expiration.seconds:604800}")
+    private int refreshTokenExpirationSeconds;
 
     private SecretKey getSigningKey() {
         return (SecretKey) Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
+    private Date calculateAccessTokenExpirationDate() {
+        return new Date(System.currentTimeMillis() + jwtExpirationSeconds * 1000L); // 15  minutes
+    }
+
+    private Date calculateRefreshTokenExpirationDate() {
+        return new Date(System.currentTimeMillis() + refreshTokenExpirationSeconds * 1000L); // 7 days
     }
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .expiration(calculateAccessTokenExpirationDate())
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -30,7 +44,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .expiration(calculateRefreshTokenExpirationDate())
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -52,4 +66,6 @@ public class JwtUtil {
         final Claims claims = Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
         return claimsResolver.apply(claims);
     }
+
+    public int getJwtExpirationSeconds() { return jwtExpirationSeconds; }
 } 

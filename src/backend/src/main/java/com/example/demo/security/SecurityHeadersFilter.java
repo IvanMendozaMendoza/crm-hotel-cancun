@@ -16,11 +16,8 @@ public class SecurityHeadersFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (response instanceof HttpServletResponse res) {
-            // XSS Protection (legacy, but still useful for some browsers)
             res.setHeader("X-XSS-Protection", "1; mode=block");
-            // Content Security Policy (modern, highly effective)
             res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'");
-            // Prevent MIME type sniffing
             res.setHeader("X-Content-Type-Options", "nosniff");
         }
         chain.doFilter(request, response);
