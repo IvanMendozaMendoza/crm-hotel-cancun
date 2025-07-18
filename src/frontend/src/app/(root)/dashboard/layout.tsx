@@ -11,6 +11,8 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
+  const user = { username: session.user.email, email: session.user.username };
+
   return (
     <SidebarProvider
       style={
@@ -20,7 +22,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user}/>
       <SidebarInset>
         <SiteHeader />
         {children}

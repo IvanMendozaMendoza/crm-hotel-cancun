@@ -99,7 +99,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={()=>{
+            <DropdownMenuItem  onClick={()=>{
               signOut({callbackUrl: "/login"});
               }}>
               <IconLogout />
