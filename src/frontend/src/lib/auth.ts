@@ -1,4 +1,4 @@
-import { env } from "@/app/config/env";
+import { env } from "@/config/env";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
