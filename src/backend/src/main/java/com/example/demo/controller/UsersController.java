@@ -75,6 +75,26 @@ public class UsersController {
         }});
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/me/email")
+    public ResponseEntity<?> updateMyEmail(@RequestBody Map<String, String> updates) {
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof com.example.demo.model.User user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        if (!updates.containsKey("email")) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        user.setEmail(updates.get("email"));
+        userService.registerUser(user);
+        return ResponseEntity.ok(new java.util.HashMap<>() {{
+            put("id", user.getId());
+            put("username", user.getUsername());
+            put("email", user.getEmail());
+            put("role", user.getRole().name());
+        }});
+    }
+
     @PatchMapping("/me/password")
     public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body) {
         Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
