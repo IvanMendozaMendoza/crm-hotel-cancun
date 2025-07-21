@@ -51,6 +51,7 @@ export const NavUser = ({
   return (
     <SidebarMenu>
       <AccountDialog
+        user={user}
         open={accountDialogOpen}
         onOpenChange={setAccountDialogOpen}
       />
