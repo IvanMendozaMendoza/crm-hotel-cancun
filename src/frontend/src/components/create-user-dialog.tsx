@@ -97,7 +97,9 @@ export const CreateUserDialog = ({
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit">Create User</Button>
+            <Button type="submit" disabled>
+              Create User
+            </Button>
           </DialogFooter>
         </DialogContent>
       </form>

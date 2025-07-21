@@ -41,14 +41,14 @@ export const AccountDialog = ({
               <Label htmlFor="name-1">Name</Label>
               <Input id="name-1" name="name" defaultValue={user.name} />
             </div>
-            <div className="grid gap-3">
+            {/* <div className="grid gap-3">
               <Label htmlFor="email-1">Email</Label>
               <Input id="email-1" name="email" type="email" defaultValue="pedro@duarte.com" />
               <span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                 <Info className="ml-2 w-3 h-3 text-muted-foreground" aria-hidden="true" />
-                We'll send a confirmation email to this address to validate your new email
+                We'll send a confirmation email to this address to validate the changes
               </span>
-            </div>
+            </div> */}
             <div className="lg:col-span-2">
               <hr className="border-zinc-800 my-4" />
               {/* Password Change Section */}
@@ -87,7 +87,7 @@ export const AccountDialog = ({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit" disabled>Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </form>

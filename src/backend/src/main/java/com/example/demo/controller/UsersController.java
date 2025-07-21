@@ -77,4 +77,27 @@ public class UsersController {
             put("role", user.getRole().name());
         }});
     }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body) {
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof com.example.demo.model.User user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("password");
+        String passwordConfirm = body.get("passwordConfirm");
+        if (currentPassword == null || newPassword == null || passwordConfirm == null) {
+            return ResponseEntity.badRequest().body("All fields are required");
+        }
+        if (!userService.checkPassword(user, currentPassword)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Current password is incorrect");
+        }
+        if (!newPassword.equals(passwordConfirm)) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+        user.setPassword(newPassword);
+        userService.registerUser(user);
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
 } 
