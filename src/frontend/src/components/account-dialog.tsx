@@ -46,7 +46,7 @@ export const AccountDialog = ({
               <Input id="email-1" name="email" type="email" defaultValue="pedro@duarte.com" />
               <span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                 <Info className="ml-2 w-3 h-3 text-muted-foreground" aria-hidden="true" />
-                We'll send a confirmation email to this address to validate any changes.
+                We'll send a confirmation email to this address to validate your new email
               </span>
             </div>
             <div className="lg:col-span-2">
