@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import com.example.demo.model.User;
+import com.example.demo.model.Role;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import org.springframework.boot.CommandLineRunner;
@@ -21,7 +22,7 @@ public class DatabaseSeeder {
                 admin.setEmail("admin@example.com");
                 admin.setPassword("admin123");
             }
-            admin.setRoles(Set.of("ADMIN", "USER"));
+            admin.setRole(Role.ADMIN);
             admin.setPassword("admin123"); // Always reset to plain text
             userService.registerUser(admin);
 
@@ -32,7 +33,7 @@ public class DatabaseSeeder {
                 user.setEmail("user@example.com");
                 user.setPassword("user123");
             }
-            user.setRoles(Set.of("USER"));
+            user.setRole(Role.USER);
             user.setPassword("user123"); // Always reset to plain text
             userService.registerUser(user);
         };

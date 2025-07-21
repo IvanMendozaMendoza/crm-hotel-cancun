@@ -54,7 +54,7 @@ public class authController {
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "email", user.getEmail(),
-                "roles", user.getRoles(),
+                "role", user.getRole().name(),
                 "token", jwt,
                 "refreshToken", refreshToken
         ));
@@ -93,7 +93,7 @@ public class authController {
             "id", user.getId(),
             "username", user.getUsername(),
             "email", user.getEmail(),
-            "roles", user.getRoles()
+            "role", user.getRole().name()
         ));
     }
 

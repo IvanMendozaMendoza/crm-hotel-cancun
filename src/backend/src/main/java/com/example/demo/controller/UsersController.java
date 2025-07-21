@@ -43,7 +43,7 @@ public class UsersController {
                 put("id", user.getId());
                 put("username", user.getUsername());
                 put("email", user.getEmail());
-                put("roles", user.getRoles());
+                put("role", user.getRole().name());
             }});
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");

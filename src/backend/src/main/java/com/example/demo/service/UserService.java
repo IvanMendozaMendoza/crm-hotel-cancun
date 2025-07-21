@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class UserService {
     }
 
     public List<User> getAllAdmins() {
-        return userRepository.findAllAdmins();
+        return userRepository.findAllByRole(Role.ADMIN);
     }
 
     public List<User> getAllUsers() {
