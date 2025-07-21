@@ -58,7 +58,7 @@ const TeamPage = async () => {
         <h2 className="text-xl font-bold text-card-foreground">Team Members</h2>
         <CreateUserDialogTrigger />
       </div>
-      <div className="w-full max-w-2xl mx-auto bg-card border border-border rounded-xl p-4 sm:p-6 shadow flex flex-col gap-4">
+      <div className="w-full max-w-2xl mx-auto bg-card dark:bg-zinc-900 border border-border rounded-xl p-4 sm:p-6 shadow flex flex-col gap-4">
         {users.length === 0 ? (
           <div className="text-center text-muted-foreground bg-card p-4 rounded-lg">
             No users found.
