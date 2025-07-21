@@ -33,6 +33,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { User } from "@/types/session";
+import Link from "next/link";
 
 const data = {
   navMain: [
@@ -165,10 +166,10 @@ export const AppSidebar = ({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
+              <Link href="/dashboard">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

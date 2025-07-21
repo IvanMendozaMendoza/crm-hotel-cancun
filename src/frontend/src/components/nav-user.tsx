@@ -6,7 +6,7 @@ import {
   IconLogout,
   IconNotification,
   IconUserCircle,
-  IconSun
+  IconSun,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +30,7 @@ import { Dialog, DialogTrigger } from "./ui/dialog";
 import { AccountDialog } from "./account-dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { useTheme } from "next-themes";
 
 export const NavUser = ({
   user,
@@ -42,10 +43,16 @@ export const NavUser = ({
 }) => {
   const { isMobile } = useSidebar();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
 
   return (
     <SidebarMenu>
-      <AccountDialog open={accountDialogOpen} onOpenChange={setAccountDialogOpen} />
+      <AccountDialog
+        open={accountDialogOpen}
+        onOpenChange={setAccountDialogOpen}
+      />
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -59,7 +66,9 @@ export const NavUser = ({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  {user.email}
+                </span>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -93,9 +102,12 @@ export const NavUser = ({
                 <IconNotification />
                 Notifications
               </DropdownMenuItem> */}
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toggleTheme()}
+                aria-label="Toggle theme"
+              >
                 <IconSun />
-                Light mode
+                {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
