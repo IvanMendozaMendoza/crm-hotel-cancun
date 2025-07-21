@@ -42,7 +42,7 @@ public class authController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
         if (userOpt.isEmpty() || !userService.checkPassword(userOpt.get(), loginRequest.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
@@ -50,26 +50,14 @@ public class authController {
         User user = userOpt.get();
         String jwt = jwtUtil.generateToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-
-        Cookie jwtCookie = new Cookie("jwt", jwt);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(jwtUtil.getJwtExpirationSeconds());
-        jwtCookie.setSecure("prod".equals(appEnv));
-        response.addCookie(jwtCookie);
-
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
-        refreshCookie.setSecure("prod".equals(appEnv));
-        response.addCookie(refreshCookie);
-
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "email", user.getEmail(),
-                "roles", user.getRoles()));
+                "roles", user.getRoles(),
+                "token", jwt,
+                "refreshToken", refreshToken
+        ));
     }
 
     @PostMapping("/refresh")

@@ -37,7 +37,7 @@ import { User } from "@/types/session";
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Home",
       url: "/dashboard",
       icon: IconDashboard,
     },
@@ -58,7 +58,7 @@ const data = {
     // },
     {
       title: "Team",
-      url: "/dashboard/team",
+      url: "/team",
       icon: IconUsers,
     },
   ],
@@ -116,16 +116,16 @@ const data = {
       url: "#",
       icon: IconSettings,
     },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
+    // {
+    //   title: "Get Help",
+    //   url: "#",
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: "Search",
+    //   url: "#",
+    //   icon: IconSearch,
+    // },
   ],
   documents: [
     {
@@ -175,8 +175,8 @@ export const AppSidebar = ({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        {/* <NavDocuments items={data.documents} />*/}
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" />  */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={datauser} />

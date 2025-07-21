@@ -22,7 +22,7 @@ public class DatabaseSeeder {
                 admin.setPassword("admin123");
             }
             admin.setRoles(Set.of("ADMIN", "USER"));
-            admin.setPassword("admin123"); 
+            admin.setPassword("admin123"); // Always reset to plain text
             userService.registerUser(admin);
 
             User user = userRepository.findByUsername("user").orElse(null);
@@ -33,7 +33,7 @@ public class DatabaseSeeder {
                 user.setPassword("user123");
             }
             user.setRoles(Set.of("USER"));
-            user.setPassword("user123"); 
+            user.setPassword("user123"); // Always reset to plain text
             userService.registerUser(user);
         };
     }

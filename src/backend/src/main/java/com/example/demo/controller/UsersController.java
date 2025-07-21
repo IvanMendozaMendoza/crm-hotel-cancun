@@ -29,6 +29,12 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
         Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();

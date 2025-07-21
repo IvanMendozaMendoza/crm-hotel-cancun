@@ -6,6 +6,7 @@ import {
   IconLogout,
   IconNotification,
   IconUserCircle,
+  IconSun
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,9 +89,13 @@ export const NavUser = ({
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <IconNotification />
                 Notifications
+              </DropdownMenuItem> */}
+              <DropdownMenuItem>
+                <IconSun />
+                Light mode
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

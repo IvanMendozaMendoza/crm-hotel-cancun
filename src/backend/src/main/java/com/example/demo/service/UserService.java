@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,10 @@ public class UserService {
     }
 
     public User registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        String password = user.getPassword();
+        if (password != null && !password.startsWith("$2")) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
         return userRepository.save(user);
     }
 
@@ -34,5 +38,13 @@ public class UserService {
 
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
+
+    public List<User> getAllAdmins() {
+        return userRepository.findAllAdmins();
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 } 

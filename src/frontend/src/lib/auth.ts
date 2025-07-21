@@ -15,7 +15,6 @@ export const authOptions: NextAuthOptions = {
         const res = await fetch(`${env.API_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             email: credentials?.email,
             password: credentials?.password,
@@ -23,8 +22,16 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!res.ok) return null;
-        const user = await res.json();
-        return user;
+        const data = await res.json();
+        console.log("[NextAuth][authorize] backend response:", data);
+        // Map backend response to user object and use data.token as backendJwt
+        return {
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          roles: data.roles,
+          backendJwt: data.token,
+        };
       },
     }),
   ],
@@ -34,17 +41,21 @@ export const authOptions: NextAuthOptions = {
     updateAge: 60 * 60 * 24
   },
   callbacks: {
-    async session({ session, token, user }) {
-      if (token) {
-        session.user = token.user as any;
-      }
-      return session;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.user = user;
+        token.backendJwt = (user.backendJwt ?? undefined) as string | undefined;
+        console.log("[NextAuth][jwt] token after login:", token);
       }
       return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user = token.user as any;
+        session.backendJwt = (token.backendJwt ?? undefined) as string | undefined;
+        console.log("[NextAuth][session] session object:", session);
+      }
+      return session;
     },
   },
   pages: {
