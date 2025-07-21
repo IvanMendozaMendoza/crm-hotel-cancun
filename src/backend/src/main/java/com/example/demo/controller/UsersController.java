@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class UsersController {
@@ -48,5 +50,31 @@ public class UsersController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateMe(@RequestBody Map<String, String> updates) {
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof com.example.demo.model.User user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        boolean changed = false;
+        if (updates.containsKey("username")) {
+            user.setUsername(updates.get("username"));
+            changed = true;
+        }
+        if (updates.containsKey("email")) {
+            user.setEmail(updates.get("email"));
+            changed = true;
+        }
+        if (changed) {
+            userService.registerUser(user); // Save changes
+        }
+        return ResponseEntity.ok(new java.util.HashMap<>() {{
+            put("id", user.getId());
+            put("username", user.getUsername());
+            put("email", user.getEmail());
+            put("role", user.getRole().name());
+        }});
     }
 } 
