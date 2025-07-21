@@ -63,10 +63,7 @@ public class UsersController {
             user.setUsername(updates.get("username"));
             changed = true;
         }
-        if (updates.containsKey("email")) {
-            user.setEmail(updates.get("email"));
-            changed = true;
-        }
+        // Do not allow email update anymore
         if (changed) {
             userService.registerUser(user); // Save changes
         }
