@@ -7,6 +7,7 @@ import {
   IconNotification,
   IconUserCircle,
   IconSun,
+  IconMoon,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -106,7 +107,7 @@ export const NavUser = ({
                 onClick={() => toggleTheme()}
                 aria-label="Toggle theme"
               >
-                <IconSun />
+                {isDark ? <IconSun /> : <IconMoon />}
                 {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </DropdownMenuItem>
             </DropdownMenuGroup>
