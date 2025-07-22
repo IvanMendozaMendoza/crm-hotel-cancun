@@ -32,6 +32,7 @@ import { AccountDialog } from "./account-dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
+import { Loader2 } from "lucide-react";
 
 export const NavUser = ({
   user,
@@ -46,6 +47,7 @@ export const NavUser = ({
   const { isMobile } = useSidebar();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
@@ -67,17 +69,24 @@ console.log(user)
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLogoutDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setLogoutDialogOpen(false)} disabled={isLoggingOut}>
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                setLogoutDialogOpen(false);
-                signOut({ callbackUrl: "/login" });
+              disabled={isLoggingOut}
+              onClick={async () => {
+                setIsLoggingOut(true);
+                try {
+                  await signOut({ callbackUrl: "/login" });
+                } finally {
+                  setIsLoggingOut(false);
+                  setLogoutDialogOpen(false);
+                }
               }}
             >
-              Log out
+              {isLoggingOut && <Loader2 className="animate-spin w-4 h-4 mr-2 inline" />}
+              {isLoggingOut ? "Logging out..." : "Log out"}
             </Button>
           </DialogFooter>
         </DialogContent>
