@@ -29,7 +29,7 @@ export const authOptions: NextAuthOptions = {
           id: data.id,
           username: data.username,
           email: data.email,
-          roles: data.roles,
+          role: data.role,
           backendJwt: data.token,
         };
       },
@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.user = user;
         token.backendJwt = (user.backendJwt ?? undefined) as string | undefined;
-        console.log("[NextAuth][jwt] token after login:", token);
+        // console.log("[NextAuth][jwt] token after login:", token);
       }
       return token;
     },
@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user = token.user as any;
         session.backendJwt = (token.backendJwt ?? undefined) as string | undefined;
-        console.log("[NextAuth][session] session object:", session);
+        // console.log("[NextAuth][session] session object:", session);
       }
       return session;
     },

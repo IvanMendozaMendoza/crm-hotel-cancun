@@ -154,6 +154,7 @@ export const AppSidebar = ({
   const datauser = {
     name: user.username,
     email: user.email,
+    role: user.role,
     avatar: "/avatars/shadcn.jpg",
   };
 

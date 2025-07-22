@@ -43,7 +43,9 @@ const TeamPage = async () => {
   if (!session) redirect("/login");
   // Check for 'ADMIN' in uppercase
   // if (!Array.isArray((session.user as any)?.roles) || !(session.user as any).roles.includes("ADMIN")) redirect("/");
-  console.log(session.backendJwt);
+  // console.log(session.backendJwt);
+
+
   let users: User[] = [];
   let error: string | null = null;
   try {

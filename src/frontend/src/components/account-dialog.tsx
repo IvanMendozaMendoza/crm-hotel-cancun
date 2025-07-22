@@ -18,15 +18,13 @@ import React from "react";
 export const AccountDialog = ({
   open,
   onOpenChange,
-  user,
-  role,
+  user
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: { name: string; email?: string };
-  role: string;
+  user: { name: string; email?: string, role: string };
 }) => {
-  console.log(role)
+  console.log(user)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <form>
@@ -43,7 +41,7 @@ export const AccountDialog = ({
               <Label htmlFor="name-1">Name</Label>
               <Input id="name-1" name="name" defaultValue={user.name} />
             </div>
-            {role === "ADMIN" && (
+            {user.role === "ADMIN" && (
               <div className="grid gap-3">
                 <Label htmlFor="email-1">Email</Label>
                 <Input id="email-1" name="email" type="email" defaultValue={user.email || ""} />
