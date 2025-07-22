@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import React from "react";
 
@@ -24,11 +25,35 @@ export const AccountDialog = ({
   onOpenChange: (open: boolean) => void;
   user: { name: string; email?: string, role: string };
 }) => {
-  console.log(user)
+  const [isPending, setIsPending] = React.useState(false);
+  const [formState, setFormState] = React.useState({
+    name: user.name,
+    email: user.email || "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const isChanged =
+    formState.name !== user.name ||
+    (user.role === "ADMIN" && formState.email !== (user.email || "")) ||
+    formState.currentPassword !== "" ||
+    formState.newPassword !== "" ||
+    formState.confirmPassword !== "";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    setIsPending(false);
+    toast.success("Account settings updated successfully.");
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <form>
-        <DialogContent className="w-full max-w-lg lg:max-w-2xl xl:max-w-3xl p-4 lg:p-8 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
+      <DialogContent className="w-full max-w-lg lg:max-w-2xl xl:max-w-3xl p-4 lg:p-8 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
+        <form onSubmit={handleSubmit}>
           <DialogHeader className="">
             <DialogTitle>Your Account Settings</DialogTitle>
             <DialogDescription>
@@ -39,12 +64,12 @@ export const AccountDialog = ({
           <div className="grid gap-4 lg:grid-cols-2 lg:gap-8">
             <div className="grid gap-3">
               <Label htmlFor="name-1">Name</Label>
-              <Input id="name-1" name="name" defaultValue={user.name} />
+              <Input id="name-1" name="name" value={formState.name} onChange={e => setFormState(s => ({ ...s, name: e.target.value }))} />
             </div>
             {user.role === "ADMIN" && (
               <div className="grid gap-3">
                 <Label htmlFor="email-1">Email</Label>
-                <Input id="email-1" name="email" type="email" defaultValue={user.email || ""} />
+                <Input id="email-1" name="email" type="email" value={formState.email} onChange={e => setFormState(s => ({ ...s, email: e.target.value }))} />
                 <span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                   <Info className="ml-2 w-3 h-3 text-muted-foreground" aria-hidden="true" />
                   We'll send a confirmation email to this address to validate the changes
@@ -65,6 +90,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="Current password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
+                    value={formState.currentPassword}
+                    onChange={e => setFormState(s => ({ ...s, currentPassword: e.target.value }))}
                   />
                   <Input
                     id="new-password"
@@ -72,6 +99,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="New password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
+                    value={formState.newPassword}
+                    onChange={e => setFormState(s => ({ ...s, newPassword: e.target.value }))}
                   />
                   <Input
                     id="confirm-password"
@@ -79,6 +108,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="Confirm new password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
+                    value={formState.confirmPassword}
+                    onChange={e => setFormState(s => ({ ...s, confirmPassword: e.target.value }))}
                   />
                 </div>
               </div>
@@ -89,10 +120,13 @@ export const AccountDialog = ({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled>Save changes</Button>
+            <Button type="submit" disabled={isPending || !isChanged}>
+              {isPending ? <Info className="animate-spin w-4 h-4 mr-2 inline" /> : null}
+              {isPending ? "Saving..." : "Save changes"}
+            </Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 };
