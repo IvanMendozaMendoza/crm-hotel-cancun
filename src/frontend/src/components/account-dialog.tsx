@@ -54,7 +54,7 @@ export const AccountDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-lg lg:max-w-2xl xl:max-w-3xl p-4 lg:p-8 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
         <form onSubmit={handleSubmit}>
-          <DialogHeader className="">
+          <DialogHeader className="mb-4">
             <DialogTitle>Your Account Settings</DialogTitle>
             <DialogDescription>
               Make changes to your profile here. Click save when you&apos;re
