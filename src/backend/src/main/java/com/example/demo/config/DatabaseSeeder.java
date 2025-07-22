@@ -2,7 +2,9 @@ package com.example.demo.config;
 
 import com.example.demo.model.User;
 import com.example.demo.model.Role;
+import com.example.demo.model.UserRole;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.UserRoleRepository;
 import com.example.demo.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +15,21 @@ import java.util.Set;
 @Configuration
 public class DatabaseSeeder {
     @Bean
-    public CommandLineRunner seedDatabase(UserRepository userRepository, UserService userService) {
+    public CommandLineRunner seedDatabase(UserRepository userRepository, UserService userService, UserRoleRepository userRoleRepository) {
         return args -> {
+            // Seed roles
+            String[] roles = {"ADMIN", "USER", "SUPERVISOR", "MANAGER", "GUEST"};
+            for (String roleName : roles) {
+                userRoleRepository.findByName(roleName)
+                    .orElseGet(() -> {
+                        UserRole role = new UserRole();
+                        role.setName(roleName);
+                        return userRoleRepository.save(role);
+                    });
+            }
+            UserRole adminRole = userRoleRepository.findByName("ADMIN").get();
+            UserRole userRole = userRoleRepository.findByName("USER").get();
+            // Admin user
             User admin = userRepository.findByUsername("admin").orElse(null);
             if (admin == null) {
                 admin = new User();
@@ -22,10 +37,10 @@ public class DatabaseSeeder {
                 admin.setEmail("admin@example.com");
                 admin.setPassword("admin123");
             }
-            admin.setRole(Role.ADMIN);
+            admin.setRole(adminRole);
             admin.setPassword("admin123"); // Always reset to plain text
             userService.registerUser(admin);
-
+            // Regular user
             User user = userRepository.findByUsername("user").orElse(null);
             if (user == null) {
                 user = new User();
@@ -33,7 +48,7 @@ public class DatabaseSeeder {
                 user.setEmail("user@example.com");
                 user.setPassword("user123");
             }
-            user.setRole(Role.USER);
+            user.setRole(userRole);
             user.setPassword("user123"); // Always reset to plain text
             userService.registerUser(user);
         };

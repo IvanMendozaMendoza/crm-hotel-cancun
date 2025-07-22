@@ -1,6 +1,6 @@
 package com.example.demo.model;
 
-import com.example.demo.model.Role;
+import com.example.demo.model.UserRole;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,9 +28,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private UserRole role;
 
     // Getters and setters
     public UUID getId() { return id; }
@@ -45,12 +45,12 @@ public class User implements UserDetails {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
     }
 
     @Override

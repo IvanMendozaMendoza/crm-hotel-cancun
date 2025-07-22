@@ -45,7 +45,7 @@ public class UsersController {
                 put("id", user.getId());
                 put("username", user.getUsername());
                 put("email", user.getEmail());
-                put("role", user.getRole().name());
+                put("role", user.getRole().getName());
             }});
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
@@ -71,7 +71,7 @@ public class UsersController {
             put("id", user.getId());
             put("username", user.getUsername());
             put("email", user.getEmail());
-            put("role", user.getRole().name());
+            put("role", user.getRole().getName());
         }});
     }
 
@@ -91,7 +91,7 @@ public class UsersController {
             put("id", user.getId());
             put("username", user.getUsername());
             put("email", user.getEmail());
-            put("role", user.getRole().name());
+            put("role", user.getRole().getName());
         }});
     }
 
