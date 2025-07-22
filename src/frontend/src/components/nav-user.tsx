@@ -27,7 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "next-auth/react";
-import { Dialog, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { AccountDialog } from "./account-dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -45,6 +45,7 @@ export const NavUser = ({
 }) => {
   const { isMobile } = useSidebar();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
@@ -56,6 +57,31 @@ console.log(user)
         open={accountDialogOpen}
         onOpenChange={setAccountDialogOpen}
       />
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <DialogContent className="w-full max-w-xs p-6 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to log out?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLogoutDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setLogoutDialogOpen(false);
+                signOut({ callbackUrl: "/login" });
+              }}
+            >
+              Log out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -115,9 +141,7 @@ console.log(user)
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => {
-                signOut({ callbackUrl: "/login" });
-              }}
+              onClick={() => setLogoutDialogOpen(true)}
             >
               <IconLogout />
               Log out
