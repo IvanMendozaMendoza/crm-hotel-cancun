@@ -2,6 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
+import com.example.demo.security.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +18,18 @@ import java.util.Map;
 @RequestMapping("/api/v1/users")
 public class UsersController {
     private final UserService userService;
+    private final JwtUtil jwtUtil;
+
+    @Value("${app.env:dev}")
+    private String appEnv;
+
+    @Value("${refresh.token.expiration.seconds:604800}")
+    private int refreshTokenExpirationSeconds;
 
     @Autowired
-    public UsersController(UserService userService) {
+    public UsersController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -53,7 +65,7 @@ public class UsersController {
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<?> updateMe(@RequestBody Map<String, String> updates) {
+    public ResponseEntity<?> updateMe(@RequestBody Map<String, String> updates, HttpServletResponse response) {
         Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
@@ -63,30 +75,35 @@ public class UsersController {
             user.setUsername(updates.get("username"));
             changed = true;
         }
-        // Do not allow email update anymore
+        if (updates.containsKey("email")) {
+            user.setEmail(updates.get("email"));
+            changed = true;
+        }
         if (changed) {
             userService.registerUser(user); // Save changes
+            String jwt = jwtUtil.generateToken(user.getUsername());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+            Cookie jwtCookie = new Cookie("jwt", jwt);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(jwtUtil.getJwtExpirationSeconds());
+            jwtCookie.setSecure("prod".equals(appEnv));
+            response.addCookie(jwtCookie);
+            Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+            refreshCookie.setHttpOnly(true);
+            refreshCookie.setPath("/");
+            refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
+            refreshCookie.setSecure("prod".equals(appEnv));
+            response.addCookie(refreshCookie);
+            return ResponseEntity.ok(new java.util.HashMap<>() {{
+                put("id", user.getId());
+                put("username", user.getUsername());
+                put("email", user.getEmail());
+                put("role", user.getRole().getName());
+                put("token", jwt);
+                put("refreshToken", refreshToken);
+            }});
         }
-        return ResponseEntity.ok(new java.util.HashMap<>() {{
-            put("id", user.getId());
-            put("username", user.getUsername());
-            put("email", user.getEmail());
-            put("role", user.getRole().getName());
-        }});
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/me/email")
-    public ResponseEntity<?> updateMyEmail(@RequestBody Map<String, String> updates) {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof com.example.demo.model.User user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
-        }
-        if (!updates.containsKey("email")) {
-            return ResponseEntity.badRequest().body("Email is required");
-        }
-        user.setEmail(updates.get("email"));
-        userService.registerUser(user);
         return ResponseEntity.ok(new java.util.HashMap<>() {{
             put("id", user.getId());
             put("username", user.getUsername());
@@ -96,7 +113,7 @@ public class UsersController {
     }
 
     @PatchMapping("/me/password")
-    public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body, HttpServletResponse response) {
         Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
@@ -115,6 +132,27 @@ public class UsersController {
         }
         user.setPassword(newPassword);
         userService.registerUser(user);
-        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        String jwt = jwtUtil.generateToken(user.getUsername());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+        Cookie jwtCookie = new Cookie("jwt", jwt);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(jwtUtil.getJwtExpirationSeconds());
+        jwtCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(jwtCookie);
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
+        refreshCookie.setSecure("prod".equals(appEnv));
+        response.addCookie(refreshCookie);
+        return ResponseEntity.ok(new java.util.HashMap<>() {{
+            put("id", user.getId());
+            put("username", user.getUsername());
+            put("email", user.getEmail());
+            put("role", user.getRole().getName());
+            put("token", jwt);
+            put("refreshToken", refreshToken);
+        }});
     }
 } 
