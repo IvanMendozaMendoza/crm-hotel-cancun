@@ -4,18 +4,6 @@ import { env } from "@/config/env";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// async function updateSessionJwt(token: string, refreshToken: string) {
-//   // Use absolute URL for server-side fetch
-//   const baseUrl = env.NEXTAUTH_URL || env.VERCEL_URL
-//     ? `https://${env.VERCEL_URL}`
-//     : "http://localhost:3000";
-//   await fetch(`${baseUrl}/api/auth/update-jwt`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ token, refreshToken }),
-//   });
-// }
-
 export async function updateMe({ username, email }: { username?: string; email?: string }) {
   const session = await getServerSession(authOptions);
   const jwt = session?.backendJwt;

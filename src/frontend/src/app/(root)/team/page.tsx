@@ -5,7 +5,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { CreateUserDialog } from "@/components/create-user-dialog";
-import CreateUserDialogTrigger from "./create-user-dialog-trigger";
+import CreateUserDialogTrigger from "../../../components/create-user-dialog-trigger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,

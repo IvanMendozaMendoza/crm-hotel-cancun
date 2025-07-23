@@ -12,8 +12,10 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
-  const user = { username: session.user.username, email: session.user.email, role: session.user.role };
+  const user = { username: session.user.username, email: session.user.email, role: session.user.roles };
+  console.log("from layout", session)
 
+  // return <div>Hello</div>
   return (
     <SidebarProvider
       style={

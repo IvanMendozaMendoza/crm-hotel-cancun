@@ -1,17 +1,17 @@
 import { DefaultSession } from "next-auth";
 
 type User = {
+  id?: string;
   username: string ;
   email: string ;
-  backendJwt?: string;
-  role: string;
+  roles: string[];
+  jwt:string;
+  refreshToken:string;
 };
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: User;
-    backendJwt?: string;
-  }
-  interface User {
-    backendJwt?: string;
+    jwt: string;
+    refreshToken: string;
   }
 }

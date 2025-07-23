@@ -23,37 +23,43 @@ export const authOptions: NextAuthOptions = {
 
         if (!res.ok) return null;
         const data = await res.json();
-        // console.log("[NextAuth][authorize] backend response:", data);
-        // Map backend response to user object and use data.token as backendJwt
+
+        // NextAuth requires an 'id' property on the user object
         return {
-          id: data.id,
+          id: data.id || data.email,
           username: data.username,
           email: data.email,
-          role: data.role,
-          backendJwt: data.token,
+          roles: data.roles,
+          jwt: data.token,
+          refreshToken: data.refreshToken
         };
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60  * 24 * 3,
-    updateAge: 60 * 60 * 24
+    maxAge: 60 * 60 * 24 * 3,
+    updateAge: 60 * 60 * 24,
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.user = user;
-        token.backendJwt = (user.backendJwt ?? undefined) as string | undefined;
-        // console.log("[NextAuth][jwt] token after login:", token);
+        token.jwt = (user as any).jwt ?? undefined;
+        token.refreshToken = (user as any).refreshToken ?? undefined;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user = token.user as any;
-        session.backendJwt = (token.backendJwt ?? undefined) as string | undefined;
-        // console.log("[NextAuth][session] session object:", session);
+        session.jwt = (token.jwt as string) ?? "";
+        session.refreshToken = (token.refreshToken as string) ?? "";
+        // Remove from user object to avoid duplication
+        if (session.user) {
+          delete (session.user as any).jwt;
+          delete (session.user as any).refreshToken;
+        }
       }
       return session;
     },
