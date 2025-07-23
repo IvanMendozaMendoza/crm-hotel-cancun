@@ -51,7 +51,7 @@ export const NavUser = ({
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
-console.log(user)
+// console.log(user)
   return (
     <SidebarMenu>
       <AccountDialog

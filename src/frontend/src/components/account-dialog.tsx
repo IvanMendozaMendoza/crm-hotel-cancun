@@ -16,7 +16,8 @@ import { toast } from "sonner";
 import React from "react";
 import { z } from "zod";
 import { env } from "@/config/env";
-import { updateName, updateEmail, updatePassword } from "@/app/actions/account";
+import { updateMe, updatePassword } from "@/app/actions/account";
+import { signIn } from "next-auth/react";
 
 export const AccountDialog = ({
   open,
@@ -35,15 +36,16 @@ export const AccountDialog = ({
     newPassword: "",
     confirmPassword: "",
   });
+  const [optimisticState, setOptimisticState] = React.useOptimistic(formState);
   const [passwordError, setPasswordError] = React.useState("");
   const [currentPasswordError, setCurrentPasswordError] = React.useState("");
 
   const isChanged =
-    formState.name !== user.name ||
-    (user.role === "ADMIN" && formState.email !== (user.email || "")) ||
-    formState.currentPassword !== "" ||
-    formState.newPassword !== "" ||
-    formState.confirmPassword !== "";
+    optimisticState.name !== user.name ||
+    optimisticState.email !== (user.email || "") ||
+    optimisticState.currentPassword !== "" ||
+    optimisticState.newPassword !== "" ||
+    optimisticState.confirmPassword !== "";
 
   // Zod password schema
   const passwordSchema = z.object({
@@ -55,24 +57,31 @@ export const AccountDialog = ({
     path: ["confirmPassword"],
   });
 
-  // Remove the old API update functions
+  // Optimistic update handler
+  const handleOptimisticChange = (field: string, value: string) => {
+    React.startTransition(() => {
+      setOptimisticState((prev) => ({ ...prev, [field]: value }));
+    });
+    setFormState((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsPending(true);
     setPasswordError("");
     setCurrentPasswordError("");
+    let reverted = false;
     try {
       // Password validation (if password fields are filled)
       if (
-        formState.currentPassword ||
-        formState.newPassword ||
-        formState.confirmPassword
+        optimisticState.currentPassword ||
+        optimisticState.newPassword ||
+        optimisticState.confirmPassword
       ) {
         const result = passwordSchema.safeParse({
-          currentPassword: formState.currentPassword,
-          newPassword: formState.newPassword,
-          confirmPassword: formState.confirmPassword,
+          currentPassword: optimisticState.currentPassword,
+          newPassword: optimisticState.newPassword,
+          confirmPassword: optimisticState.confirmPassword,
         });
         if (!result.success) {
           const errors = result.error.flatten().fieldErrors;
@@ -83,38 +92,86 @@ export const AccountDialog = ({
           return;
         }
       }
-      // Track which updates are needed
-      const updatePromises = [];
-      if (formState.name !== user.name) {
-        updatePromises.push(updateName(formState.name));
+      // 1. Update username/email if changed
+      let meResult = null;
+      let pwResult = null;
+      if (optimisticState.name !== user.name || optimisticState.email !== (user.email || "")) {
+        React.startTransition(() => {
+          setOptimisticState((prev) => ({ ...prev, name: optimisticState.name, email: optimisticState.email }));
+        });
+        await new Promise((res) => setTimeout(res, 500));
+        try {
+          meResult = await updateMe({ username: optimisticState.name, email: optimisticState.email });
+        } catch (err: any) {
+          React.startTransition(() => {
+            setOptimisticState((prev) => ({ ...prev, name: user.name, email: user.email || "" }));
+          });
+          toast.error(err.message || "Failed to update profile");
+          reverted = true;
+          throw err;
+        }
+        // If a new token is returned, re-authenticate and wait for session update
+        if (meResult && meResult.token) {
+          const signInResult = await signIn("credentials", {
+            redirect: false,
+            email: optimisticState.email,
+            password: optimisticState.currentPassword || "dummy", // prompt for password if needed
+          });
+          if (signInResult?.error) {
+            toast.error("Session refresh failed. Please re-login.");
+            setIsPending(false);
+            return;
+          }
+        }
       }
-      if (user.role === "ADMIN" && formState.email !== (user.email || "")) {
-        updatePromises.push(updateEmail(formState.email));
-      }
+      // 2. Password (only after session is updated)
       if (
-        formState.currentPassword &&
-        formState.newPassword &&
-        formState.newPassword === formState.confirmPassword
+        optimisticState.currentPassword &&
+        optimisticState.newPassword &&
+        optimisticState.newPassword === optimisticState.confirmPassword
       ) {
-        updatePromises.push(updatePassword(formState.currentPassword, formState.newPassword));
+        React.startTransition(() => {
+          setOptimisticState((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+        });
+        await new Promise((res) => setTimeout(res, 500));
+        try {
+          pwResult = await updatePassword(optimisticState.currentPassword, optimisticState.newPassword);
+        } catch (err: any) {
+          React.startTransition(() => {
+            setOptimisticState((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+          });
+          setCurrentPasswordError(err.message || "Failed to update password");
+          reverted = true;
+          throw err;
+        }
+        // If a new token is returned, re-authenticate and wait for session update
+        if (pwResult && pwResult.token) {
+          const signInResult = await signIn("credentials", {
+            redirect: false,
+            email: optimisticState.email,
+            password: optimisticState.newPassword,
+          });
+          if (signInResult?.error) {
+            toast.error("Session refresh failed. Please re-login.");
+            setIsPending(false);
+            return;
+          }
+        }
       }
-      await Promise.all(updatePromises);
       toast.success("Account settings updated successfully.");
       onOpenChange(false);
     } catch (err: any) {
-      // Show specific error messages
-      if (err.message?.toLowerCase().includes("password")) {
-        setCurrentPasswordError(err.message);
-      } else if (err.message?.toLowerCase().includes("email")) {
-        setPasswordError("");
-        setCurrentPasswordError("");
-        toast.error(err.message);
-      } else if (err.message?.toLowerCase().includes("name")) {
-        setPasswordError("");
-        setCurrentPasswordError("");
-        toast.error(err.message);
-      } else {
-        toast.error(err.message || "Failed to update account settings.");
+      if (!reverted) {
+        // Show specific error messages
+        if (err.message?.toLowerCase().includes("password")) {
+          setCurrentPasswordError(err.message);
+        } else if (err.message?.toLowerCase().includes("email") || err.message?.toLowerCase().includes("profile") || err.message?.toLowerCase().includes("name")) {
+          setPasswordError("");
+          setCurrentPasswordError("");
+          toast.error(err.message);
+        } else {
+          toast.error(err.message || "Failed to update account settings.");
+        }
       }
     } finally {
       setIsPending(false);
@@ -125,7 +182,7 @@ export const AccountDialog = ({
   React.useEffect(() => {
     setPasswordError("");
     setCurrentPasswordError("");
-  }, [formState.currentPassword, formState.newPassword, formState.confirmPassword]);
+  }, [optimisticState.currentPassword, optimisticState.newPassword, optimisticState.confirmPassword]);
 
   // Reset password fields when dialog opens
   React.useEffect(() => {
@@ -136,10 +193,18 @@ export const AccountDialog = ({
         newPassword: "",
         confirmPassword: "",
       }));
+      React.startTransition(() => {
+        setOptimisticState(s => ({
+          ...s,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        }));
+      });
       setPasswordError("");
       setCurrentPasswordError("");
     }
-  }, [open]);
+  }, [open, setOptimisticState]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,18 +220,12 @@ export const AccountDialog = ({
           <div className="grid gap-4 lg:grid-cols-2 lg:gap-8">
             <div className="grid gap-3">
               <Label htmlFor="name-1">Name</Label>
-              <Input id="name-1" name="name" value={formState.name} onChange={e => setFormState(s => ({ ...s, name: e.target.value }))} />
+              <Input id="name-1" name="name" value={optimisticState.name} onChange={e => handleOptimisticChange("name", e.target.value)} />
             </div>
-            {user.role === "ADMIN" && (
-              <div className="grid gap-3">
-                <Label htmlFor="email-1">Email</Label>
-                <Input id="email-1" name="email" type="email" value={formState.email} onChange={e => setFormState(s => ({ ...s, email: e.target.value }))} />
-                <span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                  <Info className="ml-2 w-3 h-3 text-muted-foreground" aria-hidden="true" />
-                  We'll send a confirmation email to this address to validate the changes
-                </span>
-              </div>
-            )}
+            <div className="grid gap-3">
+              <Label htmlFor="email-1">Email</Label>
+              <Input id="email-1" name="email" type="email" value={optimisticState.email} onChange={e => handleOptimisticChange("email", e.target.value)} />
+            </div>
             <div className="lg:col-span-2">
               <hr className="border-zinc-800 my-4" />
               {/* Password Change Section */}
@@ -181,8 +240,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="Current password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
-                    value={formState.currentPassword}
-                    onChange={e => setFormState(s => ({ ...s, currentPassword: e.target.value }))}
+                    value={optimisticState.currentPassword}
+                    onChange={e => handleOptimisticChange("currentPassword", e.target.value)}
                   />
                   <div className="text-xs text-red-500 min-h-[20px] lg:col-span-2">
                     {currentPasswordError}
@@ -193,8 +252,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="New password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
-                    value={formState.newPassword}
-                    onChange={e => setFormState(s => ({ ...s, newPassword: e.target.value }))}
+                    value={optimisticState.newPassword}
+                    onChange={e => handleOptimisticChange("newPassword", e.target.value)}
                   />
                   <Input
                     id="confirm-password"
@@ -202,8 +261,8 @@ export const AccountDialog = ({
                     type="password"
                     placeholder="Confirm new password"
                     className="bg-zinc-800 text-zinc-100 placeholder-zinc-500"
-                    value={formState.confirmPassword}
-                    onChange={e => setFormState(s => ({ ...s, confirmPassword: e.target.value }))}
+                    value={optimisticState.confirmPassword}
+                    onChange={e => handleOptimisticChange("confirmPassword", e.target.value)}
                   />
                 </div>
                 {passwordError && (
@@ -221,7 +280,7 @@ export const AccountDialog = ({
               isPending ||
               !isChanged ||
               // Only block submit if password error AND user is trying to change password
-              ((!!passwordError || !!currentPasswordError) && !!(formState.currentPassword || formState.newPassword || formState.confirmPassword))
+              ((!!passwordError || !!currentPasswordError) && !!(optimisticState.currentPassword || optimisticState.newPassword || optimisticState.confirmPassword))
             }>
               {isPending ? <Info className="animate-spin w-4 h-4 mr-2 inline" /> : null}
               {isPending ? "Saving..." : "Save changes"}

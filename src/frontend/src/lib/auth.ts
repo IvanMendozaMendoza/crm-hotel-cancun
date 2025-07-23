@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!res.ok) return null;
         const data = await res.json();
-        console.log("[NextAuth][authorize] backend response:", data);
+        // console.log("[NextAuth][authorize] backend response:", data);
         // Map backend response to user object and use data.token as backendJwt
         return {
           id: data.id,
