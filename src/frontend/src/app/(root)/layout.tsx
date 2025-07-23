@@ -7,15 +7,19 @@ import { Toaster } from "@/components/ui/sonner"
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { User } from "@/types/session";
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
-  const user = { username: session.user.username, email: session.user.email, role: session.user.roles };
-  console.log("from layout", session)
+  const user: User = {
+    username: session.user.username,
+    email: session.user.email,
+    roles: session.user.roles,
+    avatar: "/avatars/shadcn.jpg", // TODO: considering to implement avatar from backend or get rid of it | 23/07/2025
+  }
 
-  // return <div>Hello</div>
   return (
     <SidebarProvider
       style={
@@ -32,6 +36,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
       </SidebarInset>
       <Toaster />
     </SidebarProvider>
+
   );
 };
 

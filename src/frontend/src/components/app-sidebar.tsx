@@ -152,10 +152,8 @@ export const AppSidebar = ({
   ...props
 }: { user: User } & React.ComponentProps<typeof Sidebar>) => {
   const datauser = {
-    name: user.username,
-    email: user.email,
-    role: user.role,
     avatar: "/avatars/shadcn.jpg",
+    ...user,
   };
 
   return (
@@ -186,4 +184,3 @@ export const AppSidebar = ({
     </Sidebar>
   );
 };
-
