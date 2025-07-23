@@ -37,7 +37,7 @@ public class DatabaseSeeder {
                 admin.setEmail("admin@example.com");
                 admin.setPassword("admin123");
             }
-            admin.setRole(adminRole);
+            admin.setRoles(Set.of(adminRole, userRole)); // Admin has both ADMIN and USER roles
             admin.setPassword("admin123"); // Always reset to plain text
             userService.registerUser(admin);
             // Regular user
@@ -48,7 +48,7 @@ public class DatabaseSeeder {
                 user.setEmail("user@example.com");
                 user.setPassword("user123");
             }
-            user.setRole(userRole);
+            user.setRoles(Set.of(userRole)); // User has only USER role
             user.setPassword("user123"); // Always reset to plain text
             userService.registerUser(user);
         };

@@ -46,8 +46,7 @@ public class UserService {
     }
 
     public List<User> getAllAdmins() {
-        UserRole adminRole = userRoleRepository.findByName("ADMIN").orElseThrow();
-        return userRepository.findAllByRole(adminRole);
+        return userRepository.findAllByRoles_Name("ADMIN");
     }
 
     public List<User> getAllUsers() {

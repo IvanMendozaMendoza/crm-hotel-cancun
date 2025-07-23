@@ -28,9 +28,17 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
-    private UserRole role;
+    // Replace single role with multiple roles
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles_map",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<UserRole> roles = new HashSet<>();
+
+    public Set<UserRole> getRoles() { return roles; }
+    public void setRoles(Set<UserRole> roles) { this.roles = roles; }
 
     // Getters and setters
     public UUID getId() { return id; }
@@ -45,12 +53,11 @@ public class User implements UserDetails {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .collect(Collectors.toSet());
     }
 
     @Override

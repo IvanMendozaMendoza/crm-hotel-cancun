@@ -36,7 +36,7 @@ public class UsersController {
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User user) {
         if (userService.findByUsername(user.getUsername()).isPresent() ||
-            userService.findByEmail(user.getEmail()).isPresent()) {
+                userService.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username or email already exists");
         }
         User savedUser = userService.registerUser(user);
@@ -51,14 +51,17 @@ public class UsersController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
         if (principal instanceof com.example.demo.model.User user) {
-            return ResponseEntity.ok(new java.util.HashMap<>() {{
-                put("id", user.getId());
-                put("username", user.getUsername());
-                put("email", user.getEmail());
-                put("role", user.getRole().getName());
-            }});
+            return ResponseEntity.ok(new java.util.HashMap<>() {
+                {
+                    put("id", user.getId());
+                    put("username", user.getUsername());
+                    put("email", user.getEmail());
+                    put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+                }
+            });
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
@@ -66,7 +69,8 @@ public class UsersController {
 
     @PatchMapping("/me")
     public ResponseEntity<?> updateMe(@RequestBody Map<String, String> updates, HttpServletResponse response) {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
@@ -95,26 +99,31 @@ public class UsersController {
             refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
             refreshCookie.setSecure("prod".equals(appEnv));
             response.addCookie(refreshCookie);
-            return ResponseEntity.ok(new java.util.HashMap<>() {{
+            return ResponseEntity.ok(new java.util.HashMap<>() {
+                {
+                    put("id", user.getId());
+                    put("username", user.getUsername());
+                    put("email", user.getEmail());
+                    put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+                    put("token", jwt);
+                    put("refreshToken", refreshToken);
+                }
+            });
+        }
+        return ResponseEntity.ok(new java.util.HashMap<>() {
+            {
                 put("id", user.getId());
                 put("username", user.getUsername());
                 put("email", user.getEmail());
-                put("role", user.getRole().getName());
-                put("token", jwt);
-                put("refreshToken", refreshToken);
-            }});
-        }
-        return ResponseEntity.ok(new java.util.HashMap<>() {{
-            put("id", user.getId());
-            put("username", user.getUsername());
-            put("email", user.getEmail());
-            put("role", user.getRole().getName());
-        }});
+                put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+            }
+        });
     }
 
     @PatchMapping("/me/password")
     public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body, HttpServletResponse response) {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
@@ -146,13 +155,15 @@ public class UsersController {
         refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
         refreshCookie.setSecure("prod".equals(appEnv));
         response.addCookie(refreshCookie);
-        return ResponseEntity.ok(new java.util.HashMap<>() {{
-            put("id", user.getId());
-            put("username", user.getUsername());
-            put("email", user.getEmail());
-            put("role", user.getRole().getName());
-            put("token", jwt);
-            put("refreshToken", refreshToken);
-        }});
+        return ResponseEntity.ok(new java.util.HashMap<>() {
+            {
+                put("id", user.getId());
+                put("username", user.getUsername());
+                put("email", user.getEmail());
+                put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+                put("token", jwt);
+                put("refreshToken", refreshToken);
+            }
+        });
     }
-} 
+}
