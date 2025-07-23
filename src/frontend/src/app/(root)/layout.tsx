@@ -17,7 +17,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
     username: session.user.username,
     email: session.user.email,
     roles: session.user.roles,
-    avatar: "/avatars/shadcn.jpg", // TODO: considering to implement avatar from backend or get rid of it | 23/07/2025
+    avatar: "/avatars/shadcn.jpg", // TODO: change to user avatar
   }
 
   return (

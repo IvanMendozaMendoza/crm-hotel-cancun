@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function updateMe({ username, email }: { username?: string; email?: string }) {
   const session = await getServerSession(authOptions);
-  const jwt = session?.backendJwt;
+  const jwt = session?.jwt;
   if (!jwt) throw new Error("Not authenticated");
   const body: any = {};
   if (username !== undefined) body.username = username;
@@ -21,16 +21,19 @@ export async function updateMe({ username, email }: { username?: string; email?:
     cache: 'no-store',
   });
   const data = await res.json();
-  console.log(data)
   if (!res.ok) {
     throw new Error(data.message || "Failed to update profile");
   }
-  return data;
+  const newJwt = res.headers.get('authorization')?.replace('Bearer ', '') || data.token || null;
+  return {
+    ...data,
+    newJwt: newJwt,
+  };
 }
 
-export async function updatePassword(currentPassword: string, newPassword: string) {
+export async function updatePassword(currentPassword: string, newPassword: string, newJwt?: string | null) {
   const session = await getServerSession(authOptions);
-  const jwt = session?.backendJwt;
+  const jwt = newJwt || session?.jwt;
   if (!jwt) throw new Error("Not authenticated");
   const res = await fetch(`${env.API_URL}/users/me/password`, {
     method: "PATCH",
@@ -45,9 +48,26 @@ export async function updatePassword(currentPassword: string, newPassword: strin
     }),
     cache: 'no-store',
   });
-  const data = await res.json();
+  
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    if (!res.ok) {
+      if (res.status === 403) throw new Error("Your session is invalid. Please log in again.");
+      throw new Error("Failed to update password");
+    }
+    data = {};
+  }
+  
   if (!res.ok) {
     throw new Error(data.message || "Failed to update password");
   }
-  return data;
+
+  const finalNewJwt = res.headers.get('authorization')?.replace('Bearer ', '') || data.token || null;
+  
+  return {
+    ...data,
+    newJwt: finalNewJwt
+  };
 } 

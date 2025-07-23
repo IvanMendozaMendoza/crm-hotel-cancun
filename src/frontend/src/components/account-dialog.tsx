@@ -17,7 +17,8 @@ import React from "react";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { updateMe, updatePassword } from "@/app/actions/account";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
+import { User } from "@/types/session";
 
 export const AccountDialog = ({
   open,
@@ -26,11 +27,11 @@ export const AccountDialog = ({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: { name: string; email?: string, role: string };
+  user: User;
 }) => {
   const [isPending, setIsPending] = React.useState(false);
   const [formState, setFormState] = React.useState({
-    name: user.name,
+    username: user.username,
     email: user.email || "",
     currentPassword: "",
     newPassword: "",
@@ -41,7 +42,7 @@ export const AccountDialog = ({
   const [currentPasswordError, setCurrentPasswordError] = React.useState("");
 
   const isChanged =
-    optimisticState.name !== user.name ||
+    optimisticState.username !== user.username ||
     optimisticState.email !== (user.email || "") ||
     optimisticState.currentPassword !== "" ||
     optimisticState.newPassword !== "" ||
@@ -71,6 +72,7 @@ export const AccountDialog = ({
     setPasswordError("");
     setCurrentPasswordError("");
     let reverted = false;
+
     try {
       // Password validation (if password fields are filled)
       if (
@@ -92,39 +94,35 @@ export const AccountDialog = ({
           return;
         }
       }
+
+      let hasUpdates = false;
+      let needsReauth = false;
+      let latestJwt: string | null = null;
+
       // 1. Update username/email if changed
-      let meResult = null;
-      let pwResult = null;
-      if (optimisticState.name !== user.name || optimisticState.email !== (user.email || "")) {
+      if (optimisticState.username !== user.username || optimisticState.email !== (user.email || "")) {
         React.startTransition(() => {
-          setOptimisticState((prev) => ({ ...prev, name: optimisticState.name, email: optimisticState.email }));
+          setOptimisticState((prev) => ({ ...prev, username: optimisticState.username, email: optimisticState.email }));
         });
-        await new Promise((res) => setTimeout(res, 500));
         try {
-          meResult = await updateMe({ username: optimisticState.name, email: optimisticState.email });
+          const meResult = await updateMe({ username: optimisticState.username, email: optimisticState.email });
+          if (meResult) {
+            hasUpdates = true;
+            if (meResult.newJwt) {
+              latestJwt = meResult.newJwt;
+            }
+          }
         } catch (err: any) {
           React.startTransition(() => {
-            setOptimisticState((prev) => ({ ...prev, name: user.name, email: user.email || "" }));
+            setOptimisticState((prev) => ({ ...prev, username: user.username, email: user.email || "" }));
           });
           toast.error(err.message || "Failed to update profile");
           reverted = true;
           throw err;
         }
-        // If a new token is returned, re-authenticate and wait for session update
-        if (meResult && meResult.token) {
-          const signInResult = await signIn("credentials", {
-            redirect: false,
-            email: optimisticState.email,
-            password: optimisticState.currentPassword || "dummy", // prompt for password if needed
-          });
-          if (signInResult?.error) {
-            toast.error("Session refresh failed. Please re-login.");
-            setIsPending(false);
-            return;
-          }
-        }
       }
-      // 2. Password (only after session is updated)
+
+      // 2. Update password if changed, using the latest JWT
       if (
         optimisticState.currentPassword &&
         optimisticState.newPassword &&
@@ -133,9 +131,29 @@ export const AccountDialog = ({
         React.startTransition(() => {
           setOptimisticState((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
         });
-        await new Promise((res) => setTimeout(res, 500));
         try {
-          pwResult = await updatePassword(optimisticState.currentPassword, optimisticState.newPassword);
+          const pwResult = await updatePassword(
+            optimisticState.currentPassword, 
+            optimisticState.newPassword,
+            latestJwt
+          );
+          if (pwResult) {
+            hasUpdates = true;
+            needsReauth = true;
+            // Final re-authentication with new password
+            const signInResult = await signIn("credentials", {
+              redirect: false,
+              email: optimisticState.email,
+              password: optimisticState.newPassword,
+            });
+            if (signInResult?.error) {
+              toast.error("Failed to update session with new credentials. Please log in again.");
+              setTimeout(() => {
+                signOut({ callbackUrl: "/login" });
+              }, 2000);
+              return;
+            }
+          }
         } catch (err: any) {
           React.startTransition(() => {
             setOptimisticState((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
@@ -144,25 +162,17 @@ export const AccountDialog = ({
           reverted = true;
           throw err;
         }
-        // If a new token is returned, re-authenticate and wait for session update
-        if (pwResult && pwResult.token) {
-          const signInResult = await signIn("credentials", {
-            redirect: false,
-            email: optimisticState.email,
-            password: optimisticState.newPassword,
-          });
-          if (signInResult?.error) {
-            toast.error("Session refresh failed. Please re-login.");
-            setIsPending(false);
-            return;
-          }
-        }
       }
-      toast.success("Account settings updated successfully.");
-      onOpenChange(false);
+
+      if (hasUpdates) {
+        toast.success("Account settings updated successfully.");
+        if (needsReauth) {
+          toast.info("Please wait while your session is updated...");
+        }
+        onOpenChange(false);
+      }
     } catch (err: any) {
       if (!reverted) {
-        // Show specific error messages
         if (err.message?.toLowerCase().includes("password")) {
           setCurrentPasswordError(err.message);
         } else if (err.message?.toLowerCase().includes("email") || err.message?.toLowerCase().includes("profile") || err.message?.toLowerCase().includes("name")) {
@@ -219,8 +229,8 @@ export const AccountDialog = ({
           </DialogHeader>
           <div className="grid gap-4 lg:grid-cols-2 lg:gap-8">
             <div className="grid gap-3">
-              <Label htmlFor="name-1">Name</Label>
-              <Input id="name-1" name="name" value={optimisticState.name} onChange={e => handleOptimisticChange("name", e.target.value)} />
+              <Label htmlFor="username-1">Username</Label>
+              <Input id="username-1" name="username" value={optimisticState.username} onChange={e => handleOptimisticChange("username", e.target.value)} />
             </div>
             <div className="grid gap-3">
               <Label htmlFor="email-1">Email</Label>

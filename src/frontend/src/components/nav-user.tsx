@@ -1,10 +1,7 @@
 "use client";
 
 import {
-  IconCreditCard,
-  IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
   IconSun,
   IconMoon,
@@ -22,28 +19,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "next-auth/react";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
 import { AccountDialog } from "./account-dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { Loader2 } from "lucide-react";
+import { User } from "@/types/session";
 
-export const NavUser = ({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-    role: string;
-  };
-}) => {
+export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -51,7 +46,6 @@ export const NavUser = ({
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
-// console.log(user)
   return (
     <SidebarMenu>
       <AccountDialog
@@ -59,7 +53,6 @@ export const NavUser = ({
         open={accountDialogOpen}
         onOpenChange={setAccountDialogOpen}
       />
-      {/* Logout Confirmation Dialog */}
       <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <DialogContent className="w-full max-w-xs p-6 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
           <DialogHeader>
@@ -69,7 +62,11 @@ export const NavUser = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLogoutDialogOpen(false)} disabled={isLoggingOut}>
+            <Button
+              variant="outline"
+              onClick={() => setLogoutDialogOpen(false)}
+              disabled={isLoggingOut}
+            >
               Cancel
             </Button>
             <Button
@@ -85,7 +82,9 @@ export const NavUser = ({
                 }
               }}
             >
-              {isLoggingOut && <Loader2 className="animate-spin w-4 h-4 mr-2 inline" />}
+              {isLoggingOut && (
+                <Loader2 className="animate-spin w-4 h-4 mr-2 inline" />
+              )}
               {isLoggingOut ? "Logging out..." : "Log out"}
             </Button>
           </DialogFooter>
@@ -99,11 +98,11 @@ export const NavUser = ({
               className="w-full flex items-center gap-2 justify-start"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate font-medium">{user.username}</span>
                 <span className="text-muted-foreground truncate text-xs">
                   {user.email}
                 </span>
@@ -119,7 +118,7 @@ export const NavUser = ({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user.avatar} alt={user.username} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -136,10 +135,6 @@ export const NavUser = ({
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-              {/* <DropdownMenuItem>
-                <IconNotification />
-                Notifications
-              </DropdownMenuItem> */}
               <DropdownMenuItem
                 onClick={() => toggleTheme()}
                 aria-label="Toggle theme"
@@ -149,9 +144,7 @@ export const NavUser = ({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setLogoutDialogOpen(true)}
-            >
+            <DropdownMenuItem onClick={() => setLogoutDialogOpen(true)}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

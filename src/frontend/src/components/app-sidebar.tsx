@@ -151,10 +151,6 @@ export const AppSidebar = ({
   user,
   ...props
 }: { user: User } & React.ComponentProps<typeof Sidebar>) => {
-  const datauser = {
-    avatar: "/avatars/shadcn.jpg",
-    ...user,
-  };
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -179,7 +175,7 @@ export const AppSidebar = ({
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" />  */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={datauser} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   );
