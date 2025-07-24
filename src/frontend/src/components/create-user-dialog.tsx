@@ -37,6 +37,9 @@ export const CreateUserDialog = ({
             <DialogTitle>Create New User</DialogTitle>
             <DialogDescription>
               Fill in the details to create a new user account.
+              <br />
+              <br />
+              <span className="text-red-500">DOESNT WORK YET</span>
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">

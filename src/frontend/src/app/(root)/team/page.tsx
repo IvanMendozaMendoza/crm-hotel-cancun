@@ -14,6 +14,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { getAllUsers } from "@/app/actions/admin";
 
 // TODO: This is for testing purpuses, we render this fields for each user
 interface User {
@@ -27,17 +28,6 @@ interface User {
   credentialsNonExpired: boolean;
 }
 
-const fetchUsers = async (backendJwt: string): Promise<User[]> => {
-  const res = await fetch(process.env.API_URL + "/users", {
-    headers: {
-      Authorization: `Bearer ${backendJwt}`,
-    },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("Failed to fetch users");
-  return res.json();
-};
-
 const TeamPage = async () => {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
@@ -45,11 +35,10 @@ const TeamPage = async () => {
   // if (!Array.isArray((session.user as any)?.roles) || !(session.user as any).roles.includes("ADMIN")) redirect("/");
   // console.log(session.backendJwt);
 
-
   let users: User[] = [];
   let error: string | null = null;
   try {
-    const res = await fetchUsers(session.jwt || "");
+    const res = await getAllUsers();
     users = res.users;
   } catch (e: any) {
     error = e.message;
