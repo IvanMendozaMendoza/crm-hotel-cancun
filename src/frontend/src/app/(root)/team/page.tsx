@@ -49,7 +49,8 @@ const TeamPage = async () => {
   let users: User[] = [];
   let error: string | null = null;
   try {
-    users = await fetchUsers(session.jwt || "");
+    const res = await fetchUsers(session.jwt || "");
+    users = res.users;
   } catch (e: any) {
     error = e.message;
   }
