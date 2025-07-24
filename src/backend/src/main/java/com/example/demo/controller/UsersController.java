@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import com.example.demo.security.JwtUtil;
+import com.example.demo.dto.UserResponseDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -46,7 +50,19 @@ public class UsersController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
     public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<UserResponseDTO> users = userService.getAllUsers().stream().map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setRoles(user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet()));
+            return dto;
+        }).collect(Collectors.toList());
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", "success");
+        response.put("results", users.size());
+        response.put("users", users);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -45,19 +46,25 @@ public class authController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
         if (userOpt.isEmpty() || !userService.checkPassword(userOpt.get(), loginRequest.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         User user = userOpt.get();
         String jwt = jwtUtil.generateToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-        return ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "roles", user.getRoles().stream().map(r -> r.getName()).toList(),
-                "token", jwt,
-                "refreshToken", refreshToken
-        ));
+        Map<String, Object> userMap = new LinkedHashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("username", user.getUsername());
+        userMap.put("email", user.getEmail());
+        userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", "success");
+        response.put("user", userMap);
+        response.put("token", jwt);
+        response.put("refreshToken", refreshToken);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh")
