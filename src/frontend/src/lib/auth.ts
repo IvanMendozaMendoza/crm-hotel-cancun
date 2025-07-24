@@ -24,12 +24,11 @@ export const authOptions: NextAuthOptions = {
         if (!res.ok) return null;
         const data = await res.json();
 
-        // NextAuth requires an 'id' property on the user object
         return {
-          id: data.id || data.email,
-          username: data.username,
-          email: data.email,
-          roles: data.roles,
+          id: data.user.id || data.email,
+          username: data.user.username,
+          email: data.user.email,
+          roles: data.user.roles,
           jwt: data.token,
           refreshToken: data.refreshToken
         };
