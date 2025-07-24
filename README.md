@@ -10,6 +10,8 @@ This document contains SQL queries related to user roles and their associations 
 
 Returns a list of roles along with a comma-separated list of users assigned to each role.
 
+
+ROLES WITH USERS
 ```sql
 SELECT 
     r.id AS role_id, 
@@ -22,6 +24,7 @@ GROUP BY r.id, r.name
 ORDER BY r.name;
 ```
 
+USERS WITH ROLES
 ```sql
 SELECT 
     r.id AS role_id, 
