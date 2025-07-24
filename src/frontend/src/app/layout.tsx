@@ -9,7 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={` antialiased`}
+        className={` antialiased dark`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
