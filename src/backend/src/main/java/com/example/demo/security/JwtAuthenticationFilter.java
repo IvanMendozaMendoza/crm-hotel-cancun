@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -36,18 +37,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
         }
-        String username = null;
+        String userId = null;
         if (jwt != null) {
-            username = jwtUtil.extractUsername(jwt);
+            userId = jwtUtil.extractUserId(jwt);
         }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            Optional<User> userOpt = userRepository.findByUsername(username);
-            if (userOpt.isPresent() && jwtUtil.validateToken(jwt)) {
-                User user = userOpt.get();
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user, null, user.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UUID uuid = UUID.fromString(userId);
+                Optional<User> userOpt = userRepository.findById(uuid);
+                if (userOpt.isPresent() && jwtUtil.validateToken(jwt)) {
+                    User user = userOpt.get();
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            user, null, user.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (IllegalArgumentException e) {
+                // Invalid UUID, do nothing (token will be rejected)
             }
         }
         filterChain.doFilter(request, response);

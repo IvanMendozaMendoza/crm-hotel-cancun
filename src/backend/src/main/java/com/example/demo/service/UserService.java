@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -39,6 +40,10 @@ public class UserService {
 
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
+
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id);
     }
 
     public List<User> getAllAdmins() {

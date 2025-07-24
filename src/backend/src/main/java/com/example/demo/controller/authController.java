@@ -20,6 +20,7 @@ import org.springframework.lang.NonNull;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -52,8 +53,8 @@ public class authController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         User user = userOpt.get();
-        String jwt = jwtUtil.generateToken(user.getUsername());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+        String jwt = jwtUtil.generateToken(user.getId().toString());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId().toString());
         Map<String, Object> userMap = new LinkedHashMap<>();
         userMap.put("id", user.getId());
         userMap.put("username", user.getUsername());
@@ -73,14 +74,14 @@ public class authController {
         if (!jwtUtil.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
         }
-        String username = jwtUtil.extractUsername(refreshToken);
-        Optional<User> userOpt = userService.findByUsername(username);
+        String userId = jwtUtil.extractUserId(refreshToken);
+        Optional<User> userOpt = userService.findById(UUID.fromString(userId));
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
         }
         User user = userOpt.get();
-        String newJwt = jwtUtil.generateToken(username);
-        String newRefreshToken = jwtUtil.generateRefreshToken(username);
+        String newJwt = jwtUtil.generateToken(user.getId().toString());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId().toString());
         // Set new tokens as cookies
         Cookie jwtCookie = new Cookie("jwt", newJwt);
         jwtCookie.setHttpOnly(true);
