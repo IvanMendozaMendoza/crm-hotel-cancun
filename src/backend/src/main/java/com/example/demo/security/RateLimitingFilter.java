@@ -15,8 +15,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class RateLimitingFilter implements Filter {
@@ -38,8 +40,14 @@ public class RateLimitingFilter implements Filter {
         if (bucket.tryConsume(1)) {
             chain.doFilter(request, response);
         } else {
-            ((HttpServletResponse) response).setStatus(429);
-            response.getWriter().write("Too Many Requests");
+            HttpServletResponse httpResp = (HttpServletResponse) response;
+            httpResp.setStatus(429);
+            httpResp.setContentType("application/json");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "Too Many Requests");
+            ObjectMapper mapper = new ObjectMapper();
+            httpResp.getWriter().write(mapper.writeValueAsString(errorResponse));
         }
     }
 } 
