@@ -121,6 +121,7 @@ export const AccountDialog = ({
       let hasUpdates = false;
       let needsReauth = false;
       let latestJwt: string | null = null;
+      let didShowLogoutToast = false;
 
       // 1. Update username/email if changed
       if (optimisticState.username !== user.username || optimisticState.email !== (user.email || "")) {
@@ -134,6 +135,7 @@ export const AccountDialog = ({
             if (meResult.newJwt) {
               latestJwt = meResult.newJwt;
             }
+            didShowLogoutToast = true;
           }
         } catch (err: any) {
           React.startTransition(() => {
@@ -163,19 +165,7 @@ export const AccountDialog = ({
           if (pwResult) {
             hasUpdates = true;
             needsReauth = true;
-            // Final re-authentication with new password
-            const signInResult = await signIn("credentials", {
-              redirect: false,
-              email: optimisticState.email,
-              password: optimisticState.newPassword,
-            });
-            if (signInResult?.error) {
-              toast.error("Failed to update session with new credentials. Please log in again.");
-              setTimeout(() => {
-                signOut({ callbackUrl: "/login" });
-              }, 2000);
-              return;
-            }
+            didShowLogoutToast = true;
           }
         } catch (err: any) {
           React.startTransition(() => {
@@ -187,12 +177,14 @@ export const AccountDialog = ({
         }
       }
 
-      if (hasUpdates) {
-        toast.success("Account settings updated successfully.");
-        if (needsReauth) {
-          toast.info("Please wait while your session is updated...");
-        }
+      if (hasUpdates && didShowLogoutToast) {
         onOpenChange(false);
+        toast.success("Account settings updated successfully. You need to log in again.");
+        setTimeout(() => {
+          signOut({ callbackUrl: "/login" });
+        }, 3500);
+        setIsPending(false);
+        return;
       }
     } catch (err: any) {
       if (!reverted) {
