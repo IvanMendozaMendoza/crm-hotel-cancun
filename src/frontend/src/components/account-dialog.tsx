@@ -40,6 +40,8 @@ export const AccountDialog = ({
   const [optimisticState, setOptimisticState] = React.useOptimistic(formState);
   const [passwordError, setPasswordError] = React.useState("");
   const [currentPasswordError, setCurrentPasswordError] = React.useState("");
+  const [emailError, setEmailError] = React.useState("");
+  const [usernameError, setUsernameError] = React.useState("");
 
   const isChanged =
     optimisticState.username !== user.username ||
@@ -58,6 +60,12 @@ export const AccountDialog = ({
     path: ["confirmPassword"],
   });
 
+  // Zod schemas
+  const profileSchema = z.object({
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Please enter a valid email address"),
+  });
+
   // Optimistic update handler
   const handleOptimisticChange = (field: string, value: string) => {
     React.startTransition(() => {
@@ -71,9 +79,24 @@ export const AccountDialog = ({
     setIsPending(true);
     setPasswordError("");
     setCurrentPasswordError("");
+    setEmailError("");
+    setUsernameError("");
     let reverted = false;
 
     try {
+      // Profile validation
+      const profileResult = profileSchema.safeParse({
+        username: optimisticState.username,
+        email: optimisticState.email,
+      });
+      if (!profileResult.success) {
+        const errors = profileResult.error.flatten().fieldErrors;
+        if (errors.username) setUsernameError(errors.username[0]);
+        if (errors.email) setEmailError(errors.email[0]);
+        setIsPending(false);
+        return;
+      }
+
       // Password validation (if password fields are filled)
       if (
         optimisticState.currentPassword ||
@@ -194,6 +217,12 @@ export const AccountDialog = ({
     setCurrentPasswordError("");
   }, [optimisticState.currentPassword, optimisticState.newPassword, optimisticState.confirmPassword]);
 
+  // Clear profile errors on field change
+  React.useEffect(() => {
+    setEmailError("");
+    setUsernameError("");
+  }, [optimisticState.username, optimisticState.email]);
+
   // Reset password fields when dialog opens
   React.useEffect(() => {
     if (open) {
@@ -232,10 +261,12 @@ export const AccountDialog = ({
               <div className="flex flex-col gap-2">
                 <Label htmlFor="username-1">Username</Label>
                 <Input id="username-1" name="username" value={optimisticState.username} onChange={e => handleOptimisticChange("username", e.target.value)} />
+                {usernameError && <span className="text-xs text-red-500 mt-1">{usernameError}</span>}
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="email-1">Email</Label>
                 <Input id="email-1" name="email" type="email" value={optimisticState.email} onChange={e => handleOptimisticChange("email", e.target.value)} />
+                {emailError && <span className="text-xs text-red-500 mt-1">{emailError}</span>}
               </div>
             </div>
             <div className="w-full">
@@ -302,7 +333,8 @@ export const AccountDialog = ({
               disabled={
                 isPending ||
                 !isChanged ||
-                ((!!passwordError || !!currentPasswordError) && !!(optimisticState.currentPassword || optimisticState.newPassword || optimisticState.confirmPassword))
+                ((!!passwordError || !!currentPasswordError) && !!(optimisticState.currentPassword || optimisticState.newPassword || optimisticState.confirmPassword)) ||
+                ((!!usernameError || !!emailError) && !!(optimisticState.username || optimisticState.email))
               }
             >
               {isPending ? <Info className="animate-spin w-4 h-4 mr-2 inline" /> : null}
