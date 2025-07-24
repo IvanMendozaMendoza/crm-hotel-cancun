@@ -1,6 +1,5 @@
 package com.example.demo.model;
 
-import com.example.demo.model.UserRole;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.UUID;
-import java.util.List;
 
 @Entity
 @Table(name = "users")

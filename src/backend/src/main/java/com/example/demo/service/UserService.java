@@ -1,8 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Role;
 import com.example.demo.model.User;
-import com.example.demo.model.UserRole;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +14,11 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserRoleRepository userRoleRepository;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.userRoleRepository = userRoleRepository;
     }
 
     public User registerUser(User user) {
