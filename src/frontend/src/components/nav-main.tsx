@@ -45,7 +45,9 @@ export function NavMain({
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
+
         <SidebarMenu>
+          <hr className="bg-zinc-700 dark:border-zinc-800" />
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title} asChild>

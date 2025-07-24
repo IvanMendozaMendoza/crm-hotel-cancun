@@ -15,7 +15,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-// Add a type for User
+// TODO: This is for testing purpuses, we render this fields for each user
 interface User {
   id: string;
   username: string;
@@ -109,6 +109,13 @@ const TeamPage = async () => {
           ))
         )}
       </div>
+
+      {
+        <div className="w-auto mx-auto bg-card dark:bg-zinc-900 border border-border rounded-xl p-4 sm:p-6 shadow flex flex-col gap-4">
+          <h1>Users data</h1>
+          <pre>{JSON.stringify(users, null, 2)}</pre>
+        </div>
+      }
     </div>
   );
 };

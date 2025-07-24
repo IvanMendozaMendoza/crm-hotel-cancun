@@ -38,7 +38,7 @@ import Link from "next/link";
 const data = {
   navMain: [
     {
-      title: "Home",
+      title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
     },
