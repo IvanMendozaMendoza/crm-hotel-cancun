@@ -4,6 +4,9 @@ import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.dto.UserResponseDTO;
+import com.example.demo.dto.CreateUserDTO;
+import com.example.demo.model.UserRole;
+import com.example.demo.repository.UserRoleRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,12 +20,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.Set;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UsersController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final UserRoleRepository userRoleRepository;
 
     @Value("${app.env:dev}")
     private String appEnv;
@@ -31,21 +38,35 @@ public class UsersController {
     private int refreshTokenExpirationSeconds;
 
     @Autowired
-    public UsersController(UserService userService, JwtUtil jwtUtil) {
+    public UsersController(UserService userService, JwtUtil jwtUtil, UserRoleRepository userRoleRepository) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        if (userService.findByUsername(user.getUsername()).isPresent() ||
-                userService.findByEmail(user.getEmail()).isPresent()) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserDTO dto) {
+        if (userService.findByUsername(dto.getUsername()).isPresent() ||
+                userService.findByEmail(dto.getEmail()).isPresent()) {
             Map<String, Object> errorResponse = new LinkedHashMap<>();
             errorResponse.put("status", "fail");
             errorResponse.put("message", "Username or email already exists");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+        Set<UserRole> roles = new HashSet<>();
+        if (dto.getRoles() != null) {
+            for (String roleName : dto.getRoles()) {
+                UserRole role = userRoleRepository.findByName(roleName)
+                    .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                roles.add(role);
+            }
+        }
+        user.setRoles(roles);
         User savedUser = userService.registerUser(user);
         Map<String, Object> userMap = new LinkedHashMap<>();
         userMap.put("id", savedUser.getId());
