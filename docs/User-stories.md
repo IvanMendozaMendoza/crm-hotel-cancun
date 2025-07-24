@@ -23,10 +23,10 @@
     - The system validates the email and password.
     - On success, a JWT and refresh token are returned.
 
-- **As a user, I want to refresh my authentication token, so that I can stay logged in without re-entering my credentials.**
+<!-- - **As a user, I want to refresh my authentication token, so that I can stay logged in without re-entering my credentials.**
   - Endpoint: `POST /api/v1/auth/refresh`
   - Acceptance Criteria:
     - The system accepts a valid refresh token.
     - On success, a new JWT and refresh token are returned.
 
----
+--- -->
