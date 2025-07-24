@@ -41,10 +41,21 @@ public class UsersController {
     public ResponseEntity<?> createUser(@RequestBody User user) {
         if (userService.findByUsername(user.getUsername()).isPresent() ||
                 userService.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username or email already exists");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "Username or email already exists");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         User savedUser = userService.registerUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+        Map<String, Object> userMap = new LinkedHashMap<>();
+        userMap.put("id", savedUser.getId());
+        userMap.put("username", savedUser.getUsername());
+        userMap.put("email", savedUser.getEmail());
+        userMap.put("roles", savedUser.getRoles().stream().map(r -> r.getName()).toList());
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("user", userMap);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,28 +78,33 @@ public class UsersController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof com.example.demo.model.User user) {
-            return ResponseEntity.ok(new java.util.HashMap<>() {
-                {
-                    put("id", user.getId());
-                    put("username", user.getUsername());
-                    put("email", user.getEmail());
-                    put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
-                }
-            });
+            Map<String, Object> userMap = new LinkedHashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("username", user.getUsername());
+            userMap.put("email", user.getEmail());
+            userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "success");
+            response.put("user", userMap);
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
     @PatchMapping("/me")
     public ResponseEntity<?> updateMe(@RequestBody Map<String, String> updates, HttpServletResponse response) {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         boolean changed = false;
         if (updates.containsKey("username")) {
@@ -115,45 +131,58 @@ public class UsersController {
             refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
             refreshCookie.setSecure("prod".equals(appEnv));
             response.addCookie(refreshCookie);
-            return ResponseEntity.ok(new java.util.HashMap<>() {
-                {
-                    put("id", user.getId());
-                    put("username", user.getUsername());
-                    put("email", user.getEmail());
-                    put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
-                    put("token", jwt);
-                    put("refreshToken", refreshToken);
-                }
-            });
+            Map<String, Object> userMap = new LinkedHashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("username", user.getUsername());
+            userMap.put("email", user.getEmail());
+            userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("status", "success");
+            resp.put("user", userMap);
+            resp.put("token", jwt);
+            resp.put("refreshToken", refreshToken);
+            return ResponseEntity.ok(resp);
         }
-        return ResponseEntity.ok(new java.util.HashMap<>() {
-            {
-                put("id", user.getId());
-                put("username", user.getUsername());
-                put("email", user.getEmail());
-                put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
-            }
-        });
+        Map<String, Object> userMap = new LinkedHashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("username", user.getUsername());
+        userMap.put("email", user.getEmail());
+        userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("user", userMap);
+        return ResponseEntity.ok(resp);
     }
 
     @PatchMapping("/me/password")
     public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body, HttpServletResponse response) {
-        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof com.example.demo.model.User user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         String currentPassword = body.get("currentPassword");
         String newPassword = body.get("password");
         String passwordConfirm = body.get("passwordConfirm");
         if (currentPassword == null || newPassword == null || passwordConfirm == null) {
-            return ResponseEntity.badRequest().body("All fields are required");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "All fields are required");
+            return ResponseEntity.badRequest().body(errorResponse);
         }
         if (!userService.checkPassword(user, currentPassword)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Current password is incorrect");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "Current password is incorrect");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         }
         if (!newPassword.equals(passwordConfirm)) {
-            return ResponseEntity.badRequest().body("Passwords do not match");
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
+            errorResponse.put("status", "fail");
+            errorResponse.put("message", "Passwords do not match");
+            return ResponseEntity.badRequest().body(errorResponse);
         }
         user.setPassword(newPassword);
         userService.registerUser(user);
@@ -171,15 +200,16 @@ public class UsersController {
         refreshCookie.setMaxAge(refreshTokenExpirationSeconds);
         refreshCookie.setSecure("prod".equals(appEnv));
         response.addCookie(refreshCookie);
-        return ResponseEntity.ok(new java.util.HashMap<>() {
-            {
-                put("id", user.getId());
-                put("username", user.getUsername());
-                put("email", user.getEmail());
-                put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
-                put("token", jwt);
-                put("refreshToken", refreshToken);
-            }
-        });
+        Map<String, Object> userMap = new LinkedHashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("username", user.getUsername());
+        userMap.put("email", user.getEmail());
+        userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("user", userMap);
+        resp.put("token", jwt);
+        resp.put("refreshToken", refreshToken);
+        return ResponseEntity.ok(resp);
     }
 }
