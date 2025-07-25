@@ -47,7 +47,7 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
-  --card: oklch(1 0 0);
+  --card: oklch(1  0 0);
   --card-foreground: oklch(0.147 0.004 49.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.147 0.004 49.25);
@@ -112,11 +112,22 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+@font-face {
+  font-family: 'GeneralSans-Variable';
+  src: url('../../public/fonts/GeneralSans-Variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-display: swap;
+  font-style: normal;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
+    font-family: 'GeneralSans-Variable', sans-serif;
+    font-variation-settings: "wght" 500;
     @apply bg-background text-foreground;
   }
 

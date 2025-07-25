@@ -1,15 +1,99 @@
-## Auth Endpoints
+-----
 
-| Method | Endpoint                | Description                                                                 |
-|--------|------------------------|-----------------------------------------------------------------------------|
-| POST   | `/api/v1/auth/login`   | Authenticate with email and password.<br>Returns JWT and refresh token.      |
-| POST   | `/api/v1/auth/refresh` | Accepts a refresh token.<br>Returns a new JWT and refresh token.             |
+# CRM-Hotel API
 
----
+-----
 
-## User Endpoints
+## Authentication
 
-| Method | Endpoint                | Description                                                                 |
-|--------|------------------------|-----------------------------------------------------------------------------|
-| POST   | `/api/v1/users`        | (Admin only) Create a new user.<br>Requires admin JWT.                      |
-| GET    | `/api/v1/users/me`     | Get the current authenticated user's info (id, username, email, roles).     |
+### Login
+
+`POST /api/v1/auth/login`
+
+**Body:**
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+```
+
+### Refresh Token
+
+`POST /api/v1/auth/refresh`
+
+**Body:**
+
+```json
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN"
+}
+```
+
+-----
+
+## Users
+
+### Get My Profile
+
+`GET /api/v1/users/me`
+
+**Authorization:** Bearer Token
+
+### Update My Password
+
+`PATCH /api/v1/users/me/password`
+
+**Authorization:** Bearer Token
+
+**Body:**
+
+```json
+{
+  "currentPassword": "admin123",
+  "password": "new_password",
+  "passwordConfirm": "new_password"
+}
+```
+
+### Update My Profile
+
+`PATCH /api/v1/users/me`
+
+**Authorization:** Bearer Token
+
+**Body:**
+
+```json
+{
+  "username": "new_username"
+}
+```
+
+-----
+
+## Admin Actions
+
+### Create User
+
+`POST /api/v1/users`
+
+**Authorization:** Bearer Token
+
+**Body:**
+
+```json
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "newpassword",
+  "roles": ["USER"]
+}
+```
+
+### Get All Users
+
+`GET /api/v1/users`
+
+**Authorization:** Bearer Token
