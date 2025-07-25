@@ -20,7 +20,7 @@ To launch the entire project (database, backend, and frontend) for development i
 
 2. **Start all services:**
     ```sh
-    docker-compose -f docker-compose.dev-preview.yml up
+    docker-compose up -d
     ```
 
 #### What happens when you run this command?
