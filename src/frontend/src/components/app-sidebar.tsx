@@ -32,8 +32,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { User } from "@/types/session";
 import Link from "next/link";
+import { User } from "next-auth";
 
 const data = {
   navMain: [
@@ -151,7 +151,6 @@ export const AppSidebar = ({
   user,
   ...props
 }: { user: User } & React.ComponentProps<typeof Sidebar>) => {
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

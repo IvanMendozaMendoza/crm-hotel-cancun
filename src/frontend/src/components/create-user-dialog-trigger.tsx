@@ -7,6 +7,7 @@ const CreateUserDialogTrigger = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
+      {/* TODO: RE-STYLE THIS CREATE USER BUTTON , DEPENDING ON THE FUNCTIONALITY */}
       <Button variant="outline" onClick={() => setOpen(true)}>
         Create User
       </Button>
