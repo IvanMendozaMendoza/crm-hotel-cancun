@@ -1,7 +1,7 @@
 "use server";
 
 import { getJwt } from "@/lib/auth/helpers";
-import { Endpoints } from "@/config/constants";
+import { Endpoints } from "@/lib/server-endpoints";
 
 export async function updateMe({ username, email }: { username?: string; email?: string }) {
   const jwt = await getJwt();
