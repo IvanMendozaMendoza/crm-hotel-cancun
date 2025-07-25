@@ -15,8 +15,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import io.jsonwebtoken.Claims;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -47,10 +49,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Optional<User> userOpt = userRepository.findById(uuid);
                 if (userOpt.isPresent() && jwtUtil.validateToken(jwt)) {
                     User user = userOpt.get();
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            user, null, user.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    // Check JWT iat vs user.lastSession
+                    Claims claims = io.jsonwebtoken.Jwts.parser().verifyWith(jwtUtil.getSigningKey()).build().parseSignedClaims(jwt).getPayload();
+                    Instant jwtIat = claims.getIssuedAt().toInstant();
+                    if (user.getLastSession() != null && jwtIat.isBefore(user.getLastSession())) {
+                        // Token is too old, do not authenticate
+                    } else {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                user, null, user.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             } catch (IllegalArgumentException e) {
                 // Invalid UUID, do nothing (token will be rejected)

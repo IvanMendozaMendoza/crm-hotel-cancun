@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Set;
 import jakarta.validation.Valid;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -137,6 +138,7 @@ public class UsersController {
             changed = true;
         }
         if (changed) {
+            user.setLastSession(Instant.now());
             userService.registerUser(user); // Save changes
             String jwt = jwtUtil.generateToken(user.getUsername());
             String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
@@ -206,6 +208,7 @@ public class UsersController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
         user.setPassword(newPassword);
+        user.setLastSession(Instant.now());
         userService.registerUser(user);
         String jwt = jwtUtil.generateToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());

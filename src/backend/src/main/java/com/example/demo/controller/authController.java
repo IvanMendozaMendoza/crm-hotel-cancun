@@ -21,6 +21,8 @@ import org.springframework.lang.NonNull;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.UUID;
+import java.time.Instant;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -107,6 +109,11 @@ public class authController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User user) {
+            user.setLastSession(Instant.now());
+            userService.registerUser(user);
+        }
         Cookie jwtCookie = new Cookie("jwt", null);
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");

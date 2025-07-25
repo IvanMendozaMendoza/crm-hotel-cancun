@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.UUID;
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -25,6 +26,9 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(name = "last_session")
+    private Instant lastSession;
 
     // Replace single role with multiple roles
     @ManyToMany(fetch = FetchType.EAGER)
@@ -50,6 +54,9 @@ public class User implements UserDetails {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public Instant getLastSession() { return lastSession; }
+    public void setLastSession(Instant lastSession) { this.lastSession = lastSession; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

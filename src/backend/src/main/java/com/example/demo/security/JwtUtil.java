@@ -19,7 +19,7 @@ public class JwtUtil {
     @Value("${refresh.token.expiration.seconds:604800}")
     private int refreshTokenExpirationSeconds;
 
-    private SecretKey getSigningKey() {
+    public SecretKey getSigningKey() {
         return (SecretKey) Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
