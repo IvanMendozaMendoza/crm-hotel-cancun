@@ -13,8 +13,8 @@ const _env = envSchema.safeParse({
 });
 
 if (!_env.success) {
-  console.error("❌ Invalid environment variables:");
   console.table(_env.error.flatten().fieldErrors);
+  console.error("❌ Invalid environment variables:");
   throw new Error("❌ Environment validation failed.");
 }
 

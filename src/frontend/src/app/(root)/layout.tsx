@@ -12,7 +12,7 @@ import { User } from "@/types/session";
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
-  console.log(session);
+  // console.log(session);
   
   const user: User = {
     username: session.user.username,

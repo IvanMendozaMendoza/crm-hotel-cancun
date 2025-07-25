@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
+import { signOut } from "next-auth/react";
 
 export const CreateUserDialog = ({
   open,
@@ -29,6 +30,20 @@ export const CreateUserDialog = ({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
+  // Example handleLogout function
+  async function handleLogout() {
+    // todo
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error(e);
+      // Optionally handle error
+    }
+    signOut({ callbackUrl: "/login" });
+  }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <form>
@@ -102,6 +117,10 @@ export const CreateUserDialog = ({
             </DialogClose>
             <Button type="submit" disabled>
               Create User
+            </Button>
+            {/* Example logout button for demonstration */}
+            <Button type="button" variant="destructive" onClick={handleLogout}>
+              Logout
             </Button>
           </DialogFooter>
         </DialogContent>
