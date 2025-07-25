@@ -1,8 +1,5 @@
 "use server";
 
-import { env } from "@/config/env";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { getJwt } from "@/lib/auth/helpers";
 import { Endpoints } from "@/config/constants";
 
@@ -70,6 +67,6 @@ export async function updatePassword(currentPassword: string, newPassword: strin
 
   return {
     ...data,
-    newJwt: finalNewJwt
+    newJwt: finalNewJwt,
   };
-} 
+}
