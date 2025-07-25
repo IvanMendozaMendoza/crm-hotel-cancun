@@ -61,6 +61,7 @@ public class authController {
         userMap.put("id", user.getId());
         userMap.put("username", user.getUsername());
         userMap.put("email", user.getEmail());
+        userMap.put("last_session", user.getLastSession());
         userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
@@ -103,6 +104,7 @@ public class authController {
             "id", user.getId(),
             "username", user.getUsername(),
             "email", user.getEmail(),
+            "last_session", user.getLastSession(),
             "roles", user.getRoles().stream().map(r -> r.getName()).toList()
         ));
     }
@@ -128,7 +130,10 @@ public class authController {
         refreshCookie.setSecure("prod".equals(appEnv));
         response.addCookie(refreshCookie);
 
-        return ResponseEntity.ok(Map.of("message", "Logged out"));
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("message", "Logged out");
+        return ResponseEntity.ok(resp);
     }
 
     @Bean

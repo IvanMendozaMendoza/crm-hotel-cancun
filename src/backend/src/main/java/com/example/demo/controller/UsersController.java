@@ -89,6 +89,7 @@ public class UsersController {
             dto.setUsername(user.getUsername());
             dto.setEmail(user.getEmail());
             dto.setRoles(user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet()));
+            dto.setLastSession(user.getLastSession());
             return dto;
         }).collect(Collectors.toList());
         Map<String, Object> response = new LinkedHashMap<>();
@@ -107,6 +108,7 @@ public class UsersController {
             userMap.put("username", user.getUsername());
             userMap.put("email", user.getEmail());
             userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
+            userMap.put("last_session", user.getLastSession());
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", "success");
             response.put("user", userMap);
