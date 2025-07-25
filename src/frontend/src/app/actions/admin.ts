@@ -1,15 +1,11 @@
 "use server";
 
-import { env } from "@/config/env";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getJwt } from "@/lib/auth/helpers";
+import { Endpoints } from "@/config/constants";
 
 export async function getAllUsers() {
-  const session = await getServerSession(authOptions);
-  const jwt = session?.jwt;
-
-  if (!jwt) throw new Error("Not authenticated");
-  const res = await fetch(`${env.API_URL}/users`, {
+  const jwt = await getJwt();
+  const res = await fetch(Endpoints.GET_ALL_USERS, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -18,7 +14,6 @@ export async function getAllUsers() {
     cache: 'no-store',
   });
   const data = await res.json();
-  // console.log(data);
   if (!res.ok) {
     throw new Error(data.message || "Failed to get all users");
   }
