@@ -3,15 +3,17 @@
 import { env } from "@/config/env";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getJwt } from "@/lib/auth/helpers";
+import { Endpoints } from "@/config/constants";
 
 export async function updateMe({ username, email }: { username?: string; email?: string }) {
-  const session = await getServerSession(authOptions);
-  const jwt = session?.jwt;
-  if (!jwt) throw new Error("Not authenticated");
-  const body: any = {};
+  const jwt = await getJwt();
+
+  const body: Record<string, string> = {};
   if (username !== undefined) body.username = username;
   if (email !== undefined) body.email = email;
-  const res = await fetch(`${env.API_URL}/users/me`, {
+
+  const res = await fetch(Endpoints.UPDATE_ME, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -20,11 +22,13 @@ export async function updateMe({ username, email }: { username?: string; email?:
     body: JSON.stringify(body),
     cache: 'no-store',
   });
+
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || "Failed to update profile");
   }
-  const newJwt = res.headers.get('authorization')?.replace('Bearer ', '') || data.token || null;
+  
+  const newJwt = data.token || null;
   return {
     ...data,
     newJwt: newJwt,
@@ -32,10 +36,8 @@ export async function updateMe({ username, email }: { username?: string; email?:
 }
 
 export async function updatePassword(currentPassword: string, newPassword: string, newJwt?: string | null) {
-  const session = await getServerSession(authOptions);
-  const jwt = newJwt || session?.jwt;
-  if (!jwt) throw new Error("Not authenticated");
-  const res = await fetch(`${env.API_URL}/users/me/password`, {
+  const jwt = await getJwt();
+  const res = await fetch(Endpoints.UPDATE_PASSWORD, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -64,8 +66,8 @@ export async function updatePassword(currentPassword: string, newPassword: strin
     throw new Error(data.message || "Failed to update password");
   }
 
-  const finalNewJwt = res.headers.get('authorization')?.replace('Bearer ', '') || data.token || null;
-  
+  const finalNewJwt = data.token || null;
+
   return {
     ...data,
     newJwt: finalNewJwt

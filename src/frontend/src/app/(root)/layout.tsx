@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { User } from "@/types/session";
+import { User } from "next-auth";
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerSession(authOptions);
