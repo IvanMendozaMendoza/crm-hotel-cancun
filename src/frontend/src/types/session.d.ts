@@ -1,15 +1,20 @@
 import { DefaultSession } from "next-auth";
-
-type User = {
-  username: string ;
-  email: string ;
-  roles: string[];
-  avatar: string;
-};
 declare module "next-auth" {
+
   interface Session extends DefaultSession {
+    id?: string;
     user: User;
     jwt: string;
     refreshToken: string;
+  }
+
+  interface User extends AdapterUser {
+    id?: string;
+    username: string;
+    email: string ;
+    roles: string[];
+    avatar?: string;
+    jwt?: string;
+    refreshToken?: string;
   }
 }

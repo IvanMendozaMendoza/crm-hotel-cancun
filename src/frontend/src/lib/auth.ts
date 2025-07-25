@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
@@ -24,41 +24,41 @@ export const authOptions: NextAuthOptions = {
         if (!res.ok) return null;
         const data = await res.json();
 
-        return {
-          id: data.user.id || data.email,
+        const userPayload: User = {
+          id: data.user.id,
           username: data.user.username,
           email: data.user.email,
           roles: data.user.roles,
           jwt: data.token,
-          refreshToken: data.refreshToken
+          refreshToken: data.refreshToken,
         };
+
+        return userPayload;
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 2592000, // 30 days
-    updateAge: 604800, // 7 days
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = user;
-        token.jwt = (user as any).jwt ?? undefined;
-        token.refreshToken = (user as any).refreshToken ?? undefined;
+        token.user = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          roles: user.roles,
+        };
+        token.jwt = (user as unknown as Session).jwt;
+        token.refreshToken = (user as unknown as Session).refreshToken;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user = token.user as any;
-        session.jwt = (token.jwt as string) ?? "";
-        session.refreshToken = (token.refreshToken as string) ?? "";
-        // Remove from user object to avoid duplication
-        if (session.user) {
-          delete (session.user as any).jwt;
-          delete (session.user as any).refreshToken;
-        }
+        session.user = token.user as User;
+        session.jwt = token.jwt as string;
+        session.refreshToken = token.refreshToken as string;
       }
       return session;
     },
