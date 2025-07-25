@@ -36,7 +36,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { Loader2 } from "lucide-react";
-import { User } from "@/types/session";
+import { User } from "next-auth";
 
 export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
