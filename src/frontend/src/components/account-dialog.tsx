@@ -9,16 +9,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
 
 import React from "react";
 import { z } from "zod";
-import { env } from "@/config/env";
 import { updateMe, updatePassword } from "@/app/actions/account";
-import { signIn, signOut } from "next-auth/react";
-import { User } from "@/types/session";
+import { signOut } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -28,13 +25,13 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
+import { User } from "next-auth";
 
 export const AccountDialog = ({
   open,
   onOpenChange,
-  user
+  user,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,22 +39,26 @@ export const AccountDialog = ({
 }) => {
   const [isPending, setIsPending] = React.useState(false);
 
-  // Zod schemas
-  const profileSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    currentPassword: z.string().optional(),
-    newPassword: z.string().optional(),
-    confirmPassword: z.string().optional(),
-  }).refine((data) => {
-    if (data.newPassword || data.confirmPassword) {
-      return data.newPassword === data.confirmPassword;
-    }
-    return true;
-  }, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  const profileSchema = z
+    .object({
+      username: z.string().min(3, "Username must be at least 3 characters"),
+      email: z.email("Please enter a valid email address"),
+      currentPassword: z.string().optional(),
+      newPassword: z.string().optional(),
+      confirmPassword: z.string().optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.newPassword || data.confirmPassword) {
+          return data.newPassword === data.confirmPassword;
+        }
+        return true;
+      },
+      {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      }
+    );
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -80,9 +81,15 @@ export const AccountDialog = ({
       let didShowLogoutToast = false;
 
       // 1. Update username/email if changed
-      if (data.username !== user.username || data.email !== (user.email || "")) {
+      if (
+        data.username !== user.username ||
+        data.email !== (user.email || "")
+      ) {
         try {
-          const meResult = await updateMe({ username: data.username, email: data.email });
+          const meResult = await updateMe({
+            username: data.username,
+            email: data.email,
+          });
           if (meResult) {
             hasUpdates = true;
             if (meResult.newJwt) {
@@ -123,7 +130,9 @@ export const AccountDialog = ({
 
       if (hasUpdates && didShowLogoutToast) {
         onOpenChange(false);
-        toast.success("Account settings updated successfully. You need to log in again.");
+        toast.success(
+          "Account settings updated successfully. You need to log in again."
+        );
         setTimeout(() => {
           signOut({ callbackUrl: "/login" });
         }, 3500);
@@ -131,7 +140,9 @@ export const AccountDialog = ({
         return;
       }
     } catch (err: any) {
-      // errors handled above
+      toast.error(err.message || "Failed to update profile");
+      reverted = true;
+      throw err;
     } finally {
       setIsPending(false);
     }
@@ -145,7 +156,8 @@ export const AccountDialog = ({
             <DialogHeader className="mb-6">
               <DialogTitle>Your Account Settings</DialogTitle>
               <DialogDescription>
-                Make changes to your profile here. Click save when you&apos;re done.
+                Make changes to your profile here. Click save when you&apos;re
+                done.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-8">
@@ -182,7 +194,9 @@ export const AccountDialog = ({
                   <hr className="border-zinc-800" />
                 </div>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-lg p-8 flex flex-col gap-6 w-full max-w-2xl mx-auto">
-                  <h3 className="text-lg font-bold text-zinc-100 mb-2">Change Password</h3>
+                  <h3 className="text-lg font-bold text-zinc-100 mb-2">
+                    Change Password
+                  </h3>
                   <div className="flex flex-col gap-5 lg:flex-row md:gap-8">
                     <FormField
                       control={form.control}
@@ -191,7 +205,11 @@ export const AccountDialog = ({
                         <FormItem className="flex-1">
                           <FormLabel>Current password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Current password" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="Current password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -204,7 +222,11 @@ export const AccountDialog = ({
                         <FormItem className="flex-1">
                           <FormLabel>New password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="New password" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="New password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -217,7 +239,11 @@ export const AccountDialog = ({
                         <FormItem className="flex-1">
                           <FormLabel>Confirm new password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Confirm new password" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="Confirm new password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -234,9 +260,15 @@ export const AccountDialog = ({
               <Button
                 type="submit"
                 className="font-semibold px-8 py-2 rounded-lg text-base disabled:opacity-60 disabled:cursor-not-allowed bg-zinc-800 hover:bg-zinc-700 text-white"
-                disabled={isPending || !form.formState.isDirty || form.formState.isSubmitting}
+                disabled={
+                  isPending ||
+                  !form.formState.isDirty ||
+                  form.formState.isSubmitting
+                }
               >
-                {isPending ? <Info className="animate-spin w-4 h-4 mr-2 inline" /> : null}
+                {isPending ? (
+                  <Info className="animate-spin w-4 h-4 mr-2 inline" />
+                ) : null}
                 {isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>
