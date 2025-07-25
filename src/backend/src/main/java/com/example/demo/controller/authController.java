@@ -61,7 +61,7 @@ public class authController {
         userMap.put("id", user.getId());
         userMap.put("username", user.getUsername());
         userMap.put("email", user.getEmail());
-        userMap.put("last_session", user.getLastSession());
+        // userMap.put("last_session", user.getLastSession());
         userMap.put("roles", user.getRoles().stream().map(r -> r.getName()).toList());
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
