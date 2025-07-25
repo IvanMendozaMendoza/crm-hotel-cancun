@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { revalidatePath } from "next/cache";
 
 export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
@@ -23,6 +24,8 @@ export const authOptions: NextAuthOptions = {
 
         if (!res.ok) return null;
         const data = await res.json();
+
+        revalidatePath("/**/*");
 
         const userPayload: User = {
           id: data.user.id,

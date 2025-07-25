@@ -1,6 +1,22 @@
 "use client"
 
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import {
+  IconCirclePlusFilled,
+  IconMail,
+  IconDashboard,
+  IconUsers,
+  IconSettings,
+  IconHelp,
+  IconReport,
+  IconListDetails,
+  IconSearch,
+  IconChartBar,
+  IconDatabase,
+  IconFileAi,
+  IconFileDescription,
+  IconFileWord,
+  IconFolder,
+} from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,9 +35,24 @@ export function NavMain({
   items: {
     title: string
     url: string
-    icon?: Icon
+    icon?: string // now a string identifier
   }[]
 }) {
+  const iconMap = {
+    dashboard: IconDashboard,
+    users: IconUsers,
+    settings: IconSettings,
+    help: IconHelp,
+    report: IconReport,
+    list: IconListDetails,
+    search: IconSearch,
+    chart: IconChartBar,
+    database: IconDatabase,
+    fileai: IconFileAi,
+    filedesc: IconFileDescription,
+    fileword: IconFileWord,
+    folder: IconFolder,
+  } as const;
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -48,16 +79,19 @@ export function NavMain({
 
         <SidebarMenu>
           <hr className="bg-zinc-700 dark:border-zinc-800" />
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <Link href={item.url} className="flex items-center gap-2">
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const Icon = item.icon ? iconMap[item.icon as keyof typeof iconMap] : null;
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton tooltip={item.title} asChild>
+                  <Link href={item.url} className="flex items-center gap-2">
+                    {Icon && <Icon />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

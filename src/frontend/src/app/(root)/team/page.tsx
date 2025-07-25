@@ -1,10 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import React from "react";
-import { cookies } from "next/headers";
-import { Button } from "@/components/ui/button";
-import { CreateUserDialog } from "@/components/create-user-dialog";
 import CreateUserDialogTrigger from "../../../components/create-user-dialog-trigger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import { getAllUsers } from "@/app/actions/admin";
 
-// TODO: This is for testing purpuses, we render this fields for each user
 interface User {
   id: string;
   username: string;
@@ -29,12 +22,6 @@ interface User {
 }
 
 const TeamPage = async () => {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
-  // Check for 'ADMIN' in uppercase
-  // if (!Array.isArray((session.user as any)?.roles) || !(session.user as any).roles.includes("ADMIN")) redirect("/");
-  // console.log(session.backendJwt);
-
   let users: User[] = [];
   let error: string | null = null;
   try {
