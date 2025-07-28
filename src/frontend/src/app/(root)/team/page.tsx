@@ -9,6 +9,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { getAllUsers } from "@/app/actions/admin";
+import { redirect } from "next/navigation";
 
 interface User {
   id: string;
@@ -30,6 +31,8 @@ const TeamPage = async () => {
   } catch (e: any) {
     error = e.message;
   }
+
+  if (users.length === 0) redirect("/dashboard");
 
   return (
     <div className="w-full px-2 sm:px-4 py-6 flex flex-col gap-8">
