@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Search, Filter, ChevronDown, Plus, X, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -89,7 +89,6 @@ const sampleUsers = [
 const TeamPage = () => {
   const [users, setUsers] = useState(sampleUsers);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showToast, setShowToast] = useState(false);
 
@@ -98,21 +97,7 @@ const TeamPage = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUsers(filteredUsers.map(user => user.id));
-    } else {
-      setSelectedUsers([]);
-    }
-  };
 
-  const handleSelectUser = (userId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedUsers(prev => [...prev, userId]);
-    } else {
-      setSelectedUsers(prev => prev.filter(id => id !== userId));
-    }
-  };
 
   const handleAddUser = () => {
     toast.success("Add user functionality will be implemented");
@@ -175,13 +160,6 @@ const TeamPage = () => {
             <table className="w-full">
               <thead className="bg-gray-800/50">
                 <tr>
-                  <th className="px-6 py-4 text-left">
-                    <Checkbox
-                      checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                      onCheckedChange={handleSelectAll}
-                      className="border-gray-600"
-                    />
-                  </th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">
@@ -197,13 +175,6 @@ const TeamPage = () => {
               <tbody className="divide-y divide-gray-800">
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <Checkbox
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
-                        className="border-gray-600"
-                      />
-                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
