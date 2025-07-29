@@ -111,17 +111,17 @@ export function NavMain({
                     tooltip={item.title} 
                     asChild={!hasSubItems}
                     onClick={hasSubItems ? () => toggleExpanded(item.title) : undefined}
-                    className={hasSubItems ? "cursor-pointer" : ""}
+                    className={`${hasSubItems ? "cursor-pointer" : ""} transition-all duration-100 ease-in-out hover:bg-zinc-800/50`}
                   >
                     {hasSubItems ? (
                       <div className="flex items-center gap-2 w-full">
                         {Icon && <Icon />}
                         <span className="flex-1">{item.title}</span>
-                        {expanded ? (
-                          <IconChevronDown className="h-4 w-4" />
-                        ) : (
+                        <div className={`transition-transform duration-200 ease-in-out ${
+                          expanded ? 'rotate-90' : 'rotate-0'
+                        }`}>
                           <IconChevronRight className="h-4 w-4" />
-                        )}
+                        </div>
                       </div>
                     ) : (
                       <Link href={item.url} className="flex items-center gap-2">
@@ -133,10 +133,23 @@ export function NavMain({
                 </SidebarMenuItem>
                 
                 {/* Sub-items */}
-                {hasSubItems && expanded && (
-                  <div className="ml-6 border-l border-zinc-700 dark:border-zinc-800">
-                    {item.items!.map((subItem) => (
-                      <SidebarMenuItem key={subItem.title} className="ml-2">
+                {hasSubItems && (
+                  <div 
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      expanded 
+                        ? 'max-h-96 opacity-100' 
+                        : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-6 border-l border-zinc-700 dark:border-zinc-800">
+                      {item.items?.map((subItem, index) => (
+                      <SidebarMenuItem 
+                        key={subItem.title} 
+                        className="ml-2"
+                        style={{
+                          transitionDelay: `${index * 30}ms`
+                        }}
+                      >
                         <SidebarMenuButton tooltip={subItem.title} asChild>
                           <Link href={subItem.url} className="flex items-center gap-2 text-sm">
                             <span>{subItem.title}</span>
@@ -145,6 +158,7 @@ export function NavMain({
                       </SidebarMenuItem>
                     ))}
                   </div>
+                </div>
                 )}
               </div>
             );
