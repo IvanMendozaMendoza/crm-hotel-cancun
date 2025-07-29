@@ -38,22 +38,63 @@ let dataAdmin = {
       title: "Team",
       url: "/team",
       icon: "users",
+      items: [
+        {
+          title: "All Users",
+          url: "/team",
+        },
+        {
+          title: "User Roles",
+          url: "/team/roles",
+        },
+        {
+          title: "Security",
+          url: "/team/security",
+        },
+        {
+          title: "Permissions",
+          url: "/team/permissions",
+        },
+      ],
     },
-    // {
-    //   title: "Lifecycle",
-    //   url: "#",
-    //   icon: IconListDetails,
-    // },
-    // {
-    //   title: "Analytics",
-    //   url: "#",
-    //   icon: IconChartBar,
-    // },
-    // {
-    //   title: "Projects",
-    //   url: "#",
-    //   icon: IconFolder,
-    // },
+    {
+      title: "Analytics",
+      url: "/analytics",
+      icon: "chart",
+      items: [
+        {
+          title: "Overview",
+          url: "/analytics",
+        },
+        {
+          title: "Reports",
+          url: "/analytics/reports",
+        },
+        {
+          title: "Metrics",
+          url: "/analytics/metrics",
+        },
+      ],
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: "settings",
+      items: [
+        {
+          title: "General",
+          url: "/settings",
+        },
+        {
+          title: "Security",
+          url: "/settings/security",
+        },
+        {
+          title: "Notifications",
+          url: "/settings/notifications",
+        },
+      ],
+    },
   ],
   navClouds: [
     {
@@ -145,6 +186,40 @@ let dataUser = {
       title: "Dashboard",
       url: "/dashboard",
       icon: "dashboard",
+    },
+    {
+      title: "Documents",
+      url: "/documents",
+      icon: "folder",
+      items: [
+        {
+          title: "My Files",
+          url: "/documents",
+        },
+        {
+          title: "Shared",
+          url: "/documents/shared",
+        },
+        {
+          title: "Recent",
+          url: "/documents/recent",
+        },
+      ],
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: "settings",
+      items: [
+        {
+          title: "Profile",
+          url: "/settings",
+        },
+        {
+          title: "Preferences",
+          url: "/settings/preferences",
+        },
+      ],
     },
   ]
 };
