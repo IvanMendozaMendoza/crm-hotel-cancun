@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Search, Filter, ChevronDown, Plus, X, Check } from "lucide-react";
+import { MoreVertical, Search, Filter, ChevronDown, Plus, X, Check } from "lucide-react";
 import { toast } from "sonner";
 
 // Hardcoded sample data
@@ -209,11 +209,11 @@ const TeamPage = () => {
                       <td className="px-6 py-4 text-gray-300">{user.dateAdded}</td>
                       <td className="px-6 py-4">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
+                                                  <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
                             <DropdownMenuItem 
                               className="text-gray-300 hover:bg-gray-700"
@@ -269,7 +269,7 @@ const TeamPage = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
