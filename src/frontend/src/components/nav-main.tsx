@@ -88,7 +88,7 @@ export function NavMain({
             </SidebarMenuButton>
             <Button
               size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
+              className="size- group-data-[collapsible=icon]:opacity-0"
               variant="outline"
             >
               <IconMail />
@@ -115,7 +115,7 @@ export function NavMain({
                   >
                     {hasSubItems ? (
                       <div className="flex items-center gap-2 w-full">
-                        {Icon && <Icon />}
+                        {Icon && <Icon className="size-5"/>}
                         <span className="flex-1">{item.title}</span>
                         <div className={`transition-transform duration-200 ease-in-out ${
                           expanded ? 'rotate-90' : 'rotate-0'
