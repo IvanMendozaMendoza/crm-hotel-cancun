@@ -122,13 +122,13 @@ const TeamPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold text-white">All users {users.length}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-semibold text-white">All users {users.length}</h1>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -136,7 +136,7 @@ const TeamPage = () => {
                 placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-64"
+                className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
               />
             </div>
             
@@ -154,89 +154,151 @@ const TeamPage = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-stone-900 rounded-xl border border-gray-800 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-800/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">
-                    <div className="flex items-center gap-2">
-                      Last active
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Date added</th>
-                  <th className="px-6 py-4 text-left"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback className="bg-gray-700 text-white">
-                            {user.name[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-white">{user.name}</div>
-                          <div className="text-sm text-gray-400">{user.email}</div>
-                        </div>
+        {/* Desktop Table View */}
+        <div className="hidden lg:block">
+          <div className="bg-stone-900 rounded-xl border border-gray-800 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-800/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">
+                      <div className="flex items-center gap-2">
+                        Last active
+                        <ChevronDown className="h-4 w-4" />
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {user.access.map((access) => (
-                          <Badge
-                            key={access}
-                            variant="outline"
-                            className={`${getAccessBadgeColor(access)} border`}
-                          >
-                            {access}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-300">{user.lastActive}</td>
-                    <td className="px-6 py-4 text-gray-300">{user.dateAdded}</td>
-                    <td className="px-6 py-4">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                          <DropdownMenuItem 
-                            className="text-gray-300 hover:bg-gray-700"
-                            onClick={() => handleUpdateUser(user.name)}
-                          >
-                            Edit user
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-                            View profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
-                            Delete user
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Date added</th>
+                    <th className="px-6 py-4 text-left"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatar} alt={user.name} />
+                            <AvatarFallback className="bg-gray-700 text-white">
+                              {user.name[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-white">{user.name}</div>
+                            <div className="text-sm text-gray-400">{user.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          {user.access.map((access) => (
+                            <Badge
+                              key={access}
+                              variant="outline"
+                              className={`${getAccessBadgeColor(access)} border`}
+                            >
+                              {access}
+                            </Badge>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-300">{user.lastActive}</td>
+                      <td className="px-6 py-4 text-gray-300">{user.dateAdded}</td>
+                      <td className="px-6 py-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                            <DropdownMenuItem 
+                              className="text-gray-300 hover:bg-gray-700"
+                              onClick={() => handleUpdateUser(user.name)}
+                            >
+                              Edit user
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                              View profile
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+                              Delete user
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
+        {/* Mobile/Tablet Card View */}
+        <div className="lg:hidden space-y-4">
+          {filteredUsers.map((user) => (
+            <div key={user.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Avatar className="h-12 w-12 flex-shrink-0">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback className="bg-gray-700 text-white">
+                      {user.name[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-white truncate">{user.name}</div>
+                    <div className="text-sm text-gray-400 truncate">{user.email}</div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {user.access.map((access) => (
+                        <Badge
+                          key={access}
+                          variant="outline"
+                          className={`${getAccessBadgeColor(access)} border text-xs`}
+                        >
+                          {access}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                    <DropdownMenuItem 
+                      className="text-gray-300 hover:bg-gray-700"
+                      onClick={() => handleUpdateUser(user.name)}
+                    >
+                      Edit user
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                      View profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+                      Delete user
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
+                <div className="text-sm text-gray-400">
+                  <div>Last active: {user.lastActive}</div>
+                  <div>Added: {user.dateAdded}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          <div className="text-sm text-gray-400 text-center sm:text-left">
             Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, filteredUsers.length)} of {filteredUsers.length} results
           </div>
           <div className="flex items-center gap-2">
