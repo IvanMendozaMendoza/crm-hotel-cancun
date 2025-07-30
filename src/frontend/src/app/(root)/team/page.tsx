@@ -91,11 +91,23 @@ const TeamPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showToast, setShowToast] = useState(false);
+  const [lastActiveSort, setLastActiveSort] = useState<'asc' | 'desc'>('desc');
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Sort users by last active date
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const dateA = new Date(a.lastActive);
+    const dateB = new Date(b.lastActive);
+    return lastActiveSort === 'desc' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
+  });
+
+  const toggleLastActiveSort = () => {
+    setLastActiveSort(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
 
 
 
@@ -115,7 +127,7 @@ const TeamPage = () => {
       case "Data Export":
         return "bg-blue-500/20 text-blue-400 border-blue-500/30";
       case "Data Import":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
       default:
         return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
@@ -166,17 +178,24 @@ const TeamPage = () => {
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">
-                      <div className="flex items-center gap-2">
+                      <button
+                        onClick={toggleLastActiveSort}
+                        className="flex items-center gap-2 hover:bg-gray-700/50 px-2 py-1 rounded transition-colors duration-200"
+                      >
                         Last active
-                        <ChevronDown className="h-4 w-4" />
-                      </div>
+                        <div className={`transition-transform duration-200 ease-in-out ${
+                          lastActiveSort === 'desc' ? 'rotate-0' : 'rotate-180'
+                        }`}>
+                          <ChevronDown className="h-4 w-4" />
+                        </div>
+                      </button>
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Date added</th>
                     <th className="px-6 py-4 text-left"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {filteredUsers.map((user) => (
+                  {sortedUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -240,7 +259,7 @@ const TeamPage = () => {
 
         {/* Mobile/Tablet Card View */}
         <div className="lg:hidden space-y-4">
-          {filteredUsers.map((user) => (
+          {sortedUsers.map((user) => (
             <div key={user.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -301,7 +320,7 @@ const TeamPage = () => {
         {/* Pagination */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
           <div className="text-sm text-gray-400 text-center sm:text-left">
-            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, filteredUsers.length)} of {filteredUsers.length} results
+            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, sortedUsers.length)} of {sortedUsers.length} results
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -317,8 +336,8 @@ const TeamPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredUsers.length / 10), prev + 1))}
-              disabled={currentPage >= Math.ceil(filteredUsers.length / 10)}
+              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(sortedUsers.length / 10), prev + 1))}
+              disabled={currentPage >= Math.ceil(sortedUsers.length / 10)}
               className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
