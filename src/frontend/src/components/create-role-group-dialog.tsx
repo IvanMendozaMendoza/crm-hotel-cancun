@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { 
   Shield, 
   Users, 
@@ -130,6 +131,8 @@ export const CreateRoleGroupDialog = ({
   });
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,14 +294,27 @@ export const CreateRoleGroupDialog = ({
                     </Label>
                     
                     <div className="grid grid-cols-4 gap-3">
-                      {colorPresets.map((color) => (
+                      {colorPresets.map((color, index) => (
                         <button
                           key={color.value}
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                          onClick={() => {
+                            if (editingColorIndex === index) {
+                              // If already editing this color, close picker
+                              setEditingColorIndex(null);
+                              setShowColorPicker(false);
+                            } else {
+                              // Select this color and open picker for editing
+                              setFormData(prev => ({ ...prev, color: color.value }));
+                              setEditingColorIndex(index);
+                              setShowColorPicker(true);
+                            }
+                          }}
                           className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
                             formData.color === color.value 
                               ? 'border-white ring-2 ring-blue-500 shadow-lg' 
+                              : editingColorIndex === index
+                              ? 'border-blue-500 ring-2 ring-blue-400 shadow-lg'
                               : 'border-zinc-700 hover:border-zinc-600'
                           }`}
                           style={{ backgroundColor: color.value }}
@@ -307,9 +323,43 @@ export const CreateRoleGroupDialog = ({
                           {formData.color === color.value && (
                             <CheckCircle2 className="absolute top-1 right-1 h-4 w-4 text-white drop-shadow-lg" />
                           )}
+                          {editingColorIndex === index && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full shadow-lg" />
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>
+                    
+                    {/* Color Picker Popup */}
+                    {showColorPicker && editingColorIndex !== null && (
+                      <div className="mt-4 p-4 bg-zinc-900/50 border border-zinc-700 rounded-xl">
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="text-sm font-medium text-gray-200">
+                            Customize {colorPresets[editingColorIndex].name} Color
+                          </Label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowColorPicker(false);
+                              setEditingColorIndex(null);
+                            }}
+                            className="text-gray-400 hover:text-white"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <ColorPicker
+                          value={formData.color}
+                          onChange={(color) => {
+                            setFormData(prev => ({ ...prev, color }));
+                            // Update the color preset
+                            colorPresets[editingColorIndex].value = color;
+                          }}
+                        />
+                      </div>
+                    )}
                     
                     <div className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700">
                       <div 
