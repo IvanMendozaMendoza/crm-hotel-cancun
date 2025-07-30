@@ -32,7 +32,7 @@ import {
   Search,
   Filter
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Permission categories with icons and descriptions
 const permissionCategories = {
@@ -133,6 +133,7 @@ export const CreateRoleGroupDialog = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,6 +205,24 @@ export const CreateRoleGroupDialog = ({
   };
 
   const selectedColor = colorPresets.find(c => c.value === formData.color);
+
+  // Handle click outside color picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
+        setEditingColorIndex(null);
+      }
+    };
+
+    if (showColorPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showColorPicker]);
 
   // Filter permissions based on search
   const filteredCategories = Object.entries(permissionCategories).filter(([category, { permissions }]) => {
@@ -299,22 +318,11 @@ export const CreateRoleGroupDialog = ({
                           key={color.value}
                           type="button"
                           onClick={() => {
-                            if (editingColorIndex === index) {
-                              // If already editing this color, close picker
-                              setEditingColorIndex(null);
-                              setShowColorPicker(false);
-                            } else {
-                              // Select this color and open picker for editing
-                              setFormData(prev => ({ ...prev, color: color.value }));
-                              setEditingColorIndex(index);
-                              setShowColorPicker(true);
-                            }
+                            setFormData(prev => ({ ...prev, color: color.value }));
                           }}
                           className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
                             formData.color === color.value 
                               ? 'border-white ring-2 ring-blue-500 shadow-lg' 
-                              : editingColorIndex === index
-                              ? 'border-blue-500 ring-2 ring-blue-400 shadow-lg'
                               : 'border-zinc-700 hover:border-zinc-600'
                           }`}
                           style={{ backgroundColor: color.value }}
@@ -323,18 +331,17 @@ export const CreateRoleGroupDialog = ({
                           {formData.color === color.value && (
                             <CheckCircle2 className="absolute top-1 right-1 h-4 w-4 text-white drop-shadow-lg" />
                           )}
-                          {editingColorIndex === index && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-2 h-2 bg-white rounded-full shadow-lg" />
-                            </div>
-                          )}
                         </button>
                       ))}
                     </div>
                     
                     {/* Color Picker Popup */}
                     {showColorPicker && editingColorIndex !== null && (
-                      <div className="mt-4 p-4 bg-zinc-900/50 border border-zinc-700 rounded-xl">
+                      <div 
+                        ref={colorPickerRef}
+                        className="mt-4 p-4 bg-zinc-900/50 border border-zinc-700 rounded-xl relative"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <Label className="text-sm font-medium text-gray-200">
                             Customize {colorPresets[editingColorIndex].name} Color
@@ -361,16 +368,24 @@ export const CreateRoleGroupDialog = ({
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingColorIndex(colorPresets.findIndex(c => c.value === formData.color));
+                        setShowColorPicker(true);
+                      }}
+                      className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                    >
                       <div 
-                        className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg" 
+                        className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg group-hover:border-zinc-500 transition-colors" 
                         style={{ backgroundColor: formData.color }}
                       />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{selectedColor?.name}</p>
-                        <p className="text-xs text-gray-400 font-mono">{formData.color}</p>
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{selectedColor?.name}</p>
+                        <p className="text-xs text-gray-400 font-mono group-hover:text-blue-300 transition-colors">{formData.color}</p>
                       </div>
-                    </div>
+                      <Palette className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                    </button>
                   </div>
                 </div>
               </div>
