@@ -318,9 +318,9 @@ const TeamRolesPage = () => {
                   Create Role Group
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Create Role Group</DialogTitle>
+                             <DialogContent className="bg-stone-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+                 <DialogHeader>
+                   <DialogTitle>Create Role Group</DialogTitle>
                   <DialogDescription>
                     Create a new role group and assign permissions to it.
                   </DialogDescription>
@@ -329,25 +329,25 @@ const TeamRolesPage = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="name">Role Group Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      placeholder="e.g., Content Managers"
-                    />
+                                         <Input
+                       id="name"
+                       value={formData.name}
+                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                       className="bg-gray-900 border-gray-700 text-white"
+                       placeholder="e.g., Content Managers"
+                     />
                   </div>
                   
                   <div>
                     <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      placeholder="Describe the purpose of this role group..."
-                      rows={3}
-                    />
+                                         <Textarea
+                       id="description"
+                       value={formData.description}
+                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                       className="bg-gray-900 border-gray-700 text-white"
+                       placeholder="Describe the purpose of this role group..."
+                       rows={3}
+                     />
                   </div>
                   
                   <div>
@@ -411,7 +411,7 @@ const TeamRolesPage = () => {
         {/* Role Groups Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRoleGroups.map((roleGroup) => (
-            <Card key={roleGroup.id} className="bg-gray-900 border-gray-700">
+            <Card key={roleGroup.id} className="bg-stone-900 border-gray-700">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -462,12 +462,12 @@ const TeamRolesPage = () => {
                   <Label className="text-sm font-medium text-gray-300">Key Permissions:</Label>
                   <div className="flex flex-wrap gap-1">
                     {roleGroup.permissions.slice(0, 5).map(permission => (
-                      <Badge key={permission} variant="outline" className="text-xs bg-gray-800 border-gray-600 text-gray-300">
+                                             <Badge key={permission} variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
                         {getPermissionLabel(permission)}
                       </Badge>
                     ))}
                     {roleGroup.permissions.length > 5 && (
-                      <Badge variant="outline" className="text-xs bg-gray-800 border-gray-600 text-gray-300">
+                                             <Badge variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
                         +{roleGroup.permissions.length - 5} more
                       </Badge>
                     )}
@@ -480,7 +480,7 @@ const TeamRolesPage = () => {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-stone-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Role Group</DialogTitle>
               <DialogDescription>
@@ -491,25 +491,25 @@ const TeamRolesPage = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-name">Role Group Name</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  placeholder="e.g., Content Managers"
-                />
+                                 <Input
+                   id="edit-name"
+                   value={formData.name}
+                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                   className="bg-gray-900 border-gray-700 text-white"
+                   placeholder="e.g., Content Managers"
+                 />
               </div>
               
               <div>
                 <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  placeholder="Describe the purpose of this role group..."
-                  rows={3}
-                />
+                                 <Textarea
+                   id="edit-description"
+                   value={formData.description}
+                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                   className="bg-gray-900 border-gray-700 text-white"
+                   placeholder="Describe the purpose of this role group..."
+                   rows={3}
+                 />
               </div>
               
               <div>
