@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, Users, Shield, Settings, Database, FileText, ChartBar, Bell, Lock, Globe, Code, Palette, Search, Filter } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
 
 // Permission categories and their permissions
@@ -64,7 +65,7 @@ const initialRoleGroups = [
     id: "1",
     name: "Administrators",
     description: "Full system access with all permissions",
-    color: "bg-red-500",
+    color: "#ef4444", // red-500
     permissions: Object.values(permissionCategories).flat(),
     userCount: 3,
     createdAt: "2024-01-15"
@@ -73,7 +74,7 @@ const initialRoleGroups = [
     id: "2", 
     name: "Content Managers",
     description: "Manage content and moderate user-generated content",
-    color: "bg-blue-500",
+    color: "#3b82f6", // blue-500
     permissions: [
       "view_users",
       "view_content",
@@ -90,7 +91,7 @@ const initialRoleGroups = [
     id: "3",
     name: "Data Analysts", 
     description: "Access to analytics and reporting features",
-    color: "bg-green-500",
+    color: "#22c55e", // green-500
     permissions: [
       "view_data",
       "export_data", 
@@ -106,7 +107,7 @@ const initialRoleGroups = [
     id: "4",
     name: "Viewers",
     description: "Read-only access to basic content",
-    color: "bg-gray-500", 
+    color: "#6b7280", // gray-500
     permissions: [
       "view_users",
       "view_content",
@@ -129,9 +130,12 @@ const TeamRolesPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    color: "bg-blue-500",
+    color: "#3b82f6", // blue-500 hex
     permissions: [] as string[]
   });
+
+  // Ensure color is always defined
+  const currentColor = formData.color || "#3b82f6";
 
   const colorOptions = [
     { value: "bg-red-500", label: "Red" },
@@ -174,7 +178,7 @@ const TeamRolesPage = () => {
 
     setRoleGroups(prev => [...prev, newRoleGroup]);
     setIsCreateDialogOpen(false);
-    setFormData({ name: "", description: "", color: "bg-blue-500", permissions: [] });
+    setFormData({ name: "", description: "", color: "#3b82f6", permissions: [] });
     toast.success("Role group created successfully");
   };
 
@@ -196,7 +200,7 @@ const TeamRolesPage = () => {
     
     setIsEditDialogOpen(false);
     setEditingRoleGroup(null);
-    setFormData({ name: "", description: "", color: "bg-blue-500", permissions: [] });
+    setFormData({ name: "", description: "", color: "#3b82f6", permissions: [] });
     toast.success("Role group updated successfully");
   };
 
@@ -216,7 +220,7 @@ const TeamRolesPage = () => {
     setFormData({
       name: roleGroup.name,
       description: roleGroup.description,
-      color: roleGroup.color,
+      color: roleGroup.color || "#3b82f6",
       permissions: roleGroup.permissions
     });
     setIsEditDialogOpen(true);
@@ -334,79 +338,95 @@ const TeamRolesPage = () => {
                   Add role group
                 </Button>
               </DialogTrigger>
-                             <DialogContent className="bg-stone-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
-                 <DialogHeader>
-                   <DialogTitle>Create Role Group</DialogTitle>
+                             <DialogContent className="bg-stone-900 border-gray-700 max-w-5xl max-h-[85vh] overflow-hidden">
+                 <DialogHeader className="pb-4">
+                   <DialogTitle className="text-xl">Create Role Group</DialogTitle>
                   <DialogDescription>
                     Create a new role group and assign permissions to it.
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Role Group Name</Label>
-                                         <Input
-                       id="name"
-                       value={formData.name}
-                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                       className="bg-gray-900 border-gray-700 text-white"
-                       placeholder="e.g., Content Managers"
-                     />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                                         <Textarea
-                       id="description"
-                       value={formData.description}
-                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                       className="bg-gray-900 border-gray-700 text-white"
-                       placeholder="Describe the purpose of this role group..."
-                       rows={3}
-                     />
-                  </div>
-                  
-                  <div>
-                    <Label>Color</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {colorOptions.map(color => (
-                        <button
-                          key={color.value}
-                          onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
-                          className={`w-8 h-8 rounded-full ${color.value} border-2 ${
-                            formData.color === color.value ? 'border-white' : 'border-transparent'
-                          }`}
-                          title={color.label}
+                <div className="flex flex-col lg:flex-row gap-8 h-full">
+                  {/* Left Column - Basic Info */}
+                  <div className="flex-1 space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="name" className="text-sm font-semibold text-gray-200">Role Group Name</Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="bg-gray-900 border-gray-700 text-white mt-2 h-11"
+                          placeholder="e.g., Content Managers"
                         />
-                      ))}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="description" className="text-sm font-semibold text-gray-200">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          className="bg-gray-900 border-gray-700 text-white mt-2"
+                          placeholder="Describe the purpose of this role group..."
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Color Picker Section */}
+                    <div className="space-y-4">
+                      <Label className="text-sm font-semibold text-gray-200">Role Color</Label>
+                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                        <ColorPicker
+                          value={currentColor}
+                          onChange={(color) => setFormData(prev => ({ ...prev, color }))}
+                        />
+                      </div>
                     </div>
                   </div>
-                  
-                  <div>
-                    <Label>Permissions</Label>
-                    <div className="space-y-4 mt-2">
-                      {Object.entries(permissionCategories).map(([category, permissions]) => (
-                        <div key={category} className="border border-gray-700 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Checkbox
-                              checked={permissions.every(perm => formData.permissions.includes(perm))}
-                              onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
-                            />
-                            <Label className="font-medium">{category}</Label>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-6">
-                            {permissions.map(permission => (
-                              <div key={permission} className="flex items-center gap-2">
+
+                  {/* Right Column - Permissions */}
+                  <div className="flex-1">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold text-gray-200">Permissions</Label>
+                        <Badge variant="outline" className="text-xs bg-gray-800/50 text-gray-400 border-gray-600">
+                          {formData.permissions.length} selected
+                        </Badge>
+                      </div>
+                      
+                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+                        <div className="space-y-4">
+                          {Object.entries(permissionCategories).map(([category, permissions]) => (
+                            <div key={category} className="border border-gray-700 rounded-lg p-4 bg-gray-800/30">
+                              <div className="flex items-center gap-3 mb-3">
                                 <Checkbox
-                                  checked={formData.permissions.includes(permission)}
-                                  onCheckedChange={() => togglePermission(permission)}
+                                  checked={permissions.every(perm => formData.permissions.includes(perm))}
+                                  onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
+                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                 />
-                                <Label className="text-sm">{getPermissionLabel(permission)}</Label>
+                                <Label className="font-medium text-gray-200">{category}</Label>
+                                <Badge variant="outline" className="ml-auto text-xs bg-gray-700/50 text-gray-400 border-gray-600">
+                                  {permissions.filter(perm => formData.permissions.includes(perm)).length}/{permissions.length}
+                                </Badge>
                               </div>
-                            ))}
-                          </div>
+                              <div className="grid grid-cols-1 gap-1 ml-6">
+                                {permissions.map(permission => (
+                                  <div key={permission} className="flex items-center gap-3 py-1.5">
+                                    <Checkbox
+                                      checked={formData.permissions.includes(permission)}
+                                      onCheckedChange={() => togglePermission(permission)}
+                                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                    />
+                                    <Label className="text-sm text-gray-300 cursor-pointer">{getPermissionLabel(permission)}</Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -431,7 +451,7 @@ const TeamRolesPage = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${roleGroup.color}`} />
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: roleGroup.color }} />
                     <div>
                       <CardTitle className="text-white">{roleGroup.name}</CardTitle>
                       <CardDescription className="text-gray-400">
@@ -496,79 +516,95 @@ const TeamRolesPage = () => {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-stone-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Role Group</DialogTitle>
+          <DialogContent className="bg-stone-900 border-gray-700 max-w-5xl max-h-[85vh] overflow-hidden">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-xl">Edit Role Group</DialogTitle>
               <DialogDescription>
                 Modify the role group and its permissions.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-name">Role Group Name</Label>
-                                 <Input
-                   id="edit-name"
-                   value={formData.name}
-                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                   className="bg-gray-900 border-gray-700 text-white"
-                   placeholder="e.g., Content Managers"
-                 />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-description">Description</Label>
-                                 <Textarea
-                   id="edit-description"
-                   value={formData.description}
-                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                   className="bg-gray-900 border-gray-700 text-white"
-                   placeholder="Describe the purpose of this role group..."
-                   rows={3}
-                 />
-              </div>
-              
-              <div>
-                <Label>Color</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {colorOptions.map(color => (
-                    <button
-                      key={color.value}
-                      onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
-                      className={`w-8 h-8 rounded-full ${color.value} border-2 ${
-                        formData.color === color.value ? 'border-white' : 'border-transparent'
-                      }`}
-                      title={color.label}
+            <div className="flex flex-col lg:flex-row gap-8 h-full">
+              {/* Left Column - Basic Info */}
+              <div className="flex-1 space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-name" className="text-sm font-semibold text-gray-200">Role Group Name</Label>
+                    <Input
+                      id="edit-name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="bg-gray-900 border-gray-700 text-white mt-2 h-11"
+                      placeholder="e.g., Content Managers"
                     />
-                  ))}
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="edit-description" className="text-sm font-semibold text-gray-200">Description</Label>
+                    <Textarea
+                      id="edit-description"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      className="bg-gray-900 border-gray-700 text-white mt-2"
+                      placeholder="Describe the purpose of this role group..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                {/* Color Picker Section */}
+                <div className="space-y-4">
+                  <Label className="text-sm font-semibold text-gray-200">Role Color</Label>
+                  <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                    <ColorPicker
+                      value={currentColor}
+                      onChange={(color) => setFormData(prev => ({ ...prev, color }))}
+                    />
+                  </div>
                 </div>
               </div>
-              
-              <div>
-                <Label>Permissions</Label>
-                <div className="space-y-4 mt-2">
-                  {Object.entries(permissionCategories).map(([category, permissions]) => (
-                    <div key={category} className="border border-gray-700 rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Checkbox
-                          checked={permissions.every(perm => formData.permissions.includes(perm))}
-                          onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
-                        />
-                        <Label className="font-medium">{category}</Label>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-6">
-                        {permissions.map(permission => (
-                          <div key={permission} className="flex items-center gap-2">
+
+              {/* Right Column - Permissions */}
+              <div className="flex-1">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold text-gray-200">Permissions</Label>
+                    <Badge variant="outline" className="text-xs bg-gray-800/50 text-gray-400 border-gray-600">
+                      {formData.permissions.length} selected
+                    </Badge>
+                  </div>
+                  
+                  <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-4">
+                      {Object.entries(permissionCategories).map(([category, permissions]) => (
+                        <div key={category} className="border border-gray-700 rounded-lg p-4 bg-gray-800/30">
+                          <div className="flex items-center gap-3 mb-3">
                             <Checkbox
-                              checked={formData.permissions.includes(permission)}
-                              onCheckedChange={() => togglePermission(permission)}
+                              checked={permissions.every(perm => formData.permissions.includes(perm))}
+                              onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
+                              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                             />
-                            <Label className="text-sm">{getPermissionLabel(permission)}</Label>
+                            <Label className="font-medium text-gray-200">{category}</Label>
+                            <Badge variant="outline" className="ml-auto text-xs bg-gray-700/50 text-gray-400 border-gray-600">
+                              {permissions.filter(perm => formData.permissions.includes(perm)).length}/{permissions.length}
+                            </Badge>
                           </div>
-                        ))}
-                      </div>
+                          <div className="grid grid-cols-1 gap-1 ml-6">
+                            {permissions.map(permission => (
+                              <div key={permission} className="flex items-center gap-3 py-1.5">
+                                <Checkbox
+                                  checked={formData.permissions.includes(permission)}
+                                  onCheckedChange={() => togglePermission(permission)}
+                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                />
+                                <Label className="text-sm text-gray-300 cursor-pointer">{getPermissionLabel(permission)}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>
