@@ -66,14 +66,14 @@ let dataAdmin = {
           title: "User Roles",
           url: "/team/roles",
         },
-        {
-          title: "Security",
-          url: "/team/security",
-        },
-        {
-          title: "Permissions",
-          url: "/team/permissions",
-        },
+        // {
+        //   title: "Security",
+        //   url: "/team/security",
+        // },
+        // {
+        //   title: "Permissions",
+        //   url: "/team/permissions",
+        // },
       ],
     },
 
