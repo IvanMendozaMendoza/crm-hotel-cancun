@@ -143,7 +143,7 @@ export function NavMain({
                     }`}
                   >
                     {hasSubItems ? (
-                      <div className="flex items-center gap-2 w-full">
+                      <div className="flex items-center gap-2 w-full mt-2">
                         {Icon && <Icon className="size-5"/>}
                         <span className="flex-1">{item.title}</span>
                         <div className={`transition-transform duration-200 ease-in-out ${
@@ -164,13 +164,13 @@ export function NavMain({
                 {/* Sub-items */}
                 {hasSubItems && (
                   <div 
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    className={`mt-1 overflow-hidden transition-all duration-300 ease-in-out ${
                       expanded 
                         ? 'max-h-96 opacity-100' 
                         : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="ml-6 border-l border-zinc-700 dark:border-zinc-800">
+                    <div className="ml-6 border-l border-zinc-700 dark:border-zinc-800 mt-2">
                       {item.items?.map((subItem, index) => {
                         const isSubActive = isSubItemActive(subItem.url);
                         return (

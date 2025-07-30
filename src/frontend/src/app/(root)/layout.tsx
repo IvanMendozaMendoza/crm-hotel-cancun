@@ -35,6 +35,25 @@ let dataAdmin = {
       icon: "dashboard",
     },
     {
+      title: "Analytics",
+      url: "/analytics",
+      icon: "chart",
+      items: [
+        {
+          title: "Overview",
+          url: "/analytics",
+        },
+        {
+          title: "Reports",
+          url: "/analytics/reports",
+        },
+        {
+          title: "Metrics",
+          url: "/analytics/metrics",
+        },
+      ],
+    },
+    {
       title: "Team",
       url: "/team",
       icon: "users",
@@ -57,25 +76,7 @@ let dataAdmin = {
         },
       ],
     },
-    {
-      title: "Analytics",
-      url: "/analytics",
-      icon: "chart",
-      items: [
-        {
-          title: "Overview",
-          url: "/analytics",
-        },
-        {
-          title: "Reports",
-          url: "/analytics/reports",
-        },
-        {
-          title: "Metrics",
-          url: "/analytics/metrics",
-        },
-      ],
-    },
+
     {
       title: "Settings",
       url: "/settings",
@@ -221,7 +222,7 @@ let dataUser = {
         },
       ],
     },
-  ]
+  ],
 };
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
@@ -244,13 +245,11 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
         } as React.CSSProperties
       }
     >
-      {
-        session.user.roles.includes("ADMIN") ? (
-          <AppSidebar variant="inset" user={user} data={dataAdmin} />
-        ) : (
-          <AppSidebar variant="inset" user={user} data={dataUser} />
-        )
-      }
+      {session.user.roles.includes("ADMIN") ? (
+        <AppSidebar variant="inset" user={user} data={dataAdmin} />
+      ) : (
+        <AppSidebar variant="inset" user={user} data={dataUser} />
+      )}
       <SidebarInset>
         <SiteHeader />
         {children}
