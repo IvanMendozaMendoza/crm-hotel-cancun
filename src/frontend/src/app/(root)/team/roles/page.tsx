@@ -14,6 +14,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
+import { CreateRoleGroupDialog } from "@/components/create-role-group-dialog";
 
 // Permission categories and their permissions
 const permissionCategories = {
@@ -159,19 +160,21 @@ const TeamRolesPage = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreateRoleGroup = () => {
-    if (!formData.name.trim()) {
+  const handleCreateRoleGroup = (data?: any) => {
+    const roleData = data || formData;
+    
+    if (!roleData.name.trim()) {
       toast.error("Role group name is required");
       return;
     }
-    if (formData.permissions.length === 0) {
+    if (roleData.permissions.length === 0) {
       toast.error("At least one permission is required");
       return;
     }
 
     const newRoleGroup = {
       id: Date.now().toString(),
-      ...formData,
+      ...roleData,
       userCount: 0,
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -331,116 +334,16 @@ const TeamRolesPage = () => {
             </DropdownMenu>
             
             {/* Add Role Group */}
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-black text-white hover:bg-gray-900">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add role group
-                </Button>
-              </DialogTrigger>
-                             <DialogContent className="bg-stone-900 border-gray-700 max-w-5xl max-h-[85vh] overflow-hidden">
-                 <DialogHeader className="pb-4">
-                   <DialogTitle className="text-xl">Create Role Group</DialogTitle>
-                  <DialogDescription>
-                    Create a new role group and assign permissions to it.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="flex flex-col lg:flex-row gap-8 h-full">
-                  {/* Left Column - Basic Info */}
-                  <div className="flex-1 space-y-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="name" className="text-sm font-semibold text-gray-200">Role Group Name</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          className="bg-gray-900 border-gray-700 text-white mt-2 h-11"
-                          placeholder="e.g., Content Managers"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="description" className="text-sm font-semibold text-gray-200">Description</Label>
-                        <Textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                          className="bg-gray-900 border-gray-700 text-white mt-2"
-                          placeholder="Describe the purpose of this role group..."
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Color Picker Section */}
-                    <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-gray-200">Role Color</Label>
-                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                        <ColorPicker
-                          value={currentColor}
-                          onChange={(color) => setFormData(prev => ({ ...prev, color }))}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column - Permissions */}
-                  <div className="flex-1">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-semibold text-gray-200">Permissions</Label>
-                        <Badge variant="outline" className="text-xs bg-gray-800/50 text-gray-400 border-gray-600">
-                          {formData.permissions.length} selected
-                        </Badge>
-                      </div>
-                      
-                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
-                        <div className="space-y-4">
-                          {Object.entries(permissionCategories).map(([category, permissions]) => (
-                            <div key={category} className="border border-gray-700 rounded-lg p-4 bg-gray-800/30">
-                              <div className="flex items-center gap-3 mb-3">
-                                <Checkbox
-                                  checked={permissions.every(perm => formData.permissions.includes(perm))}
-                                  onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
-                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                                />
-                                <Label className="font-medium text-gray-200">{category}</Label>
-                                <Badge variant="outline" className="ml-auto text-xs bg-gray-700/50 text-gray-400 border-gray-600">
-                                  {permissions.filter(perm => formData.permissions.includes(perm)).length}/{permissions.length}
-                                </Badge>
-                              </div>
-                              <div className="grid grid-cols-1 gap-1 ml-6">
-                                {permissions.map(permission => (
-                                  <div key={permission} className="flex items-center gap-3 py-1.5">
-                                    <Checkbox
-                                      checked={formData.permissions.includes(permission)}
-                                      onCheckedChange={() => togglePermission(permission)}
-                                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                                    />
-                                    <Label className="text-sm text-gray-300 cursor-pointer">{getPermissionLabel(permission)}</Label>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateRoleGroup}>
-                    Create Role Group
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-black text-white hover:bg-gray-900">
+              <Plus className="h-4 w-4 mr-2" />
+              Add role group
+            </Button>
+            
+            <CreateRoleGroupDialog 
+              open={isCreateDialogOpen} 
+              onOpenChange={setIsCreateDialogOpen}
+              onSubmit={handleCreateRoleGroup}
+            />
           </div>
         </div>
 
@@ -515,16 +418,17 @@ const TeamRolesPage = () => {
         </div>
 
         {/* Edit Dialog */}
+        
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-stone-900 border-gray-700 max-w-5xl max-h-[85vh] overflow-hidden">
-            <DialogHeader className="pb-4">
+          <DialogContent >
+            <DialogHeader className="pb-4 ">
               <DialogTitle className="text-xl">Edit Role Group</DialogTitle>
               <DialogDescription>
                 Modify the role group and its permissions.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex flex-col lg:flex-row gap-8 h-full">
+            <div className="flex flex-col lg:flex-row gap-8 h-full ">
               {/* Left Column - Basic Info */}
               <div className="flex-1 space-y-6">
                 <div className="space-y-4">
