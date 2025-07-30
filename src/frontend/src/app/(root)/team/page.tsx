@@ -170,10 +170,10 @@ const TeamPage = () => {
 
         {/* Desktop Table View */}
         <div className="hidden lg:block">
-          <div className="bg-stone-900 rounded-xl border border-gray-800 overflow-hidden">
+          <div className="bg-stone-900 rounded-xl border border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-800/50">
+                <thead className="bg-zinc-800">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
