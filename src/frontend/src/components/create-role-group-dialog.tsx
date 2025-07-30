@@ -130,7 +130,6 @@ export const CreateRoleGroupDialog = ({
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,15 +202,11 @@ export const CreateRoleGroupDialog = ({
 
   const selectedColor = colorPresets.find(c => c.value === formData.color);
 
-  // Filter permissions based on search and category
+  // Filter permissions based on search
   const filteredCategories = Object.entries(permissionCategories).filter(([category, { permissions }]) => {
-    const matchesSearch = searchTerm === "" || 
+    return searchTerm === "" || 
       category.toLowerCase().includes(searchTerm.toLowerCase()) ||
       permissions.some(perm => getPermissionLabel(perm).toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === "all" || category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -375,33 +370,15 @@ export const CreateRoleGroupDialog = ({
                   </Badge>
                 </div>
 
-                {/* Search and Filter Controls */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Search Input */}
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search permissions..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-zinc-900/50 border-zinc-700 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
-                    />
-                  </div>
-                  
-                  {/* Category Filter */}
-                  <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="pl-10 pr-8 bg-zinc-900/50 border border-zinc-700 text-white rounded-md focus:border-blue-500 focus:ring-blue-500/20 appearance-none cursor-pointer"
-                    >
-                      <option value="all">All Categories</option>
-                      {Object.keys(permissionCategories).map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search permissions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-zinc-900/50 border-zinc-700 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
+                  />
                 </div>
 
                 {/* Results Summary */}
