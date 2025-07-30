@@ -121,6 +121,7 @@ const TeamRolesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
   const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
   
   // Form state for creating/editing role groups
@@ -279,17 +280,14 @@ const TeamRolesPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-white">User Roles</h1>
-            <p className="text-gray-400 mt-1">Manage role groups and permissions</p>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-white">User Roles {roleGroups.length}</h1>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search role groups..."
+                placeholder="Search"
                 type="search"
                 autoComplete="off"
                 value={searchTerm}
@@ -298,24 +296,52 @@ const TeamRolesPage = () => {
               />
             </div>
             
-            {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-gray-900 border border-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Categories</option>
-              {Object.keys(permissionCategories).map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+            {/* Filters */}
+            <Dialog open={isFiltersDialogOpen} onOpenChange={setIsFiltersDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-stone-900 border-gray-700 max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Filter Role Groups</DialogTitle>
+                  <DialogDescription>
+                    Filter role groups by permission categories.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-300 mb-2 block">Permission Category</Label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Categories</option>
+                      {Object.keys(permissionCategories).map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsFiltersDialogOpen(false)}>
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             
-            {/* Create Role Group */}
+            {/* Add Role Group */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-black text-white hover:bg-gray-900">
+                <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-black text-white hover:bg-gray-900">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Role Group
+                  Add role group
                 </Button>
               </DialogTrigger>
                              <DialogContent className="bg-stone-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
