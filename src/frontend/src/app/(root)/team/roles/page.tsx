@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, Users, Shield, Settings, Database, FileText, ChartBar, Bell, Lock, Globe, Code, Palette, Search, Filter } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 // Permission categories and their permissions
@@ -121,7 +123,6 @@ const TeamRolesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
   const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
   
   // Form state for creating/editing role groups
@@ -297,44 +298,33 @@ const TeamRolesPage = () => {
             </div>
             
             {/* Filters */}
-            <Dialog open={isFiltersDialogOpen} onOpenChange={setIsFiltersDialogOpen}>
-              <DialogTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-stone-900 border-gray-700 max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Filter Role Groups</DialogTitle>
-                  <DialogDescription>
-                    Filter role groups by permission categories.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-300 mb-2 block">Permission Category</Label>
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="all">All Categories</option>
-                      {Object.keys(permissionCategories).map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsFiltersDialogOpen(false)}>
-                    Close
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
+                <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuItem 
+                  className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
+                  onClick={() => setSelectedCategory("all")}
+                >
+                  All Categories
+                </DropdownMenuItem>
+                {Object.keys(permissionCategories).map(category => (
+                  <DropdownMenuItem 
+                    key={category}
+                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             {/* Add Role Group */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
