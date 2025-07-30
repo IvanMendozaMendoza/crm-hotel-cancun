@@ -151,6 +151,7 @@ export const EditRoleGroupDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Edit form submitted:", formData);
     if (onSubmit) {
       onSubmit(formData);
     }
@@ -539,6 +540,13 @@ export const EditRoleGroupDialog = ({
             </DialogClose>
             <Button 
               type="submit" 
+              onClick={() => {
+                console.log("Edit button clicked directly");
+                if (onSubmit) {
+                  onSubmit(formData);
+                }
+                onOpenChange(false);
+              }}
               disabled={!formData.name.trim() || formData.permissions.length === 0}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed px-8"
             >

@@ -161,50 +161,50 @@ const TeamRolesPage = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreateRoleGroup = (data?: any) => {
-    const roleData = data || formData;
-    
-    if (!roleData.name.trim()) {
+  const handleCreateRoleGroup = (data: any) => {
+    console.log("handleCreateRoleGroup called with:", data);
+    if (!data.name.trim()) {
       toast.error("Role group name is required");
       return;
     }
-    if (roleData.permissions.length === 0) {
+    if (data.permissions.length === 0) {
       toast.error("At least one permission is required");
       return;
     }
 
     const newRoleGroup = {
       id: Date.now().toString(),
-      ...roleData,
+      ...data,
       userCount: 0,
       createdAt: new Date().toISOString().split('T')[0]
     };
 
+    console.log("Creating new role group:", newRoleGroup);
     setRoleGroups(prev => [...prev, newRoleGroup]);
     setIsCreateDialogOpen(false);
-    setFormData({ name: "", description: "", color: "#3b82f6", permissions: [] });
     toast.success("Role group created successfully");
   };
 
-  const handleEditRoleGroup = () => {
-    if (!formData.name.trim()) {
+  const handleEditRoleGroup = (data: any) => {
+    console.log("handleEditRoleGroup called with:", data);
+    if (!data.name.trim()) {
       toast.error("Role group name is required");
       return;
     }
-    if (formData.permissions.length === 0) {
+    if (data.permissions.length === 0) {
       toast.error("At least one permission is required");
       return;
     }
 
+    console.log("Updating role group:", editingRoleGroup?.id, "with data:", data);
     setRoleGroups(prev => prev.map(group => 
       group.id === editingRoleGroup.id 
-        ? { ...group, ...formData }
+        ? { ...group, ...data }
         : group
     ));
     
     setIsEditDialogOpen(false);
     setEditingRoleGroup(null);
-    setFormData({ name: "", description: "", color: "#3b82f6", permissions: [] });
     toast.success("Role group updated successfully");
   };
 
@@ -221,12 +221,6 @@ const TeamRolesPage = () => {
 
   const openEditDialog = (roleGroup: any) => {
     setEditingRoleGroup(roleGroup);
-    setFormData({
-      name: roleGroup.name,
-      description: roleGroup.description,
-      color: roleGroup.color || "#3b82f6",
-      permissions: roleGroup.permissions
-    });
     setIsEditDialogOpen(true);
   };
 
