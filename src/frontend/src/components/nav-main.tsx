@@ -97,15 +97,15 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <SidebarMenu>
-          <hr className="bg-zinc-700 dark:border-zinc-800" />
+        <SidebarMenu  >
+          <hr className="bg-zinc-700 dark:border-zinc-800 mb-2" />
           {items.map((item) => {
             const Icon = item.icon ? iconMap[item.icon as keyof typeof iconMap] : null;
             const hasSubItems = item.items && item.items.length > 0;
             const expanded = isExpanded(item.title);
 
             return (
-              <div key={item.title}>
+              <div key={item.title} >
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     tooltip={item.title} 
