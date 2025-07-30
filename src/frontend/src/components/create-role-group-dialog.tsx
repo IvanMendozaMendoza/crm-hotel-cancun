@@ -335,57 +335,63 @@ export const CreateRoleGroupDialog = ({
                       ))}
                     </div>
                     
-                    {/* Color Picker Popup */}
-                    {showColorPicker && editingColorIndex !== null && (
-                      <div 
-                        ref={colorPickerRef}
-                        className="mt-4 p-4 bg-zinc-900/50 border border-zinc-700 rounded-xl relative"
-                        onClick={(e) => e.stopPropagation()}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingColorIndex(colorPresets.findIndex(c => c.value === formData.color));
+                          setShowColorPicker(true);
+                        }}
+                        className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors cursor-pointer group w-full"
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <Label className="text-sm font-medium text-gray-200">
-                            Customize {colorPresets[editingColorIndex].name} Color
-                          </Label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowColorPicker(false);
-                              setEditingColorIndex(null);
-                            }}
-                            className="text-gray-400 hover:text-white"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <ColorPicker
-                          value={formData.color}
-                          onChange={(color) => {
-                            setFormData(prev => ({ ...prev, color }));
-                            // Update the color preset
-                            colorPresets[editingColorIndex].value = color;
-                          }}
-                        />
-                      </div>
-                    )}
-                    
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingColorIndex(colorPresets.findIndex(c => c.value === formData.color));
-                        setShowColorPicker(true);
-                      }}
-                      className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
-                    >
                       <div 
                         className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg group-hover:border-zinc-500 transition-colors" 
                         style={{ backgroundColor: formData.color }}
                       />
-                      <div className="flex-1 text-left">
-                        <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{selectedColor?.name}</p>
-                        <p className="text-xs text-gray-400 font-mono group-hover:text-blue-300 transition-colors">{formData.color}</p>
-                      </div>
-                      <Palette className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                    </button>
+                                              <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{selectedColor?.name}</p>
+                          <p className="text-xs text-gray-400 font-mono group-hover:text-blue-300 transition-colors">{formData.color}</p>
+                        </div>
+                        <Palette className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                      </button>
+                      
+                      {/* Color Picker Popover */}
+                      {showColorPicker && editingColorIndex !== null && (
+                        <div 
+                          ref={colorPickerRef}
+                          className="absolute top-full left-0 mt-2 p-4 bg-zinc-900/90 border border-zinc-700 rounded-xl shadow-2xl backdrop-blur-sm z-50"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            minWidth: '320px',
+                            maxWidth: '400px'
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <Label className="text-sm font-medium text-gray-200">
+                              Customize {colorPresets[editingColorIndex].name} Color
+                            </Label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowColorPicker(false);
+                                setEditingColorIndex(null);
+                              }}
+                              className="text-gray-400 hover:text-white"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <ColorPicker
+                            value={formData.color}
+                            onChange={(color) => {
+                              setFormData(prev => ({ ...prev, color }));
+                              // Update the color preset
+                              colorPresets[editingColorIndex].value = color;
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
