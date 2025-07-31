@@ -156,16 +156,16 @@ const ReportsPage = () => {
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-semibold text-foreground mb-2">Reports</h1>
-                <p className="text-muted-foreground">Generate and manage detailed hotel performance reports and analytics</p>
+                <h1 className="text-2xl font-semibold text-white mb-2">Reports</h1>
+                <p className="text-gray-400">Generate and manage detailed hotel performance reports and analytics</p>
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-700 text-white hover:bg-gray-800">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
-                <Button size="sm">
+                <Button size="sm" className="bg-gray-800 text-white hover:bg-gray-700">
                   <FileText className="h-4 w-4 mr-2" />
                   Generate Report
                 </Button>
@@ -176,55 +176,55 @@ const ReportsPage = () => {
           {/* Report Statistics */}
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Reports</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Total Reports</CardTitle>
+                  <FileText className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{reportsData.reportStats.totalReports}</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.totalReports}</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +12 this month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Downloads</CardTitle>
-                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Total Downloads</CardTitle>
+                  <Download className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{reportsData.reportStats.totalDownloads}</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.totalDownloads}</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +12% from last month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Avg Report Size</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Avg Report Size</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{reportsData.reportStats.avgReportSize} MB</div>
-                  <div className="flex items-center text-xs text-muted-foreground mt-1">
+                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.avgReportSize} MB</div>
+                  <div className="flex items-center text-xs text-gray-400 mt-1">
                     Optimized for quick loading
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">This Month</CardTitle>
+                  <Calendar className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{reportsData.reportStats.thisMonth}</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.thisMonth}</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +3 from last month
                   </div>
@@ -237,35 +237,35 @@ const ReportsPage = () => {
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-6">
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search reports..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-stone-900 border-gray-700 text-white placeholder:text-gray-400"
                 />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto min-w-[120px]">
+                  <Button variant="outline" className="w-full sm:w-auto min-w-[120px] border-gray-700 text-white hover:bg-gray-800">
                     <Filter className="h-4 w-4 mr-2" />
                     {selectedType === "all" ? "All Types" : selectedType}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSelectedType("all")}>
+                <DropdownMenuContent className="bg-stone-900 border-gray-700">
+                  <DropdownMenuItem onClick={() => setSelectedType("all")} className="text-white hover:bg-gray-800">
                     All Types
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedType("Performance")}>
+                  <DropdownMenuItem onClick={() => setSelectedType("Performance")} className="text-white hover:bg-gray-800">
                     Performance
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedType("Analytics")}>
+                  <DropdownMenuItem onClick={() => setSelectedType("Analytics")} className="text-white hover:bg-gray-800">
                     Analytics
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedType("Survey")}>
+                  <DropdownMenuItem onClick={() => setSelectedType("Survey")} className="text-white hover:bg-gray-800">
                     Survey
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedType("Operations")}>
+                  <DropdownMenuItem onClick={() => setSelectedType("Operations")} className="text-white hover:bg-gray-800">
                     Operations
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -278,31 +278,31 @@ const ReportsPage = () => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
               {/* Recent Reports */}
               <div className="xl:col-span-2">
-                <Card>
+                <Card className="bg-stone-900 border-gray-700">
                   <CardHeader>
-                    <CardTitle>Recent Reports</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Recent Reports</CardTitle>
+                    <CardDescription className="text-gray-400">
                       Latest generated reports and analytics
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {reportsData.recentReports.map((report) => (
-                        <div key={report.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
+                        <div key={report.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-700 rounded-lg gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                              <h3 className="font-medium text-foreground truncate">{report.title}</h3>
+                              <h3 className="font-medium text-white truncate">{report.title}</h3>
                               <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline" className={getTypeColor(report.type)}>
+                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
                                   {report.type}
                                 </Badge>
-                                <Badge variant="outline" className={getStatusColor(report.status)}>
+                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
                                   {report.status}
                                 </Badge>
                               </div>
                             </div>
-                            <p className="text-muted-foreground text-sm mb-2 line-clamp-2">{report.description}</p>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                            <p className="text-gray-400 text-sm mb-2 line-clamp-2">{report.description}</p>
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
                                 {report.date}
@@ -318,26 +318,26 @@ const ReportsPage = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
                               <Download className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
                               <Share2 className="h-4 w-4" />
                             </Button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
+                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                <DropdownMenuItem>Edit Report</DropdownMenuItem>
-                                <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                              <DropdownMenuContent className="bg-stone-900 border-gray-700">
+                                <DropdownMenuItem className="text-white hover:bg-gray-800">View Details</DropdownMenuItem>
+                                <DropdownMenuItem className="text-white hover:bg-gray-800">Edit Report</DropdownMenuItem>
+                                <DropdownMenuItem className="text-white hover:bg-gray-800">Duplicate</DropdownMenuItem>
+                                <DropdownMenuItem className="text-red-400 hover:bg-gray-800">Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -351,29 +351,29 @@ const ReportsPage = () => {
               {/* Sidebar */}
               <div className="space-y-6">
                 {/* Report Templates */}
-                <Card>
+                <Card className="bg-stone-900 border-gray-700">
                   <CardHeader>
-                    <CardTitle>Report Templates</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Report Templates</CardTitle>
+                    <CardDescription className="text-gray-400">
                       Pre-configured report templates
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
                       {reportsData.reportTemplates.map((template) => (
-                        <div key={template.id} className="p-5 border rounded-lg">
+                        <div key={template.id} className="p-5 border border-gray-700 rounded-lg">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                            <h4 className="font-medium text-foreground">{template.title}</h4>
-                            <Badge variant="outline" className={getFrequencyColor(template.frequency)}>
+                            <h4 className="font-medium text-white">{template.title}</h4>
+                            <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
                               {template.frequency}
                             </Badge>
                           </div>
-                          <p className="text-muted-foreground text-sm mb-4">{template.description}</p>
+                          <p className="text-gray-400 text-sm mb-4">{template.description}</p>
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-gray-400">
                               Last: {template.lastGenerated}
                             </span>
-                            <Button size="sm" className="w-full sm:w-auto">
+                            <Button size="sm" className="w-full sm:w-auto bg-gray-800 text-white hover:bg-gray-700">
                               Generate
                             </Button>
                           </div>
@@ -384,21 +384,21 @@ const ReportsPage = () => {
                 </Card>
 
                 {/* Quick Actions */}
-                <Card>
+                <Card className="bg-stone-900 border-gray-700">
                   <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
+                    <CardTitle className="text-white">Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
                         <FileText className="h-4 w-4 mr-2" />
                         Create Custom Report
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
                         <Calendar className="h-4 w-4 mr-2" />
                         Schedule Reports
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-gray-700 text-white hover:bg-gray-800">
                         <Share2 className="h-4 w-4 mr-2" />
                         Share Reports
                       </Button>
