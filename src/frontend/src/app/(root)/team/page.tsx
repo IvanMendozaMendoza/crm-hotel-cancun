@@ -25,6 +25,51 @@ const sampleUsers = [
     dateAdded: "July 4, 2022",
   },
   {
+    id: "14554",
+    name: "Florence Shaw",
+    email: "florence@untitledui.com",
+    avatar: "/avatars/florence.jpg",
+    access: ["Admin", "Data Export", "Data Import"],
+    lastActive: "Mar 4, 2024",
+    dateAdded: "July 4, 2022",
+  },
+  {
+    id: "177",
+    name: "Florence Shaw",
+    email: "florence@untitledui.com",
+    avatar: "/avatars/florence.jpg",
+    access: ["Admin", "Data Export", "Data Import"],
+    lastActive: "Mar 4, 2024",
+    dateAdded: "July 4, 2022",
+  },
+  {
+    id: "12",
+    name: "Florence Shaw",
+    email: "florence@untitledui.com",
+    avatar: "/avatars/florence.jpg",
+    access: ["Admin", "Data Export", "Data Import"],
+    lastActive: "Mar 4, 2024",
+    dateAdded: "July 4, 2022",
+  },
+  {
+    id: "11",
+    name: "Florence Shaw",
+    email: "florence@untitledui.com",
+    avatar: "/avatars/florence.jpg",
+    access: ["Admin", "Data Export", "Data Import"],
+    lastActive: "Mar 4, 2024",
+    dateAdded: "July 4, 2022",
+  },
+  {
+    id: "17",
+    name: "Florence Shaw",
+    email: "florence@untitledui.com",
+    avatar: "/avatars/florence.jpg",
+    access: ["Admin", "Data Export", "Data Import"],
+    lastActive: "Mar 4, 2024",
+    dateAdded: "July 4, 2022",
+  },
+  {
     id: "2",
     name: "Amélie Laurent",
     email: "amelie@untitledui.com",
@@ -136,6 +181,9 @@ const TeamPage = () => {
   const [selectedSort, setSelectedSort] = useState("name_asc");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   
+  // Pagination settings
+  const itemsPerPage = 10;
+  
   // Add user form state
   const [newUser, setNewUser] = useState({
     name: "",
@@ -179,6 +227,17 @@ const TeamPage = () => {
         return 0;
     }
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = sortedUsers.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedAccessFilter, selectedSort]);
 
   const handleAddUser = () => {
     setIsAddUserDialogOpen(true);
@@ -287,6 +346,23 @@ const TeamPage = () => {
     }
   };
 
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
@@ -372,7 +448,7 @@ const TeamPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {sortedUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -436,7 +512,7 @@ const TeamPage = () => {
 
         {/* Mobile/Tablet Card View */}
         <div className="lg:hidden space-y-4">
-          {sortedUsers.map((user) => (
+          {paginatedUsers.map((user) => (
             <div key={user.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -495,33 +571,90 @@ const TeamPage = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-          <div className="text-sm text-gray-400 text-center sm:text-left">
-            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, sortedUsers.length)} of {sortedUsers.length} results
+        {sortedUsers.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+            <div className="text-sm text-gray-400 text-center sm:text-left">
+              Showing {startIndex + 1} to {Math.min(endIndex, sortedUsers.length)} of {sortedUsers.length} results
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronDown className="h-4 w-4 rotate-90 mr-2" />
+                Previous
+              </Button>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNumber;
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i;
+                  } else {
+                    pageNumber = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(pageNumber)}
+                      className={`${
+                        currentPage === pageNumber 
+                          ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                          : "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
+                      } min-w-[40px]`}
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToNextPage}
+                disabled={currentPage >= totalPages}
+                className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+                <ChevronDown className="h-4 w-4 -rotate-90 ml-2" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronDown className="h-4 w-4 rotate-90 mr-2" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(sortedUsers.length / 10), prev + 1))}
-              disabled={currentPage >= Math.ceil(sortedUsers.length / 10)}
-              className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-              <ChevronDown className="h-4 w-4 -rotate-90 ml-2" />
-            </Button>
+        )}
+
+        {/* Empty State */}
+        {sortedUsers.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No users found</h3>
+            <p className="text-gray-400 mb-4">
+              {searchTerm || selectedAccessFilter !== "all" 
+                ? "Try adjusting your search or filter criteria"
+                : "Get started by adding your first user"
+              }
+            </p>
+            {!searchTerm && selectedAccessFilter === "all" && (
+              <Button onClick={handleAddUser} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Add User Dialog */}
         <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
