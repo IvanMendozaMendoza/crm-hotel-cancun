@@ -205,66 +205,6 @@ const NotificationsPage = () => {
             </div>
           </div>
 
-          {/* Notification Statistics */}
-          <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Total Notifications</CardTitle>
-                  <Bell className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{notificationsData.stats.total}</div>
-                  <div className="flex items-center text-xs text-gray-400 mt-1">
-                    All time notifications
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Unread</CardTitle>
-                  <AlertCircle className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{notificationsData.stats.unread}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    Requires attention
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Today</CardTitle>
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{notificationsData.stats.today}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    New today
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">This Week</CardTitle>
-                  <Clock className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{notificationsData.stats.thisWeek}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    Recent activity
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
           {/* Search and Filter */}
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-6">
@@ -319,149 +259,171 @@ const NotificationsPage = () => {
 
           {/* Main Content */}
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
-            <Tabs defaultValue="all" className="space-y-6">
+            <Tabs defaultValue="unread" className="space-y-6">
               <TabsList className="bg-stone-900 border-gray-700">
-                <TabsTrigger value="all" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">All</TabsTrigger>
-                <TabsTrigger value="unread" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Unread</TabsTrigger>
-                <TabsTrigger value="read" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Read</TabsTrigger>
+                <TabsTrigger value="unread" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">
+                  Unread ({notifications.filter(n => !n.read).length})
+                </TabsTrigger>
+                <TabsTrigger value="all" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">
+                  All ({notifications.length})
+                </TabsTrigger>
+                <TabsTrigger value="read" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">
+                  Read ({notifications.filter(n => n.read).length})
+                </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="all" className="space-y-4">
-                <Card className="bg-stone-900 border-gray-700">
-                  <CardContent className="p-0">
-                    <div className="space-y-0">
-                      {filteredNotifications.map((notification) => (
-                        <div key={notification.id} className={`flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0 ${!notification.read ? 'bg-gray-800/30' : ''}`}>
-                          <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
-                            {getNotificationIcon(notification.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div className="flex-1">
-                                <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-400' : 'text-white'}`}>
-                                  {notification.title}
-                                </h3>
-                                <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
-                                  <div className="flex items-center gap-1">
-                                    {getCategoryIcon(notification.category)}
-                                    {notification.category}
-                                  </div>
-                                </Badge>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent className="bg-stone-900 border-gray-700">
-                                    <DropdownMenuItem 
-                                      className="text-white hover:bg-gray-800"
-                                      onClick={() => markAsRead(notification.id)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                      Mark as Read
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-white hover:bg-gray-800">
-                                      <Archive className="h-4 w-4 mr-2" />
-                                      Archive
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      className="text-red-400 hover:bg-gray-800"
-                                      onClick={() => deleteNotification(notification.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {notification.time}
-                              </span>
-                              {!notification.read && (
-                                <Badge variant="outline" className="bg-blue-500/20 border-blue-500 text-blue-400 text-xs">
-                                  New
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               <TabsContent value="unread" className="space-y-4">
                 <Card className="bg-stone-900 border-gray-700">
                   <CardContent className="p-0">
-                    <div className="space-y-0">
-                      {filteredNotifications.filter(n => !n.read).map((notification) => (
-                        <div key={notification.id} className="flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0 bg-gray-800/30">
-                          <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
-                            {getNotificationIcon(notification.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div className="flex-1">
-                                <h3 className="font-medium text-sm text-white">{notification.title}</h3>
-                                <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
+                    {filteredNotifications.filter(n => !n.read).length > 0 ? (
+                      <div className="space-y-0">
+                        {filteredNotifications.filter(n => !n.read).map((notification) => (
+                          <div key={notification.id} className="flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0 bg-gray-800/30">
+                            <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-sm text-white">{notification.title}</h3>
+                                  <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
+                                    <div className="flex items-center gap-1">
+                                      {getCategoryIcon(notification.category)}
+                                      {notification.category}
+                                    </div>
+                                  </Badge>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="bg-stone-900 border-gray-700">
+                                      <DropdownMenuItem 
+                                        className="text-white hover:bg-gray-800"
+                                        onClick={() => markAsRead(notification.id)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Mark as Read
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem className="text-white hover:bg-gray-800">
+                                        <Archive className="h-4 w-4 mr-2" />
+                                        Archive
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-red-400 hover:bg-gray-800"
+                                        onClick={() => deleteNotification(notification.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
-                                  <div className="flex items-center gap-1">
-                                    {getCategoryIcon(notification.category)}
-                                    {notification.category}
-                                  </div>
+                              <div className="flex items-center gap-4 text-xs text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {notification.time}
+                                </span>
+                                <Badge variant="outline" className="bg-blue-500/20 border-blue-500 text-blue-400 text-xs">
+                                  New
                                 </Badge>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent className="bg-stone-900 border-gray-700">
-                                    <DropdownMenuItem 
-                                      className="text-white hover:bg-gray-800"
-                                      onClick={() => markAsRead(notification.id)}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                      Mark as Read
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-white hover:bg-gray-800">
-                                      <Archive className="h-4 w-4 mr-2" />
-                                      Archive
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      className="text-red-400 hover:bg-gray-800"
-                                      onClick={() => deleteNotification(notification.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {notification.time}
-                              </span>
-                              <Badge variant="outline" className="bg-blue-500/20 border-blue-500 text-blue-400 text-xs">
-                                New
-                              </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Bell className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-white mb-2">No unread notifications</h3>
+                        <p className="text-gray-400">You're all caught up! Check back later for new updates.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="all" className="space-y-4">
+                <Card className="bg-stone-900 border-gray-700">
+                  <CardContent className="p-0">
+                    {filteredNotifications.length > 0 ? (
+                      <div className="space-y-0">
+                        {filteredNotifications.map((notification) => (
+                          <div key={notification.id} className={`flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0 ${!notification.read ? 'bg-gray-800/30' : ''}`}>
+                            <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex-1">
+                                  <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-400' : 'text-white'}`}>
+                                    {notification.title}
+                                  </h3>
+                                  <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
+                                    <div className="flex items-center gap-1">
+                                      {getCategoryIcon(notification.category)}
+                                      {notification.category}
+                                    </div>
+                                  </Badge>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="bg-stone-900 border-gray-700">
+                                      <DropdownMenuItem 
+                                        className="text-white hover:bg-gray-800"
+                                        onClick={() => markAsRead(notification.id)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Mark as Read
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem className="text-white hover:bg-gray-800">
+                                        <Archive className="h-4 w-4 mr-2" />
+                                        Archive
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-red-400 hover:bg-gray-800"
+                                        onClick={() => deleteNotification(notification.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 text-xs text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {notification.time}
+                                </span>
+                                {!notification.read && (
+                                  <Badge variant="outline" className="bg-blue-500/20 border-blue-500 text-blue-400 text-xs">
+                                    New
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Bell className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-white mb-2">No notifications found</h3>
+                        <p className="text-gray-400">Try adjusting your search or filter criteria.</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -469,57 +431,65 @@ const NotificationsPage = () => {
               <TabsContent value="read" className="space-y-4">
                 <Card className="bg-stone-900 border-gray-700">
                   <CardContent className="p-0">
-                    <div className="space-y-0">
-                      {filteredNotifications.filter(n => n.read).map((notification) => (
-                        <div key={notification.id} className="flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0">
-                          <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
-                            {getNotificationIcon(notification.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div className="flex-1">
-                                <h3 className="font-medium text-sm text-gray-400">{notification.title}</h3>
-                                <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
+                    {filteredNotifications.filter(n => n.read).length > 0 ? (
+                      <div className="space-y-0">
+                        {filteredNotifications.filter(n => n.read).map((notification) => (
+                          <div key={notification.id} className="flex items-start gap-4 p-4 border-b border-gray-700 last:border-b-0">
+                            <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-sm text-gray-400">{notification.title}</h3>
+                                  <p className="text-gray-400 text-sm mt-1">{notification.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
+                                    <div className="flex items-center gap-1">
+                                      {getCategoryIcon(notification.category)}
+                                      {notification.category}
+                                    </div>
+                                  </Badge>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="bg-stone-900 border-gray-700">
+                                      <DropdownMenuItem className="text-white hover:bg-gray-800">
+                                        <Archive className="h-4 w-4 mr-2" />
+                                        Archive
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-red-400 hover:bg-gray-800"
+                                        onClick={() => deleteNotification(notification.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600 text-xs">
-                                  <div className="flex items-center gap-1">
-                                    {getCategoryIcon(notification.category)}
-                                    {notification.category}
-                                  </div>
-                                </Badge>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent className="bg-stone-900 border-gray-700">
-                                    <DropdownMenuItem className="text-white hover:bg-gray-800">
-                                      <Archive className="h-4 w-4 mr-2" />
-                                      Archive
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      className="text-red-400 hover:bg-gray-800"
-                                      onClick={() => deleteNotification(notification.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                              <div className="flex items-center gap-4 text-xs text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {notification.time}
+                                </span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {notification.time}
-                              </span>
-                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <CheckCircle className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-white mb-2">No read notifications</h3>
+                        <p className="text-gray-400">Notifications you've read will appear here.</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
