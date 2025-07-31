@@ -44,12 +44,12 @@ const hotelMetricsData = {
   kpis: {
     occupancyRate: 87.5,
     averageDailyRate: 245.50,
-    revenuePerAvailableRoom: 214.81,
+    revpar: 214.81,
     totalRevenue: 2847000,
     guestSatisfaction: 4.6,
     bookingConversionRate: 23.4,
     repeatGuestRate: 68.5,
-    averageLengthOfStay: 3.2
+    avgLengthOfStay: 3.2
   },
   trends: {
     monthly: [
@@ -58,72 +58,61 @@ const hotelMetricsData = {
       { month: "Mar", occupancy: 82, adr: 230, revpar: 188, bookings: 980 },
       { month: "Apr", occupancy: 85, adr: 235, revpar: 199, bookings: 1020 },
       { month: "May", occupancy: 88, adr: 240, revpar: 211, bookings: 1080 },
-      { month: "Jun", occupancy: 92, adr: 245, revpar: 225, bookings: 1150 },
-      { month: "Jul", occupancy: 95, adr: 250, revpar: 237, bookings: 1220 },
-      { month: "Aug", occupancy: 87, adr: 245, revpar: 214, bookings: 1247 }
+      { month: "Jun", occupancy: 92, adr: 245, revpar: 225, bookings: 1150 }
     ]
   },
   businessMetrics: {
-    revenue: {
-      roomRevenue: 1980000,
-      foodBeverage: 450000,
-      spaServices: 180000,
-      parking: 75000,
-      otherServices: 167000
-    },
-    costs: {
-      laborCosts: 850000,
-      utilities: 180000,
-      maintenance: 120000,
-      marketing: 95000,
-      otherExpenses: 150000
-    }
+    revenueBreakdown: [
+      { category: "Room Revenue", amount: 1980000, percentage: 70 },
+      { category: "Food & Beverage", amount: 450000, percentage: 16 },
+      { category: "Spa Services", amount: 180000, percentage: 6 },
+      { category: "Parking", amount: 75000, percentage: 3 },
+      { category: "Other Services", amount: 167000, percentage: 5 }
+    ],
+    costAnalysis: [
+      { category: "Labor Costs", amount: 850000, percentage: 60 },
+      { category: "Utilities", amount: 180000, percentage: 13 },
+      { category: "Maintenance", amount: 120000, percentage: 8 },
+      { category: "Marketing", amount: 95000, percentage: 7 },
+      { category: "Other Expenses", amount: 150000, percentage: 12 }
+    ]
   },
   guestMetrics: {
-    demographics: {
-      businessTravelers: 45,
-      leisureTravelers: 35,
-      internationalGuests: 20
-    },
-    preferences: {
-      roomType: {
-        standard: 40,
-        deluxe: 35,
-        suite: 25
-      },
-      amenities: {
-        wifi: 98,
-        parking: 75,
-        restaurant: 82,
-        spa: 45,
-        pool: 68
-      }
-    },
-    satisfaction: {
-      overall: 4.6,
-      cleanliness: 4.7,
-      service: 4.5,
-      location: 4.8,
-      value: 4.4
-    }
+    roomPreferences: [
+      { type: "Standard", percentage: 40 },
+      { type: "Deluxe", percentage: 35 },
+      { type: "Suite", percentage: 25 }
+    ],
+    satisfaction: [
+      { category: "Overall", rating: 4.6 },
+      { category: "Cleanliness", rating: 4.7 },
+      { category: "Service", rating: 4.5 },
+      { category: "Location", rating: 4.8 },
+      { category: "Value", rating: 4.4 }
+    ],
+    amenitiesUsage: [
+      { name: "WiFi", usage: 98, icon: <Wifi className="h-6 w-6 text-gray-400" /> },
+      { name: "Parking", usage: 75, icon: <Car className="h-6 w-6 text-gray-400" /> },
+      { name: "Restaurant", usage: 82, icon: <UtensilsCrossed className="h-6 w-6 text-gray-400" /> },
+      { name: "Spa", usage: 45, icon: <Star className="h-6 w-6 text-gray-400" /> },
+      { name: "Pool", usage: 68, icon: <Target className="h-6 w-6 text-gray-400" /> }
+    ]
   }
 };
 
 const MetricsPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("30d");
 
-  const getTrendColor = (value: number, threshold: number = 0) => {
-    return value > threshold ? "text-green-600" : "text-red-600";
+  const getTrendColor = (trend: string) => {
+    switch (trend) {
+      case "up": return "text-white";
+      case "down": return "text-white";
+      default: return "text-gray-400";
+    }
   };
 
-  const getTrendIcon = (value: number, threshold: number = 0) => {
-    return value > threshold ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />;
-  };
-
-  const getMetricColor = (value: number, good: number, excellent: number) => {
-    if (value >= excellent) return "text-green-600";
-    if (value >= good) return "text-yellow-600";
-    return "text-red-600";
+  const getMetricColor = (value: number, threshold: number) => {
+    return value >= threshold ? "text-white" : "text-gray-400";
   };
 
   const formatCurrency = (amount: number) => {
@@ -140,19 +129,19 @@ const MetricsPage = () => {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           {/* Header */}
-          <div className="px-4 lg:px-6">
+          <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-semibold text-foreground mb-2">Performance Metrics</h1>
-                <p className="text-muted-foreground">Comprehensive hotel business metrics and performance indicators</p>
+                <h1 className="text-2xl font-semibold text-white mb-2">Hotel Performance Metrics</h1>
+                <p className="text-gray-400">Comprehensive hotel business metrics and performance indicators</p>
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-700 text-white hover:bg-gray-800">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-700 text-white hover:bg-gray-800">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -161,58 +150,58 @@ const MetricsPage = () => {
           </div>
 
           {/* Key Performance Indicators */}
-          <div className="px-4 lg:px-6">
+          <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Occupancy Rate</CardTitle>
-                  <Bed className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Occupancy Rate</CardTitle>
+                  <Bed className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{hotelMetricsData.kpis.occupancyRate}%</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">{hotelMetricsData.kpis.occupancyRate}%</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +2.3% from last month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Average Daily Rate</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Average Daily Rate</CardTitle>
+                  <DollarSign className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">${hotelMetricsData.kpis.averageDailyRate}</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">${hotelMetricsData.kpis.averageDailyRate}</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +$12.50 from last month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">RevPAR</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">RevPAR</CardTitle>
+                  <Target className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">${hotelMetricsData.kpis.revenuePerAvailableRoom}</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">${hotelMetricsData.kpis.revpar}</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
-                    +$8.75 from last month
+                    +$8.76 from last month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-stone-900 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Guest Satisfaction</CardTitle>
-                  <Star className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-400">Guest Satisfaction</CardTitle>
+                  <Star className="h-4 w-4 text-gray-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{hotelMetricsData.kpis.guestSatisfaction}/5.0</div>
-                  <div className="flex items-center text-xs text-green-600 mt-1">
+                  <div className="text-2xl font-bold text-white">{hotelMetricsData.kpis.guestSatisfaction}/5.0</div>
+                  <div className="flex items-center text-xs text-white mt-1">
                     <ArrowUpRight className="h-3 w-3 mr-1" />
                     +0.2 from last month
                   </div>
@@ -222,53 +211,50 @@ const MetricsPage = () => {
           </div>
 
           {/* Main Content Tabs */}
-          <div className="px-4 lg:px-6">
+          <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                <TabsTrigger value="guests">Guests</TabsTrigger>
-                <TabsTrigger value="trends">Trends</TabsTrigger>
+              <TabsList className="bg-stone-900 border-gray-700">
+                <TabsTrigger value="overview" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Overview</TabsTrigger>
+                <TabsTrigger value="revenue" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Revenue</TabsTrigger>
+                <TabsTrigger value="guests" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Guests</TabsTrigger>
+                <TabsTrigger value="trends" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-800">Trends</TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Key Metrics */}
-                  <Card>
+                  {/* Key Performance Indicators */}
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="h-5 w-5" />
-                        Key Performance Indicators
-                      </CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-white">Key Performance Indicators</CardTitle>
+                      <CardDescription className="text-gray-400">
                         Core hotel performance metrics
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-foreground">Booking Conversion Rate</span>
-                          <Badge variant="outline">
+                          <span className="text-white">Total Revenue</span>
+                          <Badge variant="outline" className="border-gray-600 text-white">
+                            {formatCurrency(hotelMetricsData.kpis.totalRevenue)}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">Booking Conversion Rate</span>
+                          <Badge variant="outline" className="border-gray-600 text-white">
                             {hotelMetricsData.kpis.bookingConversionRate}%
                           </Badge>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-foreground">Repeat Guest Rate</span>
-                          <Badge variant="outline">
+                          <span className="text-white">Repeat Guest Rate</span>
+                          <Badge variant="outline" className="border-gray-600 text-white">
                             {hotelMetricsData.kpis.repeatGuestRate}%
                           </Badge>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-foreground">Average Length of Stay</span>
-                          <Badge variant="outline">
-                            {hotelMetricsData.kpis.averageLengthOfStay} nights
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-foreground">Total Revenue</span>
-                          <Badge variant="outline">
-                            {formatCurrency(hotelMetricsData.kpis.totalRevenue)}
+                          <span className="text-white">Average Length of Stay</span>
+                          <Badge variant="outline" className="border-gray-600 text-white">
+                            {hotelMetricsData.kpis.avgLengthOfStay} nights
                           </Badge>
                         </div>
                       </div>
@@ -276,35 +262,35 @@ const MetricsPage = () => {
                   </Card>
 
                   {/* Guest Demographics */}
-                  <Card>
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Guest Demographics
-                      </CardTitle>
-                      <CardDescription>
-                        Guest type distribution
+                      <CardTitle className="text-white">Guest Demographics</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        Guest profile and preferences
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(hotelMetricsData.guestMetrics.demographics).map(([type, percentage], index) => (
-                          <div key={type} className="flex items-center justify-between">
-                            <span className="text-foreground capitalize">{type.replace(/([A-Z])/g, ' $1').trim()}</span>
-                            <div className="flex items-center gap-2">
-                              <div className="w-16 bg-muted rounded-full h-2">
-                                <div 
-                                  className={`h-2 rounded-full ${
-                                    index === 0 ? 'bg-blue-500' : 
-                                    index === 1 ? 'bg-green-500' : 'bg-purple-500'
-                                  }`}
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                              <span className="text-foreground font-medium text-sm">{percentage}%</span>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">Business Travelers</span>
+                          <span className="text-white font-medium">45%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">Leisure Travelers</span>
+                          <span className="text-white font-medium">38%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">International Guests</span>
+                          <span className="text-white font-medium">17%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">Average Age</span>
+                          <span className="text-white font-medium">42 years</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white">Family Groups</span>
+                          <span className="text-white font-medium">23%</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -315,31 +301,26 @@ const MetricsPage = () => {
               <TabsContent value="revenue" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Revenue Breakdown */}
-                  <Card>
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle>Revenue Breakdown</CardTitle>
-                      <CardDescription>
-                        Revenue distribution by service type
+                      <CardTitle className="text-white">Revenue Breakdown</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        Revenue by category and source
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(hotelMetricsData.businessMetrics.revenue).map(([service, amount], index) => (
-                          <div key={service} className="flex items-center justify-between">
-                            <span className="text-foreground capitalize">{service.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        {hotelMetricsData.businessMetrics.revenueBreakdown.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-white">{item.category}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-20 bg-muted rounded-full h-2">
+                              <div className="w-16 bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className={`h-2 rounded-full ${
-                                    index === 0 ? 'bg-blue-500' : 
-                                    index === 1 ? 'bg-green-500' : 
-                                    index === 2 ? 'bg-purple-500' : 
-                                    index === 3 ? 'bg-orange-500' : 'bg-red-500'
-                                  }`}
-                                  style={{ width: `${(amount / hotelMetricsData.businessMetrics.revenue.roomRevenue) * 100}%` }}
+                                  className="bg-gray-400 h-2 rounded-full"
+                                  style={{ width: `${item.percentage}%` }}
                                 />
                               </div>
-                              <span className="text-foreground font-medium text-sm">{formatCurrency(amount)}</span>
+                              <span className="text-white font-medium text-sm">{formatCurrency(item.amount)}</span>
                             </div>
                           </div>
                         ))}
@@ -348,31 +329,26 @@ const MetricsPage = () => {
                   </Card>
 
                   {/* Cost Analysis */}
-                  <Card>
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle>Cost Analysis</CardTitle>
-                      <CardDescription>
-                        Operational cost breakdown
+                      <CardTitle className="text-white">Cost Analysis</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        Operational costs and efficiency
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(hotelMetricsData.businessMetrics.costs).map(([cost, amount], index) => (
-                          <div key={cost} className="flex items-center justify-between">
-                            <span className="text-foreground capitalize">{cost.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        {hotelMetricsData.businessMetrics.costAnalysis.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-white">{item.category}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-20 bg-muted rounded-full h-2">
+                              <div className="w-16 bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className={`h-2 rounded-full ${
-                                    index === 0 ? 'bg-red-500' : 
-                                    index === 1 ? 'bg-orange-500' : 
-                                    index === 2 ? 'bg-yellow-500' : 
-                                    index === 3 ? 'bg-purple-500' : 'bg-blue-500'
-                                  }`}
-                                  style={{ width: `${(amount / hotelMetricsData.businessMetrics.costs.laborCosts) * 100}%` }}
+                                  className="bg-gray-500 h-2 rounded-full"
+                                  style={{ width: `${item.percentage}%` }}
                                 />
                               </div>
-                              <span className="text-foreground font-medium text-sm">{formatCurrency(amount)}</span>
+                              <span className="text-white font-medium text-sm">{formatCurrency(item.amount)}</span>
                             </div>
                           </div>
                         ))}
@@ -386,29 +362,26 @@ const MetricsPage = () => {
               <TabsContent value="guests" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Room Type Preferences */}
-                  <Card>
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle>Room Type Preferences</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-white">Room Type Preferences</CardTitle>
+                      <CardDescription className="text-gray-400">
                         Guest room type selection
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(hotelMetricsData.guestMetrics.preferences.roomType).map(([type, percentage], index) => (
-                          <div key={type} className="flex items-center justify-between">
-                            <span className="text-foreground capitalize">{type}</span>
+                        {hotelMetricsData.guestMetrics.roomPreferences.map((room, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-white">{room.type}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-16 bg-muted rounded-full h-2">
+                              <div className="w-16 bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className={`h-2 rounded-full ${
-                                    index === 0 ? 'bg-blue-500' : 
-                                    index === 1 ? 'bg-green-500' : 'bg-purple-500'
-                                  }`}
-                                  style={{ width: `${percentage}%` }}
+                                  className="bg-gray-400 h-2 rounded-full"
+                                  style={{ width: `${room.percentage}%` }}
                                 />
                               </div>
-                              <span className="text-foreground font-medium text-sm">{percentage}%</span>
+                              <span className="text-white font-medium text-sm">{room.percentage}%</span>
                             </div>
                           </div>
                         ))}
@@ -417,32 +390,26 @@ const MetricsPage = () => {
                   </Card>
 
                   {/* Guest Satisfaction */}
-                  <Card>
+                  <Card className="bg-stone-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle>Guest Satisfaction</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-white">Guest Satisfaction</CardTitle>
+                      <CardDescription className="text-gray-400">
                         Satisfaction ratings by category
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(hotelMetricsData.guestMetrics.satisfaction).map(([category, rating], index) => (
-                          <div key={category} className="flex items-center justify-between">
-                            <span className="text-foreground capitalize">{category}</span>
+                        {hotelMetricsData.guestMetrics.satisfaction.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-white">{item.category}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-20 bg-muted rounded-full h-2">
+                              <div className="w-16 bg-gray-700 rounded-full h-2">
                                 <div 
-                                  className={`h-2 rounded-full ${
-                                    rating >= 4.5 ? 'bg-green-500' : 
-                                    rating >= 4.0 ? 'bg-yellow-500' : 'bg-red-500'
-                                  }`}
-                                  style={{ width: `${(rating / 5) * 100}%` }}
+                                  className="bg-gray-500 h-2 rounded-full"
+                                  style={{ width: `${(item.rating / 5) * 100}%` }}
                                 />
                               </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-foreground font-medium text-sm">{rating}</span>
-                                <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                              </div>
+                              <span className="text-white font-medium text-sm">{item.rating}/5</span>
                             </div>
                           </div>
                         ))}
@@ -452,26 +419,22 @@ const MetricsPage = () => {
                 </div>
 
                 {/* Amenities Usage */}
-                <Card>
+                <Card className="bg-stone-900 border-gray-700">
                   <CardHeader>
-                    <CardTitle>Amenities Usage</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Amenities Usage</CardTitle>
+                    <CardDescription className="text-gray-400">
                       Guest amenity utilization rates
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {Object.entries(hotelMetricsData.guestMetrics.preferences.amenities).map(([amenity, usage], index) => (
-                        <div key={amenity} className="text-center">
-                          <div className="flex justify-center mb-2">
-                            {amenity === 'wifi' && <Wifi className="h-8 w-8 text-blue-500" />}
-                            {amenity === 'parking' && <Car className="h-8 w-8 text-green-500" />}
-                            {amenity === 'restaurant' && <UtensilsCrossed className="h-8 w-8 text-orange-500" />}
-                            {amenity === 'spa' && <Star className="h-8 w-8 text-purple-500" />}
-                            {amenity === 'pool' && <Target className="h-8 w-8 text-cyan-500" />}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                      {hotelMetricsData.guestMetrics.amenitiesUsage.map((amenity, index) => (
+                        <div key={index} className="flex flex-col items-center text-center">
+                          <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mb-2">
+                            {amenity.icon}
                           </div>
-                          <p className="text-foreground text-sm capitalize mb-1">{amenity}</p>
-                          <p className="text-foreground font-bold">{usage}%</p>
+                          <span className="text-white text-sm font-medium">{amenity.name}</span>
+                          <span className="text-gray-400 text-xs">{amenity.usage}%</span>
                         </div>
                       ))}
                     </div>
@@ -481,58 +444,55 @@ const MetricsPage = () => {
 
               {/* Trends Tab */}
               <TabsContent value="trends" className="space-y-6">
-                <Card>
+                <Card className="bg-stone-900 border-gray-700">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Monthly Performance Trends
-                    </CardTitle>
-                    <CardDescription>
-                      Key metrics trends over the last 8 months
+                    <CardTitle className="text-white">Monthly Performance Trends</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Key metrics over the last 6 months
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-8 gap-4 h-32 items-end">
+                    <div className="grid grid-cols-6 gap-4 h-32 items-end">
                       {hotelMetricsData.trends.monthly.map((month, index) => (
                         <div key={index} className="flex flex-col items-center gap-2">
                           <div className="flex flex-col gap-1 w-full">
                             <div 
-                              className="bg-green-500 rounded-t"
+                              className="bg-gray-400 rounded-t"
                               style={{ height: `${(month.occupancy / 100) * 100}%` }}
                             />
                             <div 
-                              className="bg-blue-500"
+                              className="bg-gray-500"
                               style={{ height: `${(month.adr / 300) * 100}%` }}
                             />
                             <div 
-                              className="bg-purple-500"
-                              style={{ height: `${(month.revpar / 300) * 100}%` }}
+                              className="bg-gray-600"
+                              style={{ height: `${(month.revpar / 250) * 100}%` }}
                             />
                             <div 
-                              className="bg-orange-500 rounded-b"
-                              style={{ height: `${(month.bookings / 1500) * 100}%` }}
+                              className="bg-gray-700 rounded-b"
+                              style={{ height: `${(month.bookings / 1000) * 100}%` }}
                             />
                           </div>
-                          <span className="text-muted-foreground text-xs">{month.month}</span>
+                          <span className="text-gray-400 text-xs">{month.month}</span>
                         </div>
                       ))}
                     </div>
                     <div className="flex justify-center gap-6 mt-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded"></div>
-                        <span className="text-muted-foreground text-sm">Occupancy %</span>
+                        <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                        <span className="text-gray-400 text-sm">Occupancy %</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                        <span className="text-muted-foreground text-sm">ADR</span>
+                        <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                        <span className="text-gray-400 text-sm">ADR</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                        <span className="text-muted-foreground text-sm">RevPAR</span>
+                        <div className="w-3 h-3 bg-gray-600 rounded"></div>
+                        <span className="text-gray-400 text-sm">RevPAR</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                        <span className="text-muted-foreground text-sm">Bookings</span>
+                        <div className="w-3 h-3 bg-gray-700 rounded"></div>
+                        <span className="text-gray-400 text-sm">Bookings</span>
                       </div>
                     </div>
                   </CardContent>
