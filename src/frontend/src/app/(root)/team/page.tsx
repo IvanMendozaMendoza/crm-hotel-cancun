@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Search, Filter, ChevronDown, Plus, X, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -86,30 +86,70 @@ const sampleUsers = [
   },
 ];
 
+// Access level categories for filtering
+const accessCategories = {
+  "Admin": ["Admin"],
+  "Data Export": ["Data Export"],
+  "Data Import": ["Data Import"],
+  "Full Access": ["Admin", "Data Export", "Data Import"],
+  "Limited Access": ["Data Export", "Data Import"]
+};
+
+// Sorting options
+const sortOptions = [
+  { value: "name_asc", label: "Name (A-Z)" },
+  { value: "name_desc", label: "Name (Z-A)" },
+  { value: "email_asc", label: "Email (A-Z)" },
+  { value: "email_desc", label: "Email (Z-A)" },
+  { value: "lastActive_desc", label: "Last Active (Newest)" },
+  { value: "lastActive_asc", label: "Last Active (Oldest)" },
+  { value: "dateAdded_desc", label: "Date Added (Newest)" },
+  { value: "dateAdded_asc", label: "Date Added (Oldest)" }
+];
+
 const TeamPage = () => {
   const [users, setUsers] = useState(sampleUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showToast, setShowToast] = useState(false);
-  const [lastActiveSort, setLastActiveSort] = useState<'asc' | 'desc'>('desc');
+  const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
+  const [selectedSort, setSelectedSort] = useState("name_asc");
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Sort users by last active date
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    const dateA = new Date(a.lastActive);
-    const dateB = new Date(b.lastActive);
-    return lastActiveSort === 'desc' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesAccess = selectedAccessFilter === "all" || 
+                         user.access.some(access => 
+                           accessCategories[selectedAccessFilter as keyof typeof accessCategories]?.includes(access)
+                         );
+    
+    return matchesSearch && matchesAccess;
   });
 
-  const toggleLastActiveSort = () => {
-    setLastActiveSort(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
-
-
+  // Sort users based on selected sort option
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    switch (selectedSort) {
+      case "name_asc":
+        return a.name.localeCompare(b.name);
+      case "name_desc":
+        return b.name.localeCompare(a.name);
+      case "email_asc":
+        return a.email.localeCompare(b.email);
+      case "email_desc":
+        return b.email.localeCompare(a.email);
+      case "lastActive_desc":
+        return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+      case "lastActive_asc":
+        return new Date(a.lastActive).getTime() - new Date(b.lastActive).getTime();
+      case "dateAdded_desc":
+        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+      case "dateAdded_asc":
+        return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+      default:
+        return 0;
+    }
+  });
 
   const handleAddUser = () => {
     toast.success("Add user functionality will be implemented");
@@ -155,10 +195,45 @@ const TeamPage = () => {
             </div>
             
             {/* Filters */}
-            <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
+                <DropdownMenuLabel className="text-gray-300">Filter by Access Level</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuItem 
+                  className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedAccessFilter === "all" ? "bg-gray-800/50" : ""}`}
+                  onClick={() => setSelectedAccessFilter("all")}
+                >
+                  All Access Levels
+                </DropdownMenuItem>
+                {Object.keys(accessCategories).map(accessLevel => (
+                  <DropdownMenuItem 
+                    key={accessLevel}
+                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedAccessFilter === accessLevel ? "bg-gray-800/50" : ""}`}
+                    onClick={() => setSelectedAccessFilter(accessLevel)}
+                  >
+                    {accessLevel}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuLabel className="text-gray-300">Sort by</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-700" />
+                {sortOptions.map(sortOption => (
+                  <DropdownMenuItem 
+                    key={sortOption.value}
+                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedSort === sortOption.value ? "bg-gray-800/50" : ""}`}
+                    onClick={() => setSelectedSort(sortOption.value)}
+                  >
+                    {sortOption.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             {/* Add User */}
             <Button onClick={handleAddUser} className="bg-black text-white hover:bg-gray-900">
@@ -177,19 +252,7 @@ const TeamPage = () => {
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">
-                      <button
-                        onClick={toggleLastActiveSort}
-                        className="flex items-center gap-2 hover:bg-gray-700/50 px-2 py-1 rounded transition-colors duration-200"
-                      >
-                        Last active
-                        <div className={`transition-transform duration-200 ease-in-out ${
-                          lastActiveSort === 'desc' ? 'rotate-0' : 'rotate-180'
-                        }`}>
-                          <ChevronDown className="h-4 w-4" />
-                        </div>
-                      </button>
-                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Last active</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Date added</th>
                     <th className="px-6 py-4 text-left"></th>
                   </tr>
@@ -228,11 +291,11 @@ const TeamPage = () => {
                       <td className="px-6 py-4 text-gray-300">{user.dateAdded}</td>
                       <td className="px-6 py-4">
                         <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
                             <DropdownMenuItem 
                               className="text-gray-300 hover:bg-gray-700"
