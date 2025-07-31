@@ -338,10 +338,10 @@ const NotificationsPage = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Bell className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">No unread notifications</h3>
-                        <p className="text-gray-400">You're all caught up! Check back later for new updates.</p>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Bell className="h-8 w-8 text-gray-500 mb-3" />
+                        <h3 className="text-sm font-medium text-gray-400 mb-1">No unread notifications</h3>
+                        <p className="text-gray-500 text-xs">You're all caught up! Check back later for new updates.</p>
                       </div>
                     )}
                   </CardContent>
@@ -418,10 +418,10 @@ const NotificationsPage = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Bell className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">No notifications found</h3>
-                        <p className="text-gray-400">Try adjusting your search or filter criteria.</p>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Bell className="h-8 w-8 text-gray-500 mb-3" />
+                        <h3 className="text-sm font-medium text-gray-400 mb-1">No notifications found</h3>
+                        <p className="text-gray-500 text-xs">Try adjusting your search or filter criteria.</p>
                       </div>
                     )}
                   </CardContent>
@@ -484,10 +484,10 @@ const NotificationsPage = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <CheckCircle className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">No read notifications</h3>
-                        <p className="text-gray-400">Notifications you've read will appear here.</p>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <CheckCircle className="h-8 w-8 text-gray-500 mb-3" />
+                        <h3 className="text-sm font-medium text-gray-400 mb-1">No read notifications</h3>
+                        <p className="text-gray-500 text-xs">Notifications you've read will appear here.</p>
                       </div>
                     )}
                   </CardContent>
