@@ -5,6 +5,7 @@ import {
   IconUserCircle,
   IconSun,
   IconMoon,
+  IconSettings,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,28 +32,23 @@ import {
   DialogDescription,
   DialogFooter,
 } from "./ui/dialog";
-import { AccountDialog } from "./account-dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { Loader2 } from "lucide-react";
 import { User } from "next-auth";
+import Link from "next/link";
 
 export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
-  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
+
   return (
     <SidebarMenu>
-      <AccountDialog
-        user={user}
-        open={accountDialogOpen}
-        onOpenChange={setAccountDialogOpen}
-      />
       <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <DialogContent className="w-full max-w-xs p-6 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl">
           <DialogHeader>
@@ -131,9 +127,17 @@ export const NavUser = ({ user }: { user: User }) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setAccountDialogOpen(true)}>
-                <IconUserCircle />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="flex items-center gap-2">
+                  <IconUserCircle />
+                  Account Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings/security" className="flex items-center gap-2">
+                  <IconSettings />
+                  Security Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => toggleTheme()}

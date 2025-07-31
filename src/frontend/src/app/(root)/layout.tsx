@@ -213,12 +213,16 @@ let dataUser = {
       icon: "settings",
       items: [
         {
-          title: "Profile",
+          title: "General",
           url: "/settings",
         },
         {
-          title: "Preferences",
-          url: "/settings/preferences",
+          title: "Security",
+          url: "/settings/security",
+        },
+        {
+          title: "Notifications",
+          url: "/settings/notifications",
         },
       ],
     },
