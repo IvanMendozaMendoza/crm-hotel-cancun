@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   IconCirclePlusFilled,
-  IconMail,
+  IconBell,
   IconDashboard,
   IconUsers,
   IconSettings,
@@ -116,9 +116,10 @@ export function NavMain({
               size="icon"
               className="size- group-data-[collapsible=icon]:opacity-0"
               variant="outline"
+              onClick={() => redirect("/notifications")}
             >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
+              <IconBell />
+              <span className="sr-only">Notifications</span>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
