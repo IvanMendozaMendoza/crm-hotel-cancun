@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -383,7 +382,7 @@ const TeamPage = () => {
 
     // Create new user
     const newUserData = {
-      id: (users.length + 1).toString(),
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: newUser.name.trim(),
       email: newUser.email.trim().toLowerCase(),
       avatar: newUser.avatar,
@@ -440,8 +439,6 @@ const TeamPage = () => {
     const access = availableAccessLevels.find(a => a.id === accessId);
     return access ? access.label : accessId;
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
@@ -656,114 +653,142 @@ const TeamPage = () => {
           </div>
         )}
 
-        {/* Add User Dialog */}
-        <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
-                Add New User
-              </DialogTitle>
-              <DialogDescription className="text-gray-400">
-                Create a new user account with specific access permissions.
-              </DialogDescription>
-            </DialogHeader>
+        {/* Add User Modal */}
+        {isAddUserDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={handleCancelAddUser}
+            />
             
-            <div className="space-y-4">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-300">Full Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter full name"
-                  value={newUser.name}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                />
-              </div>
-
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-300">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter email address"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                />
-              </div>
-
-              {/* Avatar Selection */}
-              <div className="space-y-2">
-                <Label className="text-gray-300">Avatar</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {defaultAvatars.map((avatar, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => setNewUser(prev => ({ ...prev, avatar }))}
-                      className={`p-2 rounded-lg border-2 transition-colors ${
-                        newUser.avatar === avatar 
-                          ? 'border-blue-500 bg-blue-500/20' 
-                          : 'border-gray-600 hover:border-gray-500'
-                      }`}
-                    >
-                      <Avatar className="h-8 w-8 mx-auto">
-                        <AvatarImage src={avatar} alt={`Avatar ${index + 1}`} />
-                        <AvatarFallback className="bg-gray-700 text-white text-xs">
-                          {index + 1}
-                        </AvatarFallback>
-                      </Avatar>
-                    </button>
-                  ))}
+            {/* Modal */}
+            <div className="relative w-full max-w-lg mx-4 bg-gray-900 border border-gray-700 rounded-lg shadow-xl">
+              <form onSubmit={handleSubmitNewUser}>
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Create New User
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Fill in the details to create a new user account
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelAddUser}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
+              
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  {/* Name Field */}
+                  <div>
+                    <Label htmlFor="name" className="text-gray-300">Full Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="Enter full name"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                      className="mt-2 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      required
+                    />
+                  </div>
 
-              {/* Access Levels */}
-              <div className="space-y-2">
-                <Label className="text-gray-300">Access Levels</Label>
-                <div className="space-y-2">
-                  {availableAccessLevels.map((access) => (
-                    <div key={access.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={access.id}
-                        checked={newUser.access.includes(access.id)}
-                        onChange={() => toggleAccessLevel(access.id)}
-                        className="border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
-                      />
-                      <Label 
-                        htmlFor={access.id} 
-                        className="text-sm text-gray-300 cursor-pointer flex-1"
-                      >
-                        <div className="font-medium">{access.label}</div>
-                        <div className="text-xs text-gray-400">{access.description}</div>
-                      </Label>
+                  {/* Email Field */}
+                  <div>
+                    <Label htmlFor="email" className="text-gray-300">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter email address"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                      className="mt-2 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      required
+                    />
+                  </div>
+
+                  {/* Avatar Selection */}
+                  <div>
+                    <Label className="text-gray-300">Avatar</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {defaultAvatars.map((avatar, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => setNewUser(prev => ({ ...prev, avatar }))}
+                          className={`p-2 rounded-lg border-2 transition-colors ${
+                            newUser.avatar === avatar 
+                              ? 'border-blue-500 bg-blue-500/20' 
+                              : 'border-gray-600 hover:border-gray-500'
+                          }`}
+                        >
+                          <Avatar className="h-8 w-8 mx-auto">
+                            <AvatarImage src={avatar} alt={`Avatar ${index + 1}`} />
+                            <AvatarFallback className="bg-gray-700 text-white text-xs">
+                              {index + 1}
+                            </AvatarFallback>
+                          </Avatar>
+                        </button>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+                  </div>
 
-            <DialogFooter className="gap-2">
-              <Button
-                variant="outline"
-                onClick={handleCancelAddUser}
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmitNewUser}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Add User
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                  {/* Access Levels */}
+                  <div>
+                    <Label className="text-gray-300">Access Levels</Label>
+                    <div className="space-y-2 mt-2">
+                      {availableAccessLevels.map((access) => (
+                        <div key={access.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={access.id}
+                            checked={newUser.access.includes(access.id)}
+                            onChange={() => toggleAccessLevel(access.id)}
+                            className="border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
+                          />
+                          <Label 
+                            htmlFor={access.id} 
+                            className="text-sm text-gray-300 cursor-pointer flex-1"
+                          >
+                            <div className="font-medium">{access.label}</div>
+                            <div className="text-xs text-gray-400">{access.description}</div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-700">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelAddUser}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={!newUser.name.trim() || !newUser.email.trim() || newUser.access.length === 0}
+                    className="bg-white hover:bg-gray-100 text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add User
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

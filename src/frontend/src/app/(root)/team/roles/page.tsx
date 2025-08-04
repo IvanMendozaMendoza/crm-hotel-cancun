@@ -414,21 +414,19 @@ const TeamRolesPage = () => {
     [roleGroups]
   );
 
-  // Filter role groups based on search and category
-  const filteredRoleGroups = roleGroups.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || 
-                           group.permissions.some(perm => 
-                             Object.values(permissionCategories[selectedCategory as keyof typeof permissionCategories] || []).includes(perm)
-                           );
-    return matchesSearch && matchesCategory;
-  });
-
   // Create table instance
   const table = useReactTable({
-    data: filteredRoleGroups,
+    data: roleGroups,
     columns,
+    filterFns: {
+      permissions: (row, id, filterValue) => {
+        const permissions = row.getValue(id) as string[]
+        const permissionCategory =
+          permissionCategories[filterValue as keyof typeof permissionCategories] ||
+          []
+        return permissionCategory.some((p: any) => permissions.includes(p))
+      },
+    },
     state: {
       sorting,
     },
@@ -437,58 +435,72 @@ const TeamRolesPage = () => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getRowId: (row) => row.id,
   });
+
+  // Filter role groups based on search and category
+  React.useEffect(() => {
+    table.setGlobalFilter(searchTerm)
+  }, [searchTerm, table])
+
+  React.useEffect(() => {
+    if (selectedCategory === "all") {
+      table.resetColumnFilters()
+      return
+    }
+    table.setColumnFilters([
+      {
+        id: "permissions",
+        value: selectedCategory,
+      },
+    ])
+  }, [selectedCategory, table])
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
-      setRoleGroups((roleGroups) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(roleGroups, oldIndex, newIndex)
+      setRoleGroups((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        return arrayMove(items, oldIndex, newIndex)
       })
     }
   }
 
   const handleCreateRoleGroup = (data: any) => {
-    console.log("handleCreateRoleGroup called with:", data);
-    if (!data.name.trim()) {
+    if (!data || !data.name || !data.name.trim()) {
       toast.error("Role group name is required");
-      return;
-    }
-    if (data.permissions.length === 0) {
-      toast.error("At least one permission is required");
       return;
     }
 
     const newRoleGroup = {
-      id: Date.now().toString(),
-      ...data,
+      id: `role_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: data.name.trim(),
+      description: data.description || "",
+      permissions: data.permissions || [],
       userCount: 0,
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    console.log("Creating new role group:", newRoleGroup);
     setRoleGroups(prev => [...prev, newRoleGroup]);
     setIsCreateDialogOpen(false);
     toast.success("Role group created successfully");
   };
 
   const handleEditRoleGroup = (data: any) => {
-    console.log("handleEditRoleGroup called with:", data);
-    if (!data.name.trim()) {
+    if (!editingRoleGroup || !data || !data.name || !data.name.trim()) {
       toast.error("Role group name is required");
       return;
     }
-    if (data.permissions.length === 0) {
-      toast.error("At least one permission is required");
-      return;
-    }
 
-    console.log("Updating role group:", editingRoleGroup?.id, "with data:", data);
     setRoleGroups(prev => prev.map(group => 
       group.id === editingRoleGroup.id 
-        ? { ...group, ...data }
+        ? { 
+            ...group, 
+            name: data.name.trim(),
+            description: data.description || "",
+            permissions: data.permissions || group.permissions
+          }
         : group
     ));
     
@@ -570,12 +582,6 @@ const TeamRolesPage = () => {
               <Plus className="h-4 w-4 mr-2" />
               Add role group
             </Button>
-            
-            <CreateRoleGroupDialog 
-              open={isCreateDialogOpen} 
-              onOpenChange={setIsCreateDialogOpen}
-              onSubmit={handleCreateRoleGroup}
-            />
           </div>
         </div>
 
@@ -627,6 +633,13 @@ const TeamRolesPage = () => {
           </DndContext>
         </div>
 
+        {/* Create Dialog */}
+        <CreateRoleGroupDialog 
+          open={isCreateDialogOpen} 
+          onOpenChange={setIsCreateDialogOpen}
+          onSubmit={handleCreateRoleGroup}
+        />
+
         {/* Edit Dialog */}
         <EditRoleGroupDialog 
           open={isEditDialogOpen} 
@@ -636,7 +649,7 @@ const TeamRolesPage = () => {
         />
 
         {/* Pagination */}
-        {filteredRoleGroups.length > 0 && (
+        {table.getRowModel().rows.length > 0 && (
           <div className="flex items-center justify-between px-4 mt-6">
             <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
               {table.getFilteredRowModel().rows.length} role group(s) total.
