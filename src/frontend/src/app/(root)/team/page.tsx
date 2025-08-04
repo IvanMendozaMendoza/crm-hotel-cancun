@@ -6,12 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Search, Filter, ChevronDown, Plus, X, Check, UserPlus } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MoreVertical, Search, Filter, ChevronDown, Plus, X, Check, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { toast } from "sonner";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
 // Hardcoded sample data
 const sampleUsers = [
@@ -172,17 +182,116 @@ const defaultAvatars = [
   "/avatars/default-6.jpg"
 ];
 
+// Helper functions
+const getAccessBadgeColor = (access: string) => {
+  switch (access) {
+    case "Admin":
+      return "bg-green-500/20 text-green-400 border-green-500/30";
+    case "Data Export":
+      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+    case "Data Import":
+      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    default:
+      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+  }
+};
+
+const handleUpdateUser = (userName: string) => {
+  toast.success(`"${userName}" details updated`);
+};
+
+// Define columns for the table
+const columns: ColumnDef<typeof sampleUsers[0]>[] = [
+  {
+    accessorKey: "name",
+    header: "User name",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="bg-gray-700 text-white">
+              {user.name[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium text-white">{user.name}</div>
+            <div className="text-sm text-gray-400">{user.email}</div>
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "access",
+    header: "Access",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <div className="flex flex-wrap gap-2">
+          {user.access.map((access) => (
+            <Badge
+              key={access}
+              variant="outline"
+              className={`${getAccessBadgeColor(access)} border`}
+            >
+              {access}
+            </Badge>
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "lastActive",
+    header: "Last active",
+    cell: ({ row }) => <span className="text-gray-300">{row.original.lastActive}</span>,
+  },
+  {
+    accessorKey: "dateAdded",
+    header: "Date added",
+    cell: ({ row }) => <span className="text-gray-300">{row.original.dateAdded}</span>,
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+            <DropdownMenuItem 
+              className="text-gray-300 hover:bg-gray-700"
+              onClick={() => handleUpdateUser(user.name)}
+            >
+              Edit user
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+              View profile
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+              Delete user
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
+
 const TeamPage = () => {
   const [users, setUsers] = useState(sampleUsers);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showToast, setShowToast] = useState(false);
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
   const [selectedSort, setSelectedSort] = useState("name_asc");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  
-  // Pagination settings
-  const itemsPerPage = 10;
+  const [sorting, setSorting] = useState<SortingState>([]);
   
   // Add user form state
   const [newUser, setNewUser] = useState({
@@ -192,6 +301,7 @@ const TeamPage = () => {
     access: [] as string[]
   });
 
+  // Filter users based on search and access filter
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -228,16 +338,19 @@ const TeamPage = () => {
     }
   });
 
-  // Pagination calculations
-  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedUsers = sortedUsers.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedAccessFilter, selectedSort]);
+  // Create table instance
+  const table = useReactTable({
+    data: sortedUsers,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
   const handleAddUser = () => {
     setIsAddUserDialogOpen(true);
@@ -328,40 +441,7 @@ const TeamPage = () => {
     return access ? access.label : accessId;
   };
 
-  const handleUpdateUser = (userName: string) => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 5000);
-  };
 
-  const getAccessBadgeColor = (access: string) => {
-    switch (access) {
-      case "Admin":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "Data Export":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case "Data Import":
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
-
-  // Pagination handlers
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
@@ -433,203 +513,123 @@ const TeamPage = () => {
           </div>
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden lg:block">
-          <div className="bg-stone-900 rounded-xl border border-gray-700 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-zinc-800">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">User name</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Access</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Last active</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">Date added</th>
-                    <th className="px-6 py-4 text-left"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {paginatedUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-800/30 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback className="bg-gray-700 text-white">
-                              {user.name[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium text-white">{user.name}</div>
-                            <div className="text-sm text-gray-400">{user.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-2">
-                          {user.access.map((access) => (
-                            <Badge
-                              key={access}
-                              variant="outline"
-                              className={`${getAccessBadgeColor(access)} border`}
-                            >
-                              {access}
-                            </Badge>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-300">{user.lastActive}</td>
-                      <td className="px-6 py-4 text-gray-300">{user.dateAdded}</td>
-                      <td className="px-6 py-4">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                            <DropdownMenuItem 
-                              className="text-gray-300 hover:bg-gray-700"
-                              onClick={() => handleUpdateUser(user.name)}
-                            >
-                              Edit user
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-                              View profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
-                              Delete user
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
+        {/* Table */}
+        <div className="overflow-hidden rounded-lg border border-gray-700">
+          <Table>
+            <TableHeader className="bg-stone-900">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="border-gray-700">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="text-gray-300 font-medium">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile/Tablet Card View */}
-        <div className="lg:hidden space-y-4">
-          {paginatedUsers.map((user) => (
-            <div key={user.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar className="h-12 w-12 flex-shrink-0">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="bg-gray-700 text-white">
-                      {user.name[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate">{user.name}</div>
-                    <div className="text-sm text-gray-400 truncate">{user.email}</div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {user.access.map((access) => (
-                        <Badge
-                          key={access}
-                          variant="outline"
-                          className={`${getAccessBadgeColor(access)} border text-xs`}
-                        >
-                          {access}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                    <DropdownMenuItem 
-                      className="text-gray-300 hover:bg-gray-700"
-                      onClick={() => handleUpdateUser(user.name)}
-                    >
-                      Edit user
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-                      View profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
-                      Delete user
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
-                <div className="text-sm text-gray-400">
-                  <div>Last active: {user.lastActive}</div>
-                  <div>Added: {user.dateAdded}</div>
-                </div>
-              </div>
-            </div>
-          ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/30">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         {/* Pagination */}
         {sortedUsers.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-            <div className="text-sm text-gray-400 text-center sm:text-left">
-              Showing {startIndex + 1} to {Math.min(endIndex, sortedUsers.length)} of {sortedUsers.length} results
+          <div className="flex items-center justify-between px-4 mt-6">
+            <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+              {table.getFilteredRowModel().rows.length} user(s) total.
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToPreviousPage}
-                disabled={currentPage === 1}
-                className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronDown className="h-4 w-4 rotate-90 mr-2" />
-                Previous
-              </Button>
-              
-              {/* Page Numbers */}
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + i;
-                  } else {
-                    pageNumber = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNumber}
-                      variant={currentPage === pageNumber ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => goToPage(pageNumber)}
-                      className={`${
-                        currentPage === pageNumber 
-                          ? "bg-blue-600 hover:bg-blue-700 text-white" 
-                          : "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
-                      } min-w-[40px]`}
-                    >
-                      {pageNumber}
-                    </Button>
-                  );
-                })}
+            <div className="flex w-full items-center gap-8 lg:w-fit">
+              <div className="hidden items-center gap-2 lg:flex">
+                <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
+                  Rows per page
+                </Label>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value))
+                  }}
+                >
+                  <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
+                    <SelectValue
+                      placeholder={table.getState().pagination.pageSize}
+                    />
+                  </SelectTrigger>
+                  <SelectContent side="top" className="bg-stone-900 border-gray-700">
+                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                      <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
+                        {pageSize}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToNextPage}
-                disabled={currentPage >= totalPages}
-                className="bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-                <ChevronDown className="h-4 w-4 -rotate-90 ml-2" />
-              </Button>
+              <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {table.getPageCount()}
+              </div>
+              <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                <Button
+                  variant="outline"
+                  className="hidden h-8 w-8 p-0 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hidden size-8 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -727,11 +727,12 @@ const TeamPage = () => {
                 <div className="space-y-2">
                   {availableAccessLevels.map((access) => (
                     <div key={access.id} className="flex items-center space-x-2">
-                      <Checkbox
+                      <input
+                        type="checkbox"
                         id={access.id}
                         checked={newUser.access.includes(access.id)}
-                        onCheckedChange={() => toggleAccessLevel(access.id)}
-                        className="border-gray-600 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                        onChange={() => toggleAccessLevel(access.id)}
+                        className="border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
                       />
                       <Label 
                         htmlFor={access.id} 
@@ -763,32 +764,6 @@ const TeamPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Toast Notification */}
-        {showToast && (
-          <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg max-w-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-medium">"Amélie Laurent" details updated</p>
-                <div className="flex gap-4 mt-2">
-                  <button className="text-blue-400 text-sm hover:text-blue-300">Undo</button>
-                  <button className="text-blue-400 text-sm hover:text-blue-300">View profile</button>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowToast(false)}
-                className="flex-shrink-0 text-gray-400 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
