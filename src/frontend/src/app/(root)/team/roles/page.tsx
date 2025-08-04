@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { CreateRoleGroupDialog } from "@/components/create-role-group-dialog";
-import { EditRoleGroupDialog } from "@/components/edit-role-group-dialog";
 import {
   ColumnDef,
   flexRender,
@@ -375,16 +374,13 @@ const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-            <DropdownMenuItem 
-              className="text-gray-300 hover:bg-gray-700"
-              onClick={() => handleUpdateRoleGroup(roleGroup.name)}
-            >
-              Edit role
-            </DropdownMenuItem>
             <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
               View details
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+            <DropdownMenuItem 
+              className="text-red-400 hover:bg-gray-700"
+              onClick={() => handleDeleteRoleGroup(roleGroup.id)}
+            >
               Delete role
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -395,12 +391,10 @@ const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
 ];
 
 const TeamRolesPage = () => {
+  const router = useRouter();
   const [roleGroups, setRoleGroups] = useState(initialRoleGroups);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const sortableId = React.useId();
   const sensors = useSensors(
@@ -467,46 +461,8 @@ const TeamRolesPage = () => {
     }
   }
 
-  const handleCreateRoleGroup = (data: any) => {
-    if (!data || !data.name || !data.name.trim()) {
-      toast.error("Role group name is required");
-      return;
-    }
-
-    const newRoleGroup = {
-      id: `role_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: data.name.trim(),
-      description: data.description || "",
-      permissions: data.permissions || [],
-      userCount: 0,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-
-    setRoleGroups(prev => [...prev, newRoleGroup]);
-    setIsCreateDialogOpen(false);
-    toast.success("Role group created successfully");
-  };
-
-  const handleEditRoleGroup = (data: any) => {
-    if (!editingRoleGroup || !data || !data.name || !data.name.trim()) {
-      toast.error("Role group name is required");
-      return;
-    }
-
-    setRoleGroups(prev => prev.map(group => 
-      group.id === editingRoleGroup.id 
-        ? { 
-            ...group, 
-            name: data.name.trim(),
-            description: data.description || "",
-            permissions: data.permissions || group.permissions
-          }
-        : group
-    ));
-    
-    setIsEditDialogOpen(false);
-    setEditingRoleGroup(null);
-    toast.success("Role group updated successfully");
+  const handleCreateRoleGroup = () => {
+    router.push('/team/roles/create');
   };
 
   const handleDeleteRoleGroup = (id: string) => {
@@ -518,11 +474,6 @@ const TeamRolesPage = () => {
     
     setRoleGroups(prev => prev.filter(group => group.id !== id));
     toast.success("Role group deleted successfully");
-  };
-
-  const openEditDialog = (roleGroup: any) => {
-    setEditingRoleGroup(roleGroup);
-    setIsEditDialogOpen(true);
   };
 
 
@@ -578,7 +529,7 @@ const TeamRolesPage = () => {
             </DropdownMenu>
             
             {/* Add Role Group */}
-            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-black text-white hover:bg-gray-900">
+            <Button onClick={handleCreateRoleGroup} className="bg-black text-white hover:bg-gray-900">
               <Plus className="h-4 w-4 mr-2" />
               Add role group
             </Button>
@@ -633,20 +584,7 @@ const TeamRolesPage = () => {
           </DndContext>
         </div>
 
-        {/* Create Dialog */}
-        <CreateRoleGroupDialog 
-          open={isCreateDialogOpen} 
-          onOpenChange={setIsCreateDialogOpen}
-          onSubmit={handleCreateRoleGroup}
-        />
 
-        {/* Edit Dialog */}
-        <EditRoleGroupDialog 
-          open={isEditDialogOpen} 
-          onOpenChange={setIsEditDialogOpen}
-          roleGroup={editingRoleGroup}
-          onSubmit={handleEditRoleGroup}
-        />
 
         {/* Pagination */}
         {table.getRowModel().rows.length > 0 && (

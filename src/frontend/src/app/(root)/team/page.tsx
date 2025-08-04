@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreVertical, Search, Filter, ChevronDown, Plus, X, Check, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { MoreVertical, Search, Filter, ChevronDown, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   ColumnDef,
@@ -152,13 +153,6 @@ const accessCategories = {
   "Limited Access": ["Data Export", "Data Import"]
 };
 
-// Available access levels for new users
-const availableAccessLevels = [
-  { id: "admin", label: "Admin", description: "Full system access" },
-  { id: "data_export", label: "Data Export", description: "Export data permissions" },
-  { id: "data_import", label: "Data Import", description: "Import data permissions" }
-];
-
 // Sorting options
 const sortOptions = [
   { value: "name_asc", label: "Name (A-Z)" },
@@ -169,16 +163,6 @@ const sortOptions = [
   { value: "lastActive_asc", label: "Last Active (Oldest)" },
   { value: "dateAdded_desc", label: "Date Added (Newest)" },
   { value: "dateAdded_asc", label: "Date Added (Oldest)" }
-];
-
-// Default avatar options
-const defaultAvatars = [
-  "/avatars/default-1.jpg",
-  "/avatars/default-2.jpg",
-  "/avatars/default-3.jpg",
-  "/avatars/default-4.jpg",
-  "/avatars/default-5.jpg",
-  "/avatars/default-6.jpg"
 ];
 
 // Helper functions
@@ -285,20 +269,12 @@ const columns: ColumnDef<typeof sampleUsers[0]>[] = [
 ];
 
 const TeamPage = () => {
+  const router = useRouter();
   const [users, setUsers] = useState(sampleUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
   const [selectedSort, setSelectedSort] = useState("name_asc");
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
-  
-  // Add user form state
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    avatar: defaultAvatars[0],
-    access: [] as string[]
-  });
 
   // Filter users based on search and access filter
   const filteredUsers = users.filter(user => {
@@ -352,92 +328,7 @@ const TeamPage = () => {
   });
 
   const handleAddUser = () => {
-    setIsAddUserDialogOpen(true);
-  };
-
-  const handleSubmitNewUser = () => {
-    // Validation
-    if (!newUser.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!newUser.email.trim()) {
-      toast.error("Email is required");
-      return;
-    }
-    if (!newUser.email.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-    if (newUser.access.length === 0) {
-      toast.error("Please select at least one access level");
-      return;
-    }
-
-    // Check if email already exists
-    if (users.some(user => user.email.toLowerCase() === newUser.email.toLowerCase())) {
-      toast.error("A user with this email already exists");
-      return;
-    }
-
-    // Create new user
-    const newUserData = {
-      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: newUser.name.trim(),
-      email: newUser.email.trim().toLowerCase(),
-      avatar: newUser.avatar,
-      access: newUser.access,
-      lastActive: new Date().toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-      }),
-      dateAdded: new Date().toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
-      })
-    };
-
-    // Add to users array
-    setUsers(prev => [...prev, newUserData]);
-    
-    // Reset form
-    setNewUser({
-      name: "",
-      email: "",
-      avatar: defaultAvatars[0],
-      access: []
-    });
-    
-    // Close dialog and show success message
-    setIsAddUserDialogOpen(false);
-    toast.success(`User "${newUserData.name}" added successfully`);
-  };
-
-  const handleCancelAddUser = () => {
-    // Reset form
-    setNewUser({
-      name: "",
-      email: "",
-      avatar: defaultAvatars[0],
-      access: []
-    });
-    setIsAddUserDialogOpen(false);
-  };
-
-  const toggleAccessLevel = (accessId: string) => {
-    setNewUser(prev => ({
-      ...prev,
-      access: prev.access.includes(accessId)
-        ? prev.access.filter(id => id !== accessId)
-        : [...prev.access, accessId]
-    }));
-  };
-
-  const getAccessLabel = (accessId: string) => {
-    const access = availableAccessLevels.find(a => a.id === accessId);
-    return access ? access.label : accessId;
+    router.push('/team/create');
   };
 
   return (
@@ -653,142 +544,7 @@ const TeamPage = () => {
           </div>
         )}
 
-        {/* Add User Modal */}
-        {isAddUserDialogOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={handleCancelAddUser}
-            />
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-lg mx-4 bg-gray-900 border border-gray-700 rounded-lg shadow-xl">
-              <form onSubmit={handleSubmitNewUser}>
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-700">
-                  <div>
-                    <h2 className="text-xl font-semibold text-white">
-                      Create New User
-                    </h2>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Fill in the details to create a new user account
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCancelAddUser}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              
-                {/* Content */}
-                <div className="p-6 space-y-4">
-                  {/* Name Field */}
-                  <div>
-                    <Label htmlFor="name" className="text-gray-300">Full Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Enter full name"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
-                      className="mt-2 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                      required
-                    />
-                  </div>
 
-                  {/* Email Field */}
-                  <div>
-                    <Label htmlFor="email" className="text-gray-300">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter email address"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-                      className="mt-2 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                      required
-                    />
-                  </div>
-
-                  {/* Avatar Selection */}
-                  <div>
-                    <Label className="text-gray-300">Avatar</Label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                      {defaultAvatars.map((avatar, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => setNewUser(prev => ({ ...prev, avatar }))}
-                          className={`p-2 rounded-lg border-2 transition-colors ${
-                            newUser.avatar === avatar 
-                              ? 'border-blue-500 bg-blue-500/20' 
-                              : 'border-gray-600 hover:border-gray-500'
-                          }`}
-                        >
-                          <Avatar className="h-8 w-8 mx-auto">
-                            <AvatarImage src={avatar} alt={`Avatar ${index + 1}`} />
-                            <AvatarFallback className="bg-gray-700 text-white text-xs">
-                              {index + 1}
-                            </AvatarFallback>
-                          </Avatar>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Access Levels */}
-                  <div>
-                    <Label className="text-gray-300">Access Levels</Label>
-                    <div className="space-y-2 mt-2">
-                      {availableAccessLevels.map((access) => (
-                        <div key={access.id} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={access.id}
-                            checked={newUser.access.includes(access.id)}
-                            onChange={() => toggleAccessLevel(access.id)}
-                            className="border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
-                          />
-                          <Label 
-                            htmlFor={access.id} 
-                            className="text-sm text-gray-300 cursor-pointer flex-1"
-                          >
-                            <div className="font-medium">{access.label}</div>
-                            <div className="text-xs text-gray-400">{access.description}</div>
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-700">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancelAddUser}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={!newUser.name.trim() || !newUser.email.trim() || newUser.access.length === 0}
-                    className="bg-white hover:bg-gray-100 text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add User
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
