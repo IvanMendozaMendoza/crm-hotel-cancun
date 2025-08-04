@@ -27,13 +27,13 @@ import {
   BarChart3, 
   Lock, 
   Palette,
-  Sparkles,
   CheckCircle2,
   XCircle,
   Search,
   Filter,
   X,
-  ChevronDown
+  ChevronDown,
+  Settings2
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -240,7 +240,7 @@ export const CreateRoleGroupDialog = ({
           <DialogHeader className="pb-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-blue-500/20">
-                <Shield className="h-6 w-6 text-blue-400" />
+                <Shield className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
@@ -260,11 +260,11 @@ export const CreateRoleGroupDialog = ({
           
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-zinc-800">
-              <TabsTrigger value="details" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
-                <Sparkles className="h-4 w-4 mr-2" />
+              <TabsTrigger value="details" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-white">
+                <Settings2 className="h-4 w-4 mr-2" />
                 Role Details
               </TabsTrigger>
-              <TabsTrigger value="permissions" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
+              <TabsTrigger value="permissions" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-white">
                 <Lock className="h-4 w-4 mr-2" />
                 Permissions
               </TabsTrigger>
@@ -276,7 +276,7 @@ export const CreateRoleGroupDialog = ({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <Label htmlFor="name" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-400" />
+                      <Users className="h-4 w-4 text-white" />
                       Role Name
                     </Label>
                     <Input 
@@ -291,7 +291,7 @@ export const CreateRoleGroupDialog = ({
                   
                   <div className="space-y-4">
                     <Label htmlFor="description" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-400" />
+                      <FileText className="h-4 w-4 text-white" />
                       Description
                     </Label>
                     <Textarea
@@ -310,7 +310,7 @@ export const CreateRoleGroupDialog = ({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <Label className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Palette className="h-4 w-4 text-blue-400" />
+                      <Palette className="h-4 w-4 text-white" />
                       Role Color
                     </Label>
                     
@@ -452,7 +452,7 @@ export const CreateRoleGroupDialog = ({
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-400" />
+                    <Lock className="h-5 w-5 text-white" />
                     Permission Categories
                   </h3>
                   <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
@@ -497,7 +497,7 @@ export const CreateRoleGroupDialog = ({
                         <div key={category} className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden shadow-lg">
                           <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-zinc-800/50 to-zinc-700/50 border-b border-zinc-700">
                             <div className="p-2 bg-blue-500/10 rounded-lg">
-                              <Icon className="h-5 w-5 text-blue-400" />
+                              <Icon className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-3">
