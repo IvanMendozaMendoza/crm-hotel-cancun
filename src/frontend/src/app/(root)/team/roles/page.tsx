@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Users, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Plus, Edit, Trash2, Users, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -364,136 +364,7 @@ function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
 
 
 
-// Define columns for the table
-const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
-  {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  },
-  {
-    accessorKey: "name",
-    header: "Role name",
-    cell: ({ row }) => {
-      const roleGroup = row.original;
-      return (
-        <div>
-          <div className="font-medium text-white">{roleGroup.name}</div>
-          <div className="text-sm text-gray-400">{roleGroup.description}</div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "permissions",
-    header: "Permissions",
-    cell: ({ row }) => {
-      const roleGroup = row.original;
-      const [open, setOpen] = useState(false);
-      const [searchValue, setSearchValue] = useState("");
-      
-      // Get all available permissions
-      const allPermissions = Object.values(permissionCategories).flat();
-      
-      // Filter permissions based on search
-      const filteredPermissions = allPermissions.filter(permission =>
-        getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
-      );
-      
-      return (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full justify-between bg-stone-900 border-gray-700 text-white hover:bg-stone-800"
-            >
-              <span className="truncate">
-                {roleGroup.permissions.length} permissions
-              </span>
-              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
-            <Command>
-              <CommandInput 
-                placeholder="Search permissions..." 
-                value={searchValue}
-                onValueChange={setSearchValue}
-                className="border-gray-700"
-              />
-              <CommandList className="max-h-[300px]">
-                <CommandEmpty>No permissions found.</CommandEmpty>
-                <CommandGroup>
-                  {filteredPermissions.map((permission) => (
-                    <CommandItem
-                      key={permission}
-                      className={`flex items-center gap-2 ${
-                        roleGroup.permissions.includes(permission) 
-                          ? "bg-blue-500/20 text-blue-400" 
-                          : "text-gray-300"
-                      }`}
-                    >
-                      <div className={`w-2 h-2 rounded-full ${
-                        roleGroup.permissions.includes(permission) 
-                          ? "bg-blue-400" 
-                          : "bg-gray-500"
-                      }`} />
-                      {getPermissionLabel(permission)}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      );
-    },
-  },
-  {
-    accessorKey: "userCount",
-    header: "Users",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Users className="h-4 w-4 text-gray-400" />
-        <span className="text-gray-300">{row.original.userCount}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
-    cell: ({ row }) => <span className="text-gray-300">{row.original.createdAt}</span>,
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => {
-      const roleGroup = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-              View details
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="text-red-400 hover:bg-gray-700"
-              onClick={() => handleDeleteRoleGroup(roleGroup.id)}
-            >
-              Delete role
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+
 
 const TeamRolesPage = () => {
   const router = useRouter();
@@ -512,6 +383,152 @@ const TeamRolesPage = () => {
     () => roleGroups?.map(({ id }) => id) || [],
     [roleGroups]
   );
+
+  const handleCreateRoleGroup = () => {
+    router.push('/team/roles/create');
+  };
+
+  const handleDeleteRoleGroup = (id: string) => {
+    const group = roleGroups.find(g => g.id === id);
+    if (group && group.userCount > 0) {
+      toast.error("Cannot delete role group with assigned users");
+      return;
+    }
+    
+    setRoleGroups(prev => prev.filter(group => group.id !== id));
+    toast.success("Role group deleted successfully");
+  };
+
+  // Define columns for the table
+  const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
+    {
+      id: "drag",
+      header: () => null,
+      cell: ({ row }) => <DragHandle id={row.original.id} />,
+    },
+    {
+      accessorKey: "name",
+      header: "Role name",
+      cell: ({ row }) => {
+        const roleGroup = row.original;
+        return (
+          <div>
+            <div className="font-medium text-white">{roleGroup.name}</div>
+            <div className="text-sm text-gray-400">{roleGroup.description}</div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "permissions",
+      header: "Permissions",
+      cell: ({ row }) => {
+        const roleGroup = row.original;
+        const [open, setOpen] = useState(false);
+        const [searchValue, setSearchValue] = useState("");
+        
+        // Get all available permissions
+        const allPermissions = Object.values(permissionCategories).flat();
+        
+        // Filter permissions based on search
+        const filteredPermissions = allPermissions.filter(permission =>
+          getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
+        );
+        
+        return (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between bg-stone-900 border-gray-700 text-white hover:bg-stone-800"
+              >
+                <span className="truncate">
+                  {roleGroup.permissions.length} permissions
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+              <Command>
+                <CommandInput 
+                  placeholder="Search permissions..." 
+                  value={searchValue}
+                  onValueChange={setSearchValue}
+                  className="border-gray-700"
+                />
+                <CommandList className="max-h-[300px]">
+                  <CommandEmpty>No permissions found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredPermissions.map((permission) => (
+                      <CommandItem
+                        key={permission}
+                        className={`flex items-center gap-2 ${
+                          roleGroup.permissions.includes(permission) 
+                            ? "bg-blue-500/20 text-blue-400" 
+                            : "text-gray-300"
+                        }`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${
+                          roleGroup.permissions.includes(permission) 
+                            ? "bg-blue-400" 
+                            : "bg-gray-500"
+                        }`} />
+                        {getPermissionLabel(permission)}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        );
+      },
+    },
+    {
+      accessorKey: "userCount",
+      header: "Users",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-gray-400" />
+          <span className="text-gray-300">{row.original.userCount}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => <span className="text-gray-300">{row.original.createdAt}</span>,
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const roleGroup = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+              <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-red-400 hover:bg-gray-700"
+                onClick={() => handleDeleteRoleGroup(roleGroup.id)}
+              >
+                Delete role
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
   // Create table instance
   const table = useReactTable({
@@ -565,23 +582,6 @@ const TeamRolesPage = () => {
       })
     }
   }
-
-  const handleCreateRoleGroup = () => {
-    router.push('/team/roles/create');
-  };
-
-  const handleDeleteRoleGroup = (id: string) => {
-    const group = roleGroups.find(g => g.id === id);
-    if (group && group.userCount > 0) {
-      toast.error("Cannot delete role group with assigned users");
-      return;
-    }
-    
-    setRoleGroups(prev => prev.filter(group => group.id !== id));
-    toast.success("Role group deleted successfully");
-  };
-
-
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
@@ -729,16 +729,16 @@ const TeamRolesPage = () => {
               <div className="ml-auto flex items-center gap-2 lg:ml-0">
                 <Button
                   variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="hidden h-8 w-8 p-0 lg:flex"
                   onClick={() => table.setPageIndex(0)}
                   disabled={!table.getCanPreviousPage()}
                 >
                   <span className="sr-only">Go to first page</span>
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
-                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="size-8"
                   size="icon"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
@@ -748,7 +748,7 @@ const TeamRolesPage = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="size-8"
                   size="icon"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
@@ -758,13 +758,13 @@ const TeamRolesPage = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="hidden size-8 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="hidden size-8 lg:flex"
                   size="icon"
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                   disabled={!table.getCanNextPage()}
                 >
                   <span className="sr-only">Go to last page</span>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
