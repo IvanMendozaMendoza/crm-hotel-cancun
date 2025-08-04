@@ -258,75 +258,7 @@ function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
   )
 }
 
-function DraggableCard({ roleGroup }: { roleGroup: typeof initialRoleGroups[0] }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: roleGroup.id,
-  })
 
-  return (
-    <div
-      ref={setNodeRef}
-      data-dragging={isDragging}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 bg-stone-900 rounded-xl border border-gray-800 p-4"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground size-7 hover:bg-transparent flex-shrink-0"
-          >
-            <GripVertical className="text-muted-foreground size-3" />
-            <span className="sr-only">Drag to reorder</span>
-          </Button>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-white truncate">{roleGroup.name}</div>
-            <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Users className="h-4 w-4" />
-                <span>{roleGroup.userCount} users</span>
-              </div>
-              <div className="text-sm text-gray-400">
-                {roleGroup.permissions.length} permissions
-              </div>
-            </div>
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-            <DropdownMenuItem 
-              className="text-gray-300 hover:bg-gray-700"
-              onClick={() => handleUpdateRoleGroup(roleGroup.name)}
-            >
-              Edit role
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-              View details
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
-              Delete role
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
-        <div className="text-sm text-gray-400">
-          Created: {roleGroup.createdAt}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // Define columns for the table
 const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
@@ -647,88 +579,51 @@ const TeamRolesPage = () => {
           </div>
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden lg:block">
-          <div className="overflow-hidden rounded-lg border border-gray-700">
-            <DndContext
-              collisionDetection={closestCenter}
-              modifiers={[restrictToVerticalAxis]}
-              onDragEnd={handleDragEnd}
-              sensors={sensors}
-              id={sortableId}
-            >
-              <Table>
-                <TableHeader className="bg-stone-900">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="border-gray-700">
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} className="text-gray-300 font-medium">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    <SortableContext
-                      items={dataIds}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {table.getRowModel().rows.map((row) => (
-                        <DraggableRow key={row.id} row={row} />
-                      ))}
-                    </SortableContext>
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
-                        No role groups found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </DndContext>
-          </div>
-        </div>
-
-                {/* Mobile/Tablet Card View */}
-        <div className="lg:hidden space-y-4">
+                {/* Table View */}
+        <div className="overflow-hidden rounded-lg border border-gray-700">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}
-            id={`${sortableId}-mobile`}
+            id={sortableId}
           >
-            <SortableContext
-              items={dataIds}
-              strategy={verticalListSortingStrategy}
-            >
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => {
-                  const roleGroup = row.original;
-                  return (
-                    <DraggableCard key={roleGroup.id} roleGroup={roleGroup} />
-                  );
-                })
-              ) : (
-                <div className="text-center py-8">
-                  <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
-                  <p className="text-gray-400">
-                    {searchTerm || selectedCategory !== "all" 
-                      ? "Try adjusting your search or filter criteria"
-                      : "Get started by creating your first role group"
-                    }
-                  </p>
-                </div>
-              )}
-            </SortableContext>
+            <Table>
+              <TableHeader className="bg-stone-900">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-gray-700">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="text-gray-300 font-medium">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  <SortableContext
+                    items={dataIds}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {table.getRowModel().rows.map((row) => (
+                      <DraggableRow key={row.id} row={row} />
+                    ))}
+                  </SortableContext>
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                      No role groups found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </DndContext>
         </div>
 
