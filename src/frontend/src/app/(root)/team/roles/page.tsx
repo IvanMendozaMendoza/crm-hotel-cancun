@@ -405,6 +405,7 @@ const TeamRolesPage = () => {
       id: "drag",
       header: () => null,
       cell: ({ row }) => <DragHandle id={row.original.id} />,
+      size: 40,
     },
     {
       accessorKey: "name",
@@ -412,12 +413,13 @@ const TeamRolesPage = () => {
       cell: ({ row }) => {
         const roleGroup = row.original;
         return (
-          <div>
-            <div className="font-medium text-white">{roleGroup.name}</div>
-            <div className="text-sm text-gray-400">{roleGroup.description}</div>
+          <div className="min-w-0">
+            <div className="font-medium text-white truncate">{roleGroup.name}</div>
+            <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
           </div>
         );
       },
+      size: 280,
     },
     {
       accessorKey: "permissions",
@@ -439,15 +441,14 @@ const TeamRolesPage = () => {
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
-                variant="outline"
+                variant="link"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full justify-between bg-stone-900 border-gray-700 text-white hover:bg-stone-800"
+                className="-ml-6"
               >
                 <span className="truncate">
                   {roleGroup.permissions.length} permissions
                 </span>
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
@@ -485,6 +486,7 @@ const TeamRolesPage = () => {
           </Popover>
         );
       },
+      size: 140,
     },
     {
       accessorKey: "userCount",
@@ -495,11 +497,15 @@ const TeamRolesPage = () => {
           <span className="text-gray-300">{row.original.userCount}</span>
         </div>
       ),
+      size: 100,
     },
     {
       accessorKey: "createdAt",
       header: "Created",
-      cell: ({ row }) => <span className="text-gray-300">{row.original.createdAt}</span>,
+      cell: ({ row }) => (
+        <span className="text-gray-300">{row.original.createdAt}</span>
+      ),
+      size: 120,
     },
     {
       id: "actions",
@@ -527,6 +533,7 @@ const TeamRolesPage = () => {
           </DropdownMenu>
         );
       },
+      size: 50,
     },
   ];
 
