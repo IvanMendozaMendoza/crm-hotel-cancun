@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { 
   Shield, 
@@ -26,11 +27,12 @@ import {
   BarChart3, 
   Lock, 
   Palette,
-  Sparkles,
   CheckCircle2,
   XCircle,
   Search,
-  Edit
+  Edit,
+  ChevronDown,
+  Settings2
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -102,16 +104,14 @@ const permissionCategories = {
   }
 };
 
-// Color presets with names
+// Color presets with role context names
 const colorPresets = [
-  { value: "#ef4444", name: "Red", bg: "bg-red-500" },
-  { value: "#f97316", name: "Orange", bg: "bg-orange-500" },
-  { value: "#eab308", name: "Yellow", bg: "bg-yellow-500" },
-  { value: "#22c55e", name: "Green", bg: "bg-green-500" },
-  { value: "#3b82f6", name: "Blue", bg: "bg-blue-500" },
-  { value: "#8b5cf6", name: "Purple", bg: "bg-purple-500" },
-  { value: "#ec4899", name: "Pink", bg: "bg-pink-500" },
-  { value: "#6b7280", name: "Gray", bg: "bg-gray-500" }
+  { value: "#3b82f6", name: "Admin", bg: "bg-blue-500" },
+  { value: "#8b5cf6", name: "Manager", bg: "bg-purple-500" },
+  { value: "#ef4444", name: "Editor", bg: "bg-red-500" },
+  { value: "#f97316", name: "Moderator", bg: "bg-orange-500" },
+  { value: "#22c55e", name: "Viewer", bg: "bg-green-500" },
+  { value: "#eab308", name: "Custom", bg: "bg-yellow-500" }
 ];
 
 export const EditRoleGroupDialog = ({
@@ -248,7 +248,7 @@ export const EditRoleGroupDialog = ({
           <DialogHeader className="pb-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-blue-500/20">
-                <Edit className="h-6 w-6 text-blue-400" />
+                <Edit className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
@@ -268,11 +268,11 @@ export const EditRoleGroupDialog = ({
           
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-zinc-800">
-              <TabsTrigger value="details" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
-                <Sparkles className="h-4 w-4 mr-2" />
+              <TabsTrigger value="details" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-white">
+                <Settings2 className="h-4 w-4 mr-2" />
                 Role Details
               </TabsTrigger>
-              <TabsTrigger value="permissions" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
+              <TabsTrigger value="permissions" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-white">
                 <Lock className="h-4 w-4 mr-2" />
                 Permissions
               </TabsTrigger>
@@ -284,7 +284,7 @@ export const EditRoleGroupDialog = ({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <Label htmlFor="name" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-400" />
+                      <Users className="h-4 w-4 text-white" />
                       Role Name
                     </Label>
                     <Input 
@@ -299,7 +299,7 @@ export const EditRoleGroupDialog = ({
                   
                   <div className="space-y-4">
                     <Label htmlFor="description" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-400" />
+                      <FileText className="h-4 w-4 text-white" />
                       Description
                     </Label>
                     <Textarea
@@ -318,32 +318,49 @@ export const EditRoleGroupDialog = ({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <Label className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Palette className="h-4 w-4 text-blue-400" />
+                      <Palette className="h-4 w-4 text-white" />
                       Role Color
                     </Label>
                     
-                    <div className="grid grid-cols-4 gap-3">
-                      {colorPresets.map((color, index) => (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
                         <button
-                          key={color.value}
                           type="button"
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, color: color.value }));
-                          }}
-                          className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                            formData.color === color.value 
-                              ? 'border-white ring-2 ring-blue-500 shadow-lg' 
-                              : 'border-zinc-700 hover:border-zinc-600'
-                          }`}
-                          style={{ backgroundColor: color.value }}
+                          className="w-full flex items-center justify-between p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors"
                         >
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors" />
-                          {formData.color === color.value && (
-                            <CheckCircle2 className="absolute top-1 right-1 h-4 w-4 text-white drop-shadow-lg" />
-                          )}
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg" 
+                              style={{ backgroundColor: formData.color }}
+                            />
+                            <span className="text-sm font-medium text-white">
+                              {selectedColor?.name || "Select color"}
+                            </span>
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
                         </button>
-                      ))}
-                    </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-full bg-zinc-900/90 border-zinc-700">
+                        {colorPresets.map((color) => (
+                          <DropdownMenuItem
+                            key={color.value}
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, color: color.value }));
+                            }}
+                            className="flex items-center gap-3 p-3 cursor-pointer"
+                          >
+                            <div 
+                              className="w-4 h-4 rounded-full border border-zinc-600" 
+                              style={{ backgroundColor: color.value }}
+                            />
+                            <span className="text-sm font-medium text-white">{color.name}</span>
+                            {formData.color === color.value && (
+                              <CheckCircle2 className="ml-auto h-4 w-4 text-gray-400" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     
                     <div className="relative">
                       <button
@@ -443,7 +460,7 @@ export const EditRoleGroupDialog = ({
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-400" />
+                    <Lock className="h-5 w-5 text-white" />
                     Permission Categories
                   </h3>
                   <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
@@ -488,7 +505,7 @@ export const EditRoleGroupDialog = ({
                         <div key={category} className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden shadow-lg">
                           <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-zinc-800/50 to-zinc-700/50 border-b border-zinc-700">
                             <div className="p-2 bg-blue-500/10 rounded-lg">
-                              <Icon className="h-5 w-5 text-blue-400" />
+                              <Icon className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-3">
@@ -548,7 +565,7 @@ export const EditRoleGroupDialog = ({
                 onOpenChange(false);
               }}
               disabled={!formData.name.trim() || formData.permissions.length === 0}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed px-8"
+              className="bg-white hover:bg-gray-100 text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-8"
             >
               <Edit className="h-4 w-4 mr-2" />
               Update Role Group
