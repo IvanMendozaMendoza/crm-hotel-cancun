@@ -599,8 +599,8 @@ const TeamPage = () => {
                   <span className="sr-only">Go to first page</span>
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
+              <Button
+                variant="outline"
                   className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
                   size="icon"
                   onClick={() => table.previousPage()}
@@ -608,8 +608,8 @@ const TeamPage = () => {
                 >
                   <span className="sr-only">Go to previous page</span>
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
+              </Button>
+                    <Button
                   variant="outline"
                   className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
                   size="icon"
@@ -618,9 +618,9 @@ const TeamPage = () => {
                 >
                   <span className="sr-only">Go to next page</span>
                   <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
+                    </Button>
+              <Button
+                variant="outline"
                   className="hidden size-8 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
                   size="icon"
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
@@ -628,7 +628,7 @@ const TeamPage = () => {
                 >
                   <span className="sr-only">Go to last page</span>
                   <ChevronsRight className="h-4 w-4" />
-                </Button>
+              </Button>
               </div>
             </div>
           </div>

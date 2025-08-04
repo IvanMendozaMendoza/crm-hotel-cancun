@@ -4,18 +4,26 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Users, Shield, Settings, Database, FileText, ChartBar, Bell, Lock, Globe, Code, Palette, Search, Filter } from "lucide-react";
-import { Combobox } from "@/components/ui/combobox";
+import { Plus, Edit, Trash2, Users, Shield, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { ColorPicker } from "@/components/ui/color-picker";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { CreateRoleGroupDialog } from "@/components/create-role-group-dialog";
 import { EditRoleGroupDialog } from "@/components/edit-role-group-dialog";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
 // Permission categories and their permissions
 const permissionCategories = {
@@ -117,7 +125,215 @@ const initialRoleGroups = [
     ],
     userCount: 12,
     createdAt: "2024-02-01"
+  },
+  {
+    id: "5",
+    name: "Moderators",
+    description: "Moderate user content and manage reports",
+    color: "#f97316", // orange-500
+    permissions: [
+      "view_users",
+      "view_content",
+      "edit_content",
+      "delete_content",
+      "view_analytics",
+      "create_reports"
+    ],
+    userCount: 6,
+    createdAt: "2024-02-05"
+  },
+  {
+    id: "6",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    color: "#8b5cf6", // purple-500
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
   }
+];
+
+// Helper functions
+const getPermissionLabel = (permission: string) => {
+  const labels: { [key: string]: string } = {
+    view_users: "View Users",
+    create_users: "Create Users",
+    edit_users: "Edit Users", 
+    delete_users: "Delete Users",
+    assign_roles: "Assign Roles",
+    view_content: "View Content",
+    create_content: "Create Content",
+    edit_content: "Edit Content",
+    delete_content: "Delete Content",
+    publish_content: "Publish Content",
+    view_settings: "View Settings",
+    edit_settings: "Edit Settings",
+    view_logs: "View Logs",
+    manage_backups: "Manage Backups",
+    system_maintenance: "System Maintenance",
+    view_data: "View Data",
+    export_data: "Export Data",
+    import_data: "Import Data",
+    delete_data: "Delete Data",
+    anonymize_data: "Anonymize Data",
+    view_analytics: "View Analytics",
+    create_reports: "Create Reports",
+    export_reports: "Export Reports",
+    share_reports: "Share Reports",
+    view_security: "View Security",
+    manage_permissions: "Manage Permissions",
+    audit_logs: "Audit Logs",
+    security_settings: "Security Settings"
+  };
+  return labels[permission] || permission;
+};
+
+const handleUpdateRoleGroup = (roleGroupName: string) => {
+  toast.success(`"${roleGroupName}" details updated`);
+};
+
+// Define columns for the table
+const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
+  {
+    accessorKey: "name",
+    header: "Role name",
+    cell: ({ row }) => {
+      const roleGroup = row.original;
+      return (
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-lg border-2 flex items-center justify-center bg-stone-800" 
+            style={{ borderColor: roleGroup.color }}
+          >
+            <Shield className="h-5 w-5" style={{ color: roleGroup.color }} />
+          </div>
+          <div>
+            <div className="font-medium text-white">{roleGroup.name}</div>
+            <div className="text-sm text-gray-400">{roleGroup.description}</div>
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "permissions",
+    header: "Permissions",
+    cell: ({ row }) => {
+      const roleGroup = row.original;
+      const [open, setOpen] = useState(false);
+      const [searchValue, setSearchValue] = useState("");
+      
+      // Get all available permissions
+      const allPermissions = Object.values(permissionCategories).flat();
+      
+      // Filter permissions based on search
+      const filteredPermissions = allPermissions.filter(permission =>
+        getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
+      );
+      
+      return (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full justify-between bg-stone-900 border-gray-700 text-white hover:bg-stone-800"
+            >
+              <span className="truncate">
+                {roleGroup.permissions.length} permissions
+              </span>
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+            <Command>
+              <CommandInput 
+                placeholder="Search permissions..." 
+                value={searchValue}
+                onValueChange={setSearchValue}
+                className="border-gray-700"
+              />
+              <CommandList className="max-h-[300px]">
+                <CommandEmpty>No permissions found.</CommandEmpty>
+                <CommandGroup>
+                  {filteredPermissions.map((permission) => (
+                    <CommandItem
+                      key={permission}
+                      className={`flex items-center gap-2 ${
+                        roleGroup.permissions.includes(permission) 
+                          ? "bg-blue-500/20 text-blue-400" 
+                          : "text-gray-300"
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${
+                        roleGroup.permissions.includes(permission) 
+                          ? "bg-blue-400" 
+                          : "bg-gray-500"
+                      }`} />
+                      {getPermissionLabel(permission)}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      );
+    },
+  },
+  {
+    accessorKey: "userCount",
+    header: "Users",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Users className="h-4 w-4 text-gray-400" />
+        <span className="text-gray-300">{row.original.userCount}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created",
+    cell: ({ row }) => <span className="text-gray-300">{row.original.createdAt}</span>,
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => {
+      const roleGroup = row.original;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+            <DropdownMenuItem 
+              className="text-gray-300 hover:bg-gray-700"
+              onClick={() => handleUpdateRoleGroup(roleGroup.name)}
+            >
+              Edit role
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+              Delete role
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
 ];
 
 const TeamRolesPage = () => {
@@ -127,28 +343,7 @@ const TeamRolesPage = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
-  
-  // Form state for creating/editing role groups
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    color: "#3b82f6", // blue-500 hex
-    permissions: [] as string[]
-  });
-
-  // Ensure color is always defined
-  const currentColor = formData.color || "#3b82f6";
-
-  const colorOptions = [
-    { value: "bg-red-500", label: "Red" },
-    { value: "bg-blue-500", label: "Blue" },
-    { value: "bg-green-500", label: "Green" },
-    { value: "bg-yellow-500", label: "Yellow" },
-    { value: "bg-purple-500", label: "Purple" },
-    { value: "bg-pink-500", label: "Pink" },
-    { value: "bg-indigo-500", label: "Indigo" },
-    { value: "bg-gray-500", label: "Gray" }
-  ];
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Filter role groups based on search and category
   const filteredRoleGroups = roleGroups.filter(group => {
@@ -159,6 +354,20 @@ const TeamRolesPage = () => {
                              Object.values(permissionCategories[selectedCategory as keyof typeof permissionCategories] || []).includes(perm)
                            );
     return matchesSearch && matchesCategory;
+  });
+
+  // Create table instance
+  const table = useReactTable({
+    data: filteredRoleGroups,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   const handleCreateRoleGroup = (data: any) => {
@@ -224,59 +433,7 @@ const TeamRolesPage = () => {
     setIsEditDialogOpen(true);
   };
 
-  const togglePermission = (permission: string) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permission)
-        ? prev.permissions.filter(p => p !== permission)
-        : [...prev.permissions, permission]
-    }));
-  };
 
-  const toggleCategoryPermissions = (category: string, permissions: string[]) => {
-    const allSelected = permissions.every(perm => formData.permissions.includes(perm));
-    
-    setFormData(prev => ({
-      ...prev,
-      permissions: allSelected
-        ? prev.permissions.filter(p => !permissions.includes(p))
-        : [...new Set([...prev.permissions, ...permissions])]
-    }));
-  };
-
-  const getPermissionLabel = (permission: string) => {
-    const labels: { [key: string]: string } = {
-      view_users: "View Users",
-      create_users: "Create Users",
-      edit_users: "Edit Users", 
-      delete_users: "Delete Users",
-      assign_roles: "Assign Roles",
-      view_content: "View Content",
-      create_content: "Create Content",
-      edit_content: "Edit Content",
-      delete_content: "Delete Content",
-      publish_content: "Publish Content",
-      view_settings: "View Settings",
-      edit_settings: "Edit Settings",
-      view_logs: "View Logs",
-      manage_backups: "Manage Backups",
-      system_maintenance: "System Maintenance",
-      view_data: "View Data",
-      export_data: "Export Data",
-      import_data: "Import Data",
-      delete_data: "Delete Data",
-      anonymize_data: "Anonymize Data",
-      view_analytics: "View Analytics",
-      create_reports: "Create Reports",
-      export_reports: "Export Reports",
-      share_reports: "Share Reports",
-      view_security: "View Security",
-      manage_permissions: "Manage Permissions",
-      audit_logs: "Audit Logs",
-      security_settings: "Security Settings"
-    };
-    return labels[permission] || permission;
-  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
@@ -342,74 +499,122 @@ const TeamRolesPage = () => {
           </div>
         </div>
 
-        {/* Role Groups Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRoleGroups.map((roleGroup) => (
-            <Card key={roleGroup.id} className="bg-stone-900 border-gray-700">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: roleGroup.color }} />
-                    <div>
-                      <CardTitle className="text-white">{roleGroup.name}</CardTitle>
-                      <CardDescription className="text-gray-400">
-                        {roleGroup.permissions.length} permissions
-                      </CardDescription>
+        {/* Desktop Table View */}
+        <div className="hidden lg:block">
+          <div className="overflow-hidden rounded-lg border border-gray-700">
+            <Table>
+              <TableHeader className="bg-stone-900">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-gray-700">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="text-gray-300 font-medium">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/30">
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                      No role groups found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="lg:hidden space-y-4">
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => {
+              const roleGroup = row.original;
+              return (
+                <div key={roleGroup.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div 
+                        className="w-12 h-12 rounded-lg border-2 flex items-center justify-center flex-shrink-0 bg-stone-800" 
+                        style={{ borderColor: roleGroup.color }}
+                      >
+                        <Shield className="h-6 w-6" style={{ color: roleGroup.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-white truncate">{roleGroup.name}</div>
+                        <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <Users className="h-4 w-4" />
+                            <span>{roleGroup.userCount} users</span>
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {roleGroup.permissions.length} permissions
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                        <DropdownMenuItem 
+                          className="text-gray-300 hover:bg-gray-700"
+                          onClick={() => handleUpdateRoleGroup(roleGroup.name)}
+                        >
+                          Edit role
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                          View details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+                          Delete role
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
+                    <div className="text-sm text-gray-400">
+                      Created: {roleGroup.createdAt}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(roleGroup)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteRoleGroup(roleGroup.id)}
-                      className="text-gray-400 hover:text-red-400"
-                      disabled={roleGroup.userCount > 0}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <p className="text-gray-300 text-sm">{roleGroup.description}</p>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Users className="h-4 w-4" />
-                    <span>{roleGroup.userCount} users</span>
-                  </div>
-                  <div className="text-gray-400">
-                    Created {roleGroup.createdAt}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-300">Key Permissions:</Label>
-                  <div className="flex flex-wrap gap-1">
-                    {roleGroup.permissions.slice(0, 5).map(permission => (
-                                             <Badge key={permission} variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
-                        {getPermissionLabel(permission)}
-                      </Badge>
-                    ))}
-                    {roleGroup.permissions.length > 5 && (
-                                             <Badge variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
-                        +{roleGroup.permissions.length - 5} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              );
+            })
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
+              <p className="text-gray-400">
+                {searchTerm || selectedCategory !== "all" 
+                  ? "Try adjusting your search or filter criteria"
+                  : "Get started by creating your first role group"
+                }
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Edit Dialog */}
@@ -420,23 +625,83 @@ const TeamRolesPage = () => {
           onSubmit={handleEditRoleGroup}
         />
 
-        {/* Empty State */}
-        {filteredRoleGroups.length === 0 && (
-          <div className="text-center py-12">
-            <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
-            <p className="text-gray-400 mb-4">
-              {searchTerm || selectedCategory !== "all" 
-                ? "Try adjusting your search or filter criteria"
-                : "Get started by creating your first role group"
-              }
-            </p>
-            {!searchTerm && selectedCategory === "all" && (
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Role Group
-              </Button>
-            )}
+        {/* Pagination */}
+        {filteredRoleGroups.length > 0 && (
+          <div className="flex items-center justify-between px-4 mt-6">
+            <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+              {table.getFilteredRowModel().rows.length} role group(s) total.
+            </div>
+            <div className="flex w-full items-center gap-8 lg:w-fit">
+              <div className="hidden items-center gap-2 lg:flex">
+                <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
+                  Rows per page
+                </Label>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value))
+                  }}
+                >
+                  <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
+                    <SelectValue
+                      placeholder={table.getState().pagination.pageSize}
+                    />
+                  </SelectTrigger>
+                  <SelectContent side="top" className="bg-stone-900 border-gray-700">
+                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                      <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
+                        {pageSize}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {table.getPageCount()}
+              </div>
+              <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                <Button
+                  variant="outline"
+                  className="hidden h-8 w-8 p-0 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hidden size-8 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  size="icon"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

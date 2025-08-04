@@ -235,7 +235,7 @@ export const NotificationsForm = ({ user }: NotificationsFormProps) => {
         <Button
           onClick={handleSave}
           disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+          className="bg-white hover:bg-gray-100 text-gray-900 px-6"
         >
           {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
           {isPending ? "Saving..." : "Save Changes"}
