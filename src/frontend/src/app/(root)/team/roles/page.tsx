@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Users, Shield, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Edit, Trash2, Users, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +23,27 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  Row,
 } from "@tanstack/react-table";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type UniqueIdentifier,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 // Permission categories and their permissions
 const permissionCategories = {
@@ -75,7 +95,6 @@ const initialRoleGroups = [
     id: "1",
     name: "Administrators",
     description: "Full system access with all permissions",
-    color: "#ef4444", // red-500
     permissions: Object.values(permissionCategories).flat(),
     userCount: 3,
     createdAt: "2024-01-15"
@@ -84,7 +103,6 @@ const initialRoleGroups = [
     id: "2", 
     name: "Content Managers",
     description: "Manage content and moderate user-generated content",
-    color: "#3b82f6", // blue-500
     permissions: [
       "view_users",
       "view_content",
@@ -101,7 +119,6 @@ const initialRoleGroups = [
     id: "3",
     name: "Data Analysts", 
     description: "Access to analytics and reporting features",
-    color: "#22c55e", // green-500
     permissions: [
       "view_data",
       "export_data", 
@@ -117,7 +134,6 @@ const initialRoleGroups = [
     id: "4",
     name: "Viewers",
     description: "Read-only access to basic content",
-    color: "#6b7280", // gray-500
     permissions: [
       "view_users",
       "view_content",
@@ -130,7 +146,6 @@ const initialRoleGroups = [
     id: "5",
     name: "Moderators",
     description: "Moderate user content and manage reports",
-    color: "#f97316", // orange-500
     permissions: [
       "view_users",
       "view_content",
@@ -146,7 +161,6 @@ const initialRoleGroups = [
     id: "6",
     name: "Developers",
     description: "Technical access for development and debugging",
-    color: "#8b5cf6", // purple-500
     permissions: [
       "view_settings",
       "edit_settings",
@@ -199,25 +213,137 @@ const handleUpdateRoleGroup = (roleGroupName: string) => {
   toast.success(`"${roleGroupName}" details updated`);
 };
 
+// Create a separate component for the drag handle
+function DragHandle({ id }: { id: string }) {
+  const { attributes, listeners } = useSortable({
+    id,
+  })
+
+  return (
+    <Button
+      {...attributes}
+      {...listeners}
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground size-7 hover:bg-transparent"
+    >
+      <GripVertical className="text-muted-foreground size-3" />
+      <span className="sr-only">Drag to reorder</span>
+    </Button>
+  )
+}
+
+function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
+  const { transform, transition, setNodeRef, isDragging } = useSortable({
+    id: row.original.id,
+  })
+
+  return (
+    <TableRow
+      data-state={row.getIsSelected() && "selected"}
+      data-dragging={isDragging}
+      ref={setNodeRef}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 border-gray-700 hover:bg-gray-800/30"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+}
+
+function DraggableCard({ roleGroup }: { roleGroup: typeof initialRoleGroups[0] }) {
+  const { transform, transition, setNodeRef, isDragging } = useSortable({
+    id: roleGroup.id,
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-dragging={isDragging}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 bg-stone-900 rounded-xl border border-gray-800 p-4"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground size-7 hover:bg-transparent flex-shrink-0"
+          >
+            <GripVertical className="text-muted-foreground size-3" />
+            <span className="sr-only">Drag to reorder</span>
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-white truncate">{roleGroup.name}</div>
+            <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Users className="h-4 w-4" />
+                <span>{roleGroup.userCount} users</span>
+              </div>
+              <div className="text-sm text-gray-400">
+                {roleGroup.permissions.length} permissions
+              </div>
+            </div>
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+            <DropdownMenuItem 
+              className="text-gray-300 hover:bg-gray-700"
+              onClick={() => handleUpdateRoleGroup(roleGroup.name)}
+            >
+              Edit role
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+              Delete role
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
+        <div className="text-sm text-gray-400">
+          Created: {roleGroup.createdAt}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Define columns for the table
 const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
+  {
+    id: "drag",
+    header: () => null,
+    cell: ({ row }) => <DragHandle id={row.original.id} />,
+  },
   {
     accessorKey: "name",
     header: "Role name",
     cell: ({ row }) => {
       const roleGroup = row.original;
       return (
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-10 h-10 rounded-lg border-2 flex items-center justify-center bg-stone-800" 
-            style={{ borderColor: roleGroup.color }}
-          >
-            <Shield className="h-5 w-5" style={{ color: roleGroup.color }} />
-          </div>
-          <div>
-            <div className="font-medium text-white">{roleGroup.name}</div>
-            <div className="text-sm text-gray-400">{roleGroup.description}</div>
-          </div>
+        <div>
+          <div className="font-medium text-white">{roleGroup.name}</div>
+          <div className="text-sm text-gray-400">{roleGroup.description}</div>
         </div>
       );
     },
@@ -344,6 +470,17 @@ const TeamRolesPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const sortableId = React.useId();
+  const sensors = useSensors(
+    useSensor(MouseSensor, {}),
+    useSensor(TouchSensor, {}),
+    useSensor(KeyboardSensor, {})
+  );
+
+  const dataIds = React.useMemo<UniqueIdentifier[]>(
+    () => roleGroups?.map(({ id }) => id) || [],
+    [roleGroups]
+  );
 
   // Filter role groups based on search and category
   const filteredRoleGroups = roleGroups.filter(group => {
@@ -369,6 +506,17 @@ const TeamRolesPage = () => {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (active && over && active.id !== over.id) {
+      setRoleGroups((roleGroups) => {
+        const oldIndex = dataIds.indexOf(active.id)
+        const newIndex = dataIds.indexOf(over.id)
+        return arrayMove(roleGroups, oldIndex, newIndex)
+      })
+    }
+  }
 
   const handleCreateRoleGroup = (data: any) => {
     console.log("handleCreateRoleGroup called with:", data);
@@ -502,119 +650,86 @@ const TeamRolesPage = () => {
         {/* Desktop Table View */}
         <div className="hidden lg:block">
           <div className="overflow-hidden rounded-lg border border-gray-700">
-            <Table>
-              <TableHeader className="bg-stone-900">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="border-gray-700">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="text-gray-300 font-medium">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/30">
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
+            <DndContext
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis]}
+              onDragEnd={handleDragEnd}
+              sensors={sensors}
+              id={sortableId}
+            >
+              <Table>
+                <TableHeader className="bg-stone-900">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="border-gray-700">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className="text-gray-300 font-medium">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
-                      No role groups found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    <SortableContext
+                      items={dataIds}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {table.getRowModel().rows.map((row) => (
+                        <DraggableRow key={row.id} row={row} />
+                      ))}
+                    </SortableContext>
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                        No role groups found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </DndContext>
           </div>
         </div>
 
-        {/* Mobile/Tablet Card View */}
+                {/* Mobile/Tablet Card View */}
         <div className="lg:hidden space-y-4">
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => {
-              const roleGroup = row.original;
-              return (
-                <div key={roleGroup.id} className="bg-stone-900 rounded-xl border border-gray-800 p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div 
-                        className="w-12 h-12 rounded-lg border-2 flex items-center justify-center flex-shrink-0 bg-stone-800" 
-                        style={{ borderColor: roleGroup.color }}
-                      >
-                        <Shield className="h-6 w-6" style={{ color: roleGroup.color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-white truncate">{roleGroup.name}</div>
-                        <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
-                        <div className="flex items-center gap-4 mt-2">
-                          <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <Users className="h-4 w-4" />
-                            <span>{roleGroup.userCount} users</span>
-                          </div>
-                          <div className="text-sm text-gray-400">
-                            {roleGroup.permissions.length} permissions
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                        <DropdownMenuItem 
-                          className="text-gray-300 hover:bg-gray-700"
-                          onClick={() => handleUpdateRoleGroup(roleGroup.name)}
-                        >
-                          Edit role
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
-                          View details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
-                          Delete role
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
-                    <div className="text-sm text-gray-400">
-                      Created: {roleGroup.createdAt}
-                    </div>
-                  </div>
+          <DndContext
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
+            id={`${sortableId}-mobile`}
+          >
+            <SortableContext
+              items={dataIds}
+              strategy={verticalListSortingStrategy}
+            >
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => {
+                  const roleGroup = row.original;
+                  return (
+                    <DraggableCard key={roleGroup.id} roleGroup={roleGroup} />
+                  );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
+                  <p className="text-gray-400">
+                    {searchTerm || selectedCategory !== "all" 
+                      ? "Try adjusting your search or filter criteria"
+                      : "Get started by creating your first role group"
+                    }
+                  </p>
                 </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
-              <p className="text-gray-400">
-                {searchTerm || selectedCategory !== "all" 
-                  ? "Try adjusting your search or filter criteria"
-                  : "Get started by creating your first role group"
-                }
-              </p>
-            </div>
-          )}
+              )}
+            </SortableContext>
+          </DndContext>
         </div>
 
         {/* Edit Dialog */}

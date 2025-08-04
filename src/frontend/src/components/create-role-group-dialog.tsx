@@ -17,25 +17,21 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { 
-  Shield, 
   Users, 
   FileText, 
   Settings, 
   Database, 
   BarChart3, 
   Lock, 
-  Palette,
   CheckCircle2,
   XCircle,
   Search,
   Filter,
   X,
-  ChevronDown,
   Settings2
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 
 // Permission categories with icons and descriptions
 const permissionCategories = {
@@ -105,15 +101,7 @@ const permissionCategories = {
   }
 };
 
-// Color presets with role context names
-const colorPresets = [
-  { value: "#3b82f6", name: "Admin", bg: "bg-blue-500" },
-  { value: "#8b5cf6", name: "Manager", bg: "bg-purple-500" },
-  { value: "#ef4444", name: "Editor", bg: "bg-red-500" },
-  { value: "#f97316", name: "Moderator", bg: "bg-orange-500" },
-  { value: "#22c55e", name: "Viewer", bg: "bg-green-500" },
-  { value: "#eab308", name: "Custom", bg: "bg-yellow-500" }
-];
+
 
 export const CreateRoleGroupDialog = ({
   open,
@@ -127,14 +115,10 @@ export const CreateRoleGroupDialog = ({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    color: "#3b82f6",
     permissions: [] as string[]
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +130,6 @@ export const CreateRoleGroupDialog = ({
     setFormData({
       name: "",
       description: "",
-      color: "#3b82f6",
       permissions: []
     });
     onOpenChange(false);
@@ -206,25 +189,7 @@ export const CreateRoleGroupDialog = ({
     return labels[permission] || permission;
   };
 
-  const selectedColor = colorPresets.find(c => c.value === formData.color);
 
-  // Handle click outside color picker
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
-        setShowColorPicker(false);
-        setEditingColorIndex(null);
-      }
-    };
-
-    if (showColorPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showColorPicker]);
 
   // Filter permissions based on search
   const filteredCategories = Object.entries(permissionCategories).filter(([category, { permissions }]) => {
@@ -240,7 +205,7 @@ export const CreateRoleGroupDialog = ({
           <DialogHeader className="pb-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-blue-500/20">
-                <Shield className="h-6 w-6 text-white" />
+                <div className="w-3 h-3 rounded-full bg-white" />
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
@@ -306,113 +271,7 @@ export const CreateRoleGroupDialog = ({
                   </div>
                 </div>
 
-                {/* Color Selection & Preview */}
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Label className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Palette className="h-4 w-4 text-white" />
-                      Role Color
-                    </Label>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="w-full flex items-center justify-between p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div 
-                              className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg" 
-                              style={{ backgroundColor: formData.color }}
-                            />
-                            <span className="text-sm font-medium text-white">
-                              {selectedColor?.name || "Select color"}
-                            </span>
-                          </div>
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-full bg-zinc-900/90 border-zinc-700">
-                        {colorPresets.map((color) => (
-                          <DropdownMenuItem
-                            key={color.value}
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, color: color.value }));
-                            }}
-                            className="flex items-center gap-3 p-3 cursor-pointer"
-                          >
-                            <div 
-                              className="w-4 h-4 rounded-full border border-zinc-600" 
-                              style={{ backgroundColor: color.value }}
-                            />
-                            <span className="text-sm font-medium text-white">{color.name}</span>
-                            {formData.color === color.value && (
-                              <CheckCircle2 className="ml-auto h-4 w-4 text-gray-400" />
-                            )}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingColorIndex(colorPresets.findIndex(c => c.value === formData.color));
-                          setShowColorPicker(true);
-                        }}
-                        className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors cursor-pointer group w-full"
-                      >
-                        <div 
-                          className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg" 
-                          style={{ backgroundColor: formData.color }}
-                        />
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{selectedColor?.name}</p>
-                          <p className="text-xs text-gray-400 font-mono group-hover:text-blue-300 transition-colors">{formData.color}</p>
-                        </div>
-                        <Palette className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                      </button>
-                      
-                      {/* Color Picker Popover */}
-                      {showColorPicker && editingColorIndex !== null && (
-                        <div 
-                          ref={colorPickerRef}
-                          className="absolute top-full left-0 mt-2 p-4 bg-zinc-900/90 border border-zinc-700 rounded-xl shadow-2xl backdrop-blur-sm z-50"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{
-                            minWidth: '320px',
-                            maxWidth: '400px'
-                          }}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <Label className="text-sm font-medium text-gray-200">
-                              Customize {colorPresets[editingColorIndex].name} Color
-                            </Label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowColorPicker(false);
-                                setEditingColorIndex(null);
-                              }}
-                              className="text-gray-400 hover:text-white"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <ColorPicker
-                            value={formData.color}
-                            onChange={(color) => {
-                              setFormData(prev => ({ ...prev, color }));
-                              // Update the color preset
-                              colorPresets[editingColorIndex].value = color;
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+
               </div>
 
               {/* Role Preview */}
@@ -422,11 +281,8 @@ export const CreateRoleGroupDialog = ({
                   Role Preview
                 </h3>
                 <div className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                  <div 
-                    className="w-12 h-12 rounded-xl border-2 border-zinc-600 shadow-lg flex items-center justify-center" 
-                    style={{ backgroundColor: formData.color }}
-                  >
-                    <Shield className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 rounded-xl border border-zinc-600 shadow-lg flex items-center justify-center bg-stone-800">
+                    <div className="w-3 h-3 rounded-full bg-gray-400" />
                   </div>
                   <div className="flex-1">
                     <h4 className="text-lg font-semibold text-white">
@@ -552,7 +408,6 @@ export const CreateRoleGroupDialog = ({
               disabled={!formData.name.trim() || formData.permissions.length === 0}
               className="bg-white hover:bg-gray-100 text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-8"
             >
-              <Shield className="h-4 w-4 mr-2" />
               Create Role Group
             </Button>
           </DialogFooter>
