@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { 
   Shield, 
@@ -30,7 +31,9 @@ import {
   CheckCircle2,
   XCircle,
   Search,
-  Filter
+  Filter,
+  X,
+  ChevronDown
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -102,16 +105,14 @@ const permissionCategories = {
   }
 };
 
-// Color presets with names
+// Color presets with role context names
 const colorPresets = [
-  { value: "#ef4444", name: "Red", bg: "bg-red-500" },
-  { value: "#f97316", name: "Orange", bg: "bg-orange-500" },
-  { value: "#eab308", name: "Yellow", bg: "bg-yellow-500" },
-  { value: "#22c55e", name: "Green", bg: "bg-green-500" },
-  { value: "#3b82f6", name: "Blue", bg: "bg-blue-500" },
-  { value: "#8b5cf6", name: "Purple", bg: "bg-purple-500" },
-  { value: "#ec4899", name: "Pink", bg: "bg-pink-500" },
-  { value: "#6b7280", name: "Gray", bg: "bg-gray-500" }
+  { value: "#3b82f6", name: "Admin", bg: "bg-blue-500" },
+  { value: "#8b5cf6", name: "Manager", bg: "bg-purple-500" },
+  { value: "#ef4444", name: "Editor", bg: "bg-red-500" },
+  { value: "#f97316", name: "Moderator", bg: "bg-orange-500" },
+  { value: "#22c55e", name: "Viewer", bg: "bg-green-500" },
+  { value: "#eab308", name: "Custom", bg: "bg-yellow-500" }
 ];
 
 export const CreateRoleGroupDialog = ({
@@ -235,22 +236,24 @@ export const CreateRoleGroupDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <form onSubmit={handleSubmit}>
-        <DialogContent className="w-full max-w-6xl max-h-[95vh] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 border border-zinc-800/50 rounded-2xl shadow-2xl backdrop-blur-xl">
-          <DialogHeader className="pb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-blue-500/20">
-                <Shield className="h-6 w-6 text-blue-400" />
-              </div>
-              <div className="flex-1">
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Create Role Group
-                </DialogTitle>
-                <DialogDescription className="text-gray-400 mt-1">
-                  Define a new role with specific permissions and access levels
-                </DialogDescription>
+        <DialogContent className="w-full max-w-4xl max-h-[90vh] bg-gray-950 border border-gray-700 rounded-xl shadow-2xl">
+          <DialogHeader className="pb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-stone-800 rounded-lg">
+                  <Shield className="h-5 w-5 text-gray-300" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-semibold text-white">
+                    Create Role Group
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-400 text-sm">
+                    Define a new role with specific permissions and access levels
+                  </DialogDescription>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
+                <Badge variant="outline" className="bg-stone-800 text-gray-300 border-gray-600">
                   {formData.permissions.length} permissions
                 </Badge>
               </div>
@@ -258,24 +261,24 @@ export const CreateRoleGroupDialog = ({
           </DialogHeader>
           
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-zinc-800">
-              <TabsTrigger value="details" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
+            <TabsList className="grid w-full grid-cols-2 bg-stone-900 border border-gray-700">
+              <TabsTrigger value="details" className="data-[state=active]:bg-stone-800 data-[state=active]:text-white text-gray-400">
                 <Sparkles className="h-4 w-4 mr-2" />
                 Role Details
               </TabsTrigger>
-              <TabsTrigger value="permissions" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
+              <TabsTrigger value="permissions" className="data-[state=active]:bg-stone-800 data-[state=active]:text-white text-gray-400">
                 <Lock className="h-4 w-4 mr-2" />
                 Permissions
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="mt-6 space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <TabsContent value="details" className="mt-6 space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Basic Information */}
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Label htmlFor="name" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-400" />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-400" />
                       Role Name
                     </Label>
                     <Input 
@@ -284,13 +287,13 @@ export const CreateRoleGroupDialog = ({
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="e.g., Content Manager" 
-                      className="bg-zinc-900/50 border-zinc-700 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20 h-12 text-lg"
+                      className="bg-stone-900 border-gray-700 text-white placeholder-gray-400 focus:border-gray-600 focus:ring-gray-600/20"
                     />
                   </div>
                   
-                  <div className="space-y-4">
-                    <Label htmlFor="description" className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-400" />
+                  <div className="space-y-2">
+                    <Label htmlFor="description" className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
                       Description
                     </Label>
                     <Textarea
@@ -300,41 +303,58 @@ export const CreateRoleGroupDialog = ({
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Describe the purpose and responsibilities of this role..."
                       rows={4}
-                      className="bg-zinc-900/50 border-zinc-700 text-white placeholder-gray-400 resize-none focus:border-blue-500 focus:ring-blue-500/20"
+                      className="bg-stone-900 border-gray-700 text-white placeholder-gray-400 resize-none focus:border-gray-600 focus:ring-gray-600/20"
                     />
                   </div>
                 </div>
 
-                {/* Color Selection & Preview */}
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Label className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                      <Palette className="h-4 w-4 text-blue-400" />
+                {/* Color Selection */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-gray-400" />
                       Role Color
                     </Label>
                     
-                    <div className="grid grid-cols-4 gap-3">
-                      {colorPresets.map((color, index) => (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
                         <button
-                          key={color.value}
                           type="button"
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, color: color.value }));
-                          }}
-                          className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                            formData.color === color.value 
-                              ? 'border-white ring-2 ring-blue-500 shadow-lg' 
-                              : 'border-zinc-700 hover:border-zinc-600'
-                          }`}
-                          style={{ backgroundColor: color.value }}
+                          className="w-full flex items-center justify-between p-3 bg-stone-900 rounded-lg border border-gray-700 hover:bg-stone-800 transition-colors"
                         >
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors" />
-                          {formData.color === color.value && (
-                            <CheckCircle2 className="absolute top-1 right-1 h-4 w-4 text-white drop-shadow-lg" />
-                          )}
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-600" 
+                              style={{ backgroundColor: formData.color }}
+                            />
+                            <span className="text-sm font-medium text-white">
+                              {selectedColor?.name || "Select color"}
+                            </span>
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
                         </button>
-                      ))}
-                    </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-full bg-stone-900 border-gray-700">
+                        {colorPresets.map((color) => (
+                          <DropdownMenuItem
+                            key={color.value}
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, color: color.value }));
+                            }}
+                            className="flex items-center gap-3 p-3 cursor-pointer"
+                          >
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-600" 
+                              style={{ backgroundColor: color.value }}
+                            />
+                            <span className="text-sm font-medium text-white">{color.name}</span>
+                            {formData.color === color.value && (
+                              <CheckCircle2 className="ml-auto h-4 w-4 text-gray-400" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     
                     <div className="relative">
                       <button
@@ -343,24 +363,24 @@ export const CreateRoleGroupDialog = ({
                           setEditingColorIndex(colorPresets.findIndex(c => c.value === formData.color));
                           setShowColorPicker(true);
                         }}
-                        className="flex items-center gap-3 p-4 bg-zinc-900/30 rounded-xl border border-zinc-700 hover:bg-zinc-800/50 transition-colors cursor-pointer group w-full"
+                        className="flex items-center gap-3 p-3 bg-stone-900 rounded-lg border border-gray-700 hover:bg-stone-800 transition-colors cursor-pointer group w-full"
                       >
-                      <div 
-                        className="w-6 h-6 rounded-full border-2 border-zinc-600 shadow-lg group-hover:border-zinc-500 transition-colors" 
-                        style={{ backgroundColor: formData.color }}
-                      />
-                                              <div className="flex-1 text-left">
-                          <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{selectedColor?.name}</p>
-                          <p className="text-xs text-gray-400 font-mono group-hover:text-blue-300 transition-colors">{formData.color}</p>
+                        <div 
+                          className="w-4 h-4 rounded-full border border-gray-600" 
+                          style={{ backgroundColor: formData.color }}
+                        />
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-white group-hover:text-gray-300 transition-colors">{selectedColor?.name}</p>
+                          <p className="text-xs text-gray-400 font-mono group-hover:text-gray-300 transition-colors">{formData.color}</p>
                         </div>
-                        <Palette className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                        <Palette className="h-4 w-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
                       </button>
                       
                       {/* Color Picker Popover */}
                       {showColorPicker && editingColorIndex !== null && (
                         <div 
                           ref={colorPickerRef}
-                          className="absolute top-full left-0 mt-2 p-4 bg-zinc-900/90 border border-zinc-700 rounded-xl shadow-2xl backdrop-blur-sm z-50"
+                          className="absolute top-full left-0 mt-2 p-4 bg-stone-900/95 border border-gray-700 rounded-lg shadow-2xl backdrop-blur-sm z-50"
                           onClick={(e) => e.stopPropagation()}
                           style={{
                             minWidth: '320px',
@@ -377,7 +397,7 @@ export const CreateRoleGroupDialog = ({
                                 setShowColorPicker(false);
                                 setEditingColorIndex(null);
                               }}
-                              className="text-gray-400 hover:text-white"
+                              className="text-gray-400 hover:text-white transition-colors"
                             >
                               <XCircle className="h-4 w-4" />
                             </button>
@@ -398,27 +418,27 @@ export const CreateRoleGroupDialog = ({
               </div>
 
               {/* Role Preview */}
-              <div className="bg-gradient-to-r from-zinc-900/50 to-zinc-800/50 border border-zinc-700 rounded-xl p-6">
-                <h3 className="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <div className="bg-stone-900 rounded-lg border border-gray-700 p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-400" />
                   Role Preview
                 </h3>
-                <div className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                <div className="flex items-center gap-3 p-3 bg-stone-800 rounded-lg border border-gray-700">
                   <div 
-                    className="w-12 h-12 rounded-xl border-2 border-zinc-600 shadow-lg flex items-center justify-center" 
+                    className="w-10 h-10 rounded-lg border border-gray-600 flex items-center justify-center" 
                     style={{ backgroundColor: formData.color }}
                   >
-                    <Shield className="h-6 w-6 text-white" />
+                    <Shield className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-white">
+                    <h4 className="font-medium text-white">
                       {formData.name || "Untitled Role Group"}
                     </h4>
                     <p className="text-sm text-gray-400">
                       {formData.description || "No description provided"}
                     </p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
+                    <div className="flex items-center gap-3 mt-1">
+                      <Badge variant="outline" className="bg-stone-800 text-gray-300 border-gray-600 text-xs">
                         {formData.permissions.length} permissions
                       </Badge>
                       <span className="text-xs text-gray-500">
@@ -431,13 +451,13 @@ export const CreateRoleGroupDialog = ({
             </TabsContent>
 
             <TabsContent value="permissions" className="mt-6">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-gray-400" />
                     Permission Categories
                   </h3>
-                  <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+                  <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
                     {formData.permissions.length} selected
                   </Badge>
                 </div>
@@ -449,7 +469,7 @@ export const CreateRoleGroupDialog = ({
                     placeholder="Search permissions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-zinc-900/50 border-zinc-700 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="pl-10 bg-stone-900 border-gray-700 text-white placeholder-gray-400 focus:border-gray-600 focus:ring-gray-600/20"
                   />
                 </div>
 
@@ -464,56 +484,56 @@ export const CreateRoleGroupDialog = ({
                   </div>
                 )}
                 
-                <ScrollArea className="h-[500px] pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-3">
                     {filteredCategories.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-300 mb-2">No permissions found</h3>
-                        <p className="text-gray-400">
-                          Try adjusting your search terms or category filter
+                      <div className="text-center py-8">
+                        <Search className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+                        <h3 className="text-base font-medium text-gray-300 mb-1">No permissions found</h3>
+                        <p className="text-sm text-gray-400">
+                          Try adjusting your search terms
                         </p>
                       </div>
                     ) : (
                       filteredCategories.map(([category, { icon: Icon, description, permissions }]) => (
-                      <div key={category} className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden shadow-lg">
-                        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-zinc-800/50 to-zinc-700/50 border-b border-zinc-700">
-                          <div className="p-2 bg-blue-500/10 rounded-lg">
-                            <Icon className="h-5 w-5 text-blue-400" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <Checkbox
-                                checked={permissions.every(perm => formData.permissions.includes(perm))}
-                                onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
-                                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                              />
-                              <Label className="font-semibold text-white cursor-pointer">{category}</Label>
-                              <Badge variant="outline" className="bg-zinc-700/50 text-gray-300 border-zinc-600">
-                                {permissions.filter(perm => formData.permissions.includes(perm)).length}/{permissions.length}
-                              </Badge>
+                        <div key={category} className="bg-stone-900 border border-gray-700 rounded-lg overflow-hidden">
+                          <div className="flex items-center gap-3 p-3 bg-stone-800 border-b border-gray-700">
+                            <div className="p-1.5 bg-stone-700 rounded">
+                              <Icon className="h-4 w-4 text-gray-400" />
                             </div>
-                            <p className="text-sm text-gray-400 mt-1 ml-8">{description}</p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={permissions.every(perm => formData.permissions.includes(perm))}
+                                  onCheckedChange={() => toggleCategoryPermissions(category, permissions)}
+                                  className="data-[state=checked]:bg-gray-600 data-[state=checked]:border-gray-600"
+                                />
+                                <Label className="font-medium text-white cursor-pointer text-sm">{category}</Label>
+                                <Badge variant="outline" className="bg-stone-700 text-gray-300 border-gray-600 text-xs">
+                                  {permissions.filter(perm => formData.permissions.includes(perm)).length}/{permissions.length}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-400 mt-1 ml-6">{description}</p>
+                            </div>
+                          </div>
+                          <div className="p-3 space-y-1">
+                            {permissions.map(permission => (
+                              <div key={permission} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-stone-800 transition-colors">
+                                <Checkbox
+                                  checked={formData.permissions.includes(permission)}
+                                  onCheckedChange={() => togglePermission(permission)}
+                                  className="data-[state=checked]:bg-gray-600 data-[state=checked]:border-gray-600"
+                                />
+                                <Label className="text-sm text-gray-300 cursor-pointer flex-1">
+                                  {getPermissionLabel(permission)}
+                                </Label>
+                                {formData.permissions.includes(permission) && (
+                                  <CheckCircle2 className="h-3 w-3 text-green-400" />
+                                )}
+                              </div>
+                            ))}
                           </div>
                         </div>
-                        <div className="p-4 space-y-2">
-                          {permissions.map(permission => (
-                            <div key={permission} className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
-                              <Checkbox
-                                checked={formData.permissions.includes(permission)}
-                                onCheckedChange={() => togglePermission(permission)}
-                                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                              />
-                              <Label className="text-sm text-gray-300 cursor-pointer flex-1">
-                                {getPermissionLabel(permission)}
-                              </Label>
-                              {formData.permissions.includes(permission) && (
-                                <CheckCircle2 className="h-4 w-4 text-green-400" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                                              </div>
                       ))
                     )}
                   </div>
@@ -522,32 +542,18 @@ export const CreateRoleGroupDialog = ({
             </TabsContent>
           </Tabs>
 
-          <DialogFooter className="border-t border-zinc-800 pt-6 mt-8">
+          <DialogFooter className="border-t border-gray-700 pt-4 mt-6">
             <DialogClose asChild>
-              <Button variant="outline" type="button" className="border-zinc-700 text-gray-300 hover:bg-zinc-800">
+              <Button variant="outline" type="button" className="border-gray-700 text-gray-300 hover:bg-stone-800">
                 <XCircle className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
             </DialogClose>
             <Button 
               type="submit" 
-              onClick={() => {
-                console.log("Button clicked directly");
-                if (onSubmit) {
-                  onSubmit(formData);
-                }
-                setFormData({
-                  name: "",
-                  description: "",
-                  color: "#3b82f6",
-                  permissions: []
-                });
-                onOpenChange(false);
-              }}
               disabled={!formData.name.trim() || formData.permissions.length === 0}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed px-8"
+              className="bg-white hover:bg-gray-100 text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Sparkles className="h-4 w-4 mr-2" />
               Create Role Group
             </Button>
           </DialogFooter>
