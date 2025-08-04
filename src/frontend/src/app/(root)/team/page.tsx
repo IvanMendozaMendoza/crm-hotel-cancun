@@ -21,6 +21,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  ColumnFiltersState,
 } from "@tanstack/react-table";
 
 // Hardcoded sample data
@@ -30,52 +31,8 @@ const sampleUsers = [
     name: "Florence Shaw",
     email: "florence@untitledui.com",
     avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
-    lastActive: "Mar 4, 2024",
-    dateAdded: "July 4, 2022",
-  },
-  {
-    id: "14554",
-    name: "Florence Shaw",
-    email: "florence@untitledui.com",
-    avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
-    lastActive: "Mar 4, 2024",
-    dateAdded: "July 4, 2022",
-  },
-  {
-    id: "177",
-    name: "Florence Shaw",
-    email: "florence@untitledui.com",
-    avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
-    lastActive: "Mar 4, 2024",
-    dateAdded: "July 4, 2022",
-  },
-  {
-    id: "12",
-    name: "Florence Shaw",
-    email: "florence@untitledui.com",
-    avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
-    lastActive: "Mar 4, 2024",
-    dateAdded: "July 4, 2022",
-  },
-  {
-    id: "11",
-    name: "Florence Shaw",
-    email: "florence@untitledui.com",
-    avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
-    lastActive: "Mar 4, 2024",
-    dateAdded: "July 4, 2022",
-  },
-  {
-    id: "17",
-    name: "Florence Shaw",
-    email: "florence@untitledui.com",
-    avatar: "/avatars/florence.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
+    access: "Admin",
+    status: "active",
     lastActive: "Mar 4, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -84,7 +41,8 @@ const sampleUsers = [
     name: "Amélie Laurent",
     email: "amelie@untitledui.com",
     avatar: "/avatars/amelie.jpg",
-    access: ["Admin", "Data Export", "Data Import"],
+    access: "User",
+    status: "active",
     lastActive: "Mar 2, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -93,7 +51,8 @@ const sampleUsers = [
     name: "Ammar Foley",
     email: "ammar@untitledui.com",
     avatar: "/avatars/ammar.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "User",
+    status: "disabled",
     lastActive: "Mar 6, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -102,7 +61,8 @@ const sampleUsers = [
     name: "Caitlyn King",
     email: "caitlyn@untitledui.com",
     avatar: "/avatars/caitlyn.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "User",
+    status: "active",
     lastActive: "Mar 8, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -111,7 +71,8 @@ const sampleUsers = [
     name: "Sienna Hewitt",
     email: "sienna@untitledui.com",
     avatar: "/avatars/sienna.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "User",
+    status: "active",
     lastActive: "Mar 1, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -120,7 +81,8 @@ const sampleUsers = [
     name: "Olly Shroeder",
     email: "olly@untitledui.com",
     avatar: "/avatars/olly.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "User",
+    status: "disabled",
     lastActive: "Mar 3, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -129,7 +91,8 @@ const sampleUsers = [
     name: "Mathilde Lewis",
     email: "mathilde@untitledui.com",
     avatar: "/avatars/mathilde.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "User",
+    status: "active",
     lastActive: "Mar 5, 2024",
     dateAdded: "July 4, 2022",
   },
@@ -138,9 +101,50 @@ const sampleUsers = [
     name: "Jaya Willis",
     email: "jaya@untitledui.com",
     avatar: "/avatars/jaya.jpg",
-    access: ["Data Export", "Data Import"],
+    access: "Admin",
+    status: "active",
     lastActive: "Mar 7, 2024",
     dateAdded: "July 4, 2022",
+  },
+  {
+    id: "9",
+    name: "John Doe",
+    email: "john.doe@example.com",
+    avatar: "/avatars/default-1.jpg",
+    access: "User",
+    status: "active",
+    lastActive: "Mar 10, 2024",
+    dateAdded: "July 5, 2022",
+  },
+  {
+    id: "10",
+    name: "Jane Smith",
+    email: "jane.smith@example.com",
+    avatar: "/avatars/default-2.jpg",
+    access: "User",
+    status: "disabled",
+    lastActive: "Mar 9, 2024",
+    dateAdded: "July 6, 2022",
+  },
+  {
+    id: "11",
+    name: "Michael Johnson",
+    email: "michael.johnson@example.com",
+    avatar: "/avatars/default-3.jpg",
+    access: "Admin",
+    status: "active",
+    lastActive: "Mar 11, 2024",
+    dateAdded: "July 7, 2022",
+  },
+  {
+    id: "12",
+    name: "Emily Davis",
+    email: "emily.davis@example.com",
+    avatar: "/avatars/default-4.jpg",
+    access: "User",
+    status: "active",
+    lastActive: "Mar 12, 2024",
+    dateAdded: "July 8, 2022",
   },
 ];
 
@@ -211,18 +215,22 @@ const columns: ColumnDef<typeof sampleUsers[0]>[] = [
     header: "Access",
     cell: ({ row }) => {
       const user = row.original;
+      const isAdmin = user.access === 'Admin';
+      const isCurrentUser = user.id === '1';
+
       return (
-        <div className="flex flex-wrap gap-2">
-          {user.access.map((access) => (
-            <Badge
-              key={access}
-              variant="outline"
-              className={`${getAccessBadgeColor(access)} border`}
-            >
-              {access}
-            </Badge>
-          ))}
-        </div>
+        <Badge
+          variant="outline"
+          className={`${
+            isCurrentUser
+              ? "bg-green-500/20 text-green-400 border-green-500/30"
+              : isAdmin
+              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+              : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"
+          } border`}
+        >
+          {user.access}
+        </Badge>
       );
     },
   },
@@ -235,6 +243,22 @@ const columns: ColumnDef<typeof sampleUsers[0]>[] = [
     accessorKey: "dateAdded",
     header: "Date added",
     cell: ({ row }) => <span className="text-gray-300">{row.original.dateAdded}</span>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <span
+          className={
+            user.status === "active" ? "text-gray-300" : "text-gray-400"
+          }
+        >
+          {user.status === "active" ? "Active" : "Disabled"}
+        </span>
+      );
+    },
   },
   {
     id: "actions",
@@ -275,52 +299,53 @@ const TeamPage = () => {
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
   const [selectedSort, setSelectedSort] = useState("name_asc");
   const [sorting, setSorting] = useState<SortingState>([]);
-
-  // Filter users based on search and access filter
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesAccess = selectedAccessFilter === "all" || 
-                         user.access.some(access => 
-                           accessCategories[selectedAccessFilter as keyof typeof accessCategories]?.includes(access)
-                         );
-    
-    return matchesSearch && matchesAccess;
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
   });
 
-  // Sort users based on selected sort option
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    switch (selectedSort) {
-      case "name_asc":
-        return a.name.localeCompare(b.name);
-      case "name_desc":
-        return b.name.localeCompare(a.name);
-      case "email_asc":
-        return a.email.localeCompare(b.email);
-      case "email_desc":
-        return b.email.localeCompare(a.email);
-      case "lastActive_desc":
-        return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
-      case "lastActive_asc":
-        return new Date(a.lastActive).getTime() - new Date(b.lastActive).getTime();
-      case "dateAdded_desc":
-        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-      case "dateAdded_asc":
-        return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
-      default:
-        return 0;
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+
+  React.useEffect(() => {
+    setGlobalFilter(searchTerm);
+  }, [searchTerm]);
+
+  React.useEffect(() => {
+    if (selectedAccessFilter === 'all') {
+      setColumnFilters([]);
+    } else {
+      setColumnFilters([
+        {
+          id: 'access',
+          value: selectedAccessFilter,
+        },
+      ]);
     }
-  });
+  }, [selectedAccessFilter]);
+
+  React.useEffect(() => {
+    const [id, order] = selectedSort.split("_");
+    if (id && order) {
+      setSorting([{ id, desc: order === "desc" }]);
+    }
+  }, [selectedSort]);
+
 
   // Create table instance
   const table = useReactTable({
-    data: sortedUsers,
+    data: users,
     columns,
     state: {
       sorting,
+      pagination,
+      columnFilters,
+      globalFilter,
     },
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -443,7 +468,7 @@ const TeamPage = () => {
         </div>
 
         {/* Pagination */}
-        {sortedUsers.length > 0 && (
+        {users.length > 0 && (
           <div className="flex items-center justify-between px-4 mt-6">
             <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
               {table.getFilteredRowModel().rows.length} user(s) total.
@@ -480,50 +505,50 @@ const TeamPage = () => {
               <div className="ml-auto flex items-center gap-2 lg:ml-0">
                 <Button
                   variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="hidden h-8 w-8 p-0 lg:flex"
                   onClick={() => table.setPageIndex(0)}
                   disabled={!table.getCanPreviousPage()}
                 >
                   <span className="sr-only">Go to first page</span>
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
-              <Button
-                variant="outline"
-                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                <Button
+                  variant="outline"
+                  className="size-8"
                   size="icon"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
                 >
                   <span className="sr-only">Go to previous page</span>
                   <ChevronLeft className="h-4 w-4" />
-              </Button>
-                    <Button
+                </Button>
+                <Button
                   variant="outline"
-                  className="size-8 bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                  className="size-8"
                   size="icon"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
                 >
                   <span className="sr-only">Go to next page</span>
                   <ChevronRight className="h-4 w-4" />
-                    </Button>
-              <Button
-                variant="outline"
-                  className="hidden size-8 lg:flex bg-stone-900 border-gray-700 text-gray-300 hover:bg-stone-800"
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hidden size-8 lg:flex"
                   size="icon"
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                   disabled={!table.getCanNextPage()}
                 >
                   <span className="sr-only">Go to last page</span>
                   <ChevronsRight className="h-4 w-4" />
-              </Button>
+                </Button>
               </div>
             </div>
           </div>
         )}
 
         {/* Empty State */}
-        {sortedUsers.length === 0 && (
+        {users.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="h-8 w-8 text-gray-400" />

@@ -130,7 +130,7 @@ const initialRoleGroups = [
     createdAt: "2024-01-25"
   },
   {
-    id: "4",
+    id: "42",
     name: "Viewers",
     description: "Read-only access to basic content",
     permissions: [
@@ -142,7 +142,7 @@ const initialRoleGroups = [
     createdAt: "2024-02-01"
   },
   {
-    id: "5",
+    id: "565",
     name: "Moderators",
     description: "Moderate user content and manage reports",
     permissions: [
@@ -155,6 +155,111 @@ const initialRoleGroups = [
     ],
     userCount: 6,
     createdAt: "2024-02-05"
+  },
+  {
+    id: "654",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "6433",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "621",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "2121",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "99",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "19",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "8",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
   },
   {
     id: "6",
@@ -170,7 +275,7 @@ const initialRoleGroups = [
     ],
     userCount: 4,
     createdAt: "2024-02-10"
-  }
+  },
 ];
 
 // Helper functions
