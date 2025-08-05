@@ -390,7 +390,7 @@ const CreateUserPage = () => {
               
               {/* Progress Bar */}
               <div className="mb-8 mt-8">
-                <Progress value={(currentStep / steps.length) * 100} className="h-0.5" />
+                <Progress value={(currentStep / steps.length) * 100} className="h-1" />
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
                   <span>Step {currentStep}</span>
                   <span>of {steps.length}</span>
