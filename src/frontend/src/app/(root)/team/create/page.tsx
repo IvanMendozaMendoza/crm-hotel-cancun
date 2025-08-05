@@ -389,7 +389,7 @@ const CreateUserPage = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-end">
               <div>
                 <h3 className="text-lg font-semibold">Select role group</h3>
                 <p className="text-sm text-muted-foreground">
@@ -422,6 +422,7 @@ const CreateUserPage = () => {
                     <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/30">
                       <TableCell>
                         <Checkbox
+                          className="ml-4"
                           checked={formData.role === roleGroup.id}
                           onCheckedChange={(checked) => {
                             if (checked) {
