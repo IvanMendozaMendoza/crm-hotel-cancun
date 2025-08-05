@@ -10,9 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, ArrowRight, CheckCircle, Info, User, Shield, Eye } from "lucide-react";
-import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, ArrowRight, CheckCircle, Info, User, Shield, Eye, Plus, Users } from "lucide-react";
+import { toast } from "sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface UserFormData {
   name: string;
@@ -73,6 +76,170 @@ const defaultAvatars = [
   "/avatars/default-5.jpg",
   "/avatars/default-6.jpg"
 ];
+
+// Permission categories and their permissions
+const permissionCategories = {
+  "User Management": [
+    "view_users",
+    "create_users", 
+    "edit_users",
+    "delete_users",
+    "assign_roles"
+  ],
+  "Content Management": [
+    "view_content",
+    "create_content",
+    "edit_content", 
+    "delete_content",
+    "publish_content"
+  ],
+  "System Administration": [
+    "view_settings",
+    "edit_settings",
+    "view_logs",
+    "manage_backups",
+    "system_maintenance"
+  ],
+  "Data Management": [
+    "view_data",
+    "export_data",
+    "import_data",
+    "delete_data",
+    "anonymize_data"
+  ],
+  "Analytics & Reports": [
+    "view_analytics",
+    "create_reports",
+    "export_reports",
+    "share_reports"
+  ],
+  "Security": [
+    "view_security",
+    "manage_permissions",
+    "audit_logs",
+    "security_settings"
+  ]
+};
+
+// Sample role groups data (same as in roles page)
+const roleGroups = [
+  {
+    id: "1",
+    name: "Administrators",
+    description: "Full system access with all permissions",
+    permissions: Object.values(permissionCategories).flat(),
+    userCount: 3,
+    createdAt: "2024-01-15"
+  },
+  {
+    id: "2", 
+    name: "Content Managers",
+    description: "Manage content and moderate user-generated content",
+    permissions: [
+      "view_users",
+      "view_content",
+      "create_content", 
+      "edit_content",
+      "delete_content",
+      "publish_content",
+      "view_analytics"
+    ],
+    userCount: 8,
+    createdAt: "2024-01-20"
+  },
+  {
+    id: "3",
+    name: "Data Analysts", 
+    description: "Access to analytics and reporting features",
+    permissions: [
+      "view_data",
+      "export_data", 
+      "view_analytics",
+      "create_reports",
+      "export_reports",
+      "share_reports"
+    ],
+    userCount: 5,
+    createdAt: "2024-01-25"
+  },
+  {
+    id: "4",
+    name: "Viewers",
+    description: "Read-only access to basic content",
+    permissions: [
+      "view_users",
+      "view_content",
+      "view_analytics"
+    ],
+    userCount: 12,
+    createdAt: "2024-02-01"
+  },
+  {
+    id: "5",
+    name: "Moderators",
+    description: "Moderate user content and manage reports",
+    permissions: [
+      "view_users",
+      "view_content",
+      "edit_content",
+      "delete_content",
+      "view_analytics",
+      "create_reports"
+    ],
+    userCount: 6,
+    createdAt: "2024-02-05"
+  },
+  {
+    id: "6",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+];
+
+// Helper function to get permission label
+const getPermissionLabel = (permission: string) => {
+  const labels: { [key: string]: string } = {
+    view_users: "View Users",
+    create_users: "Create Users",
+    edit_users: "Edit Users", 
+    delete_users: "Delete Users",
+    assign_roles: "Assign Roles",
+    view_content: "View Content",
+    create_content: "Create Content",
+    edit_content: "Edit Content",
+    delete_content: "Delete Content",
+    publish_content: "Publish Content",
+    view_settings: "View Settings",
+    edit_settings: "Edit Settings",
+    view_logs: "View Logs",
+    manage_backups: "Manage Backups",
+    system_maintenance: "System Maintenance",
+    view_data: "View Data",
+    export_data: "Export Data",
+    import_data: "Import Data",
+    delete_data: "Delete Data",
+    anonymize_data: "Anonymize Data",
+    view_analytics: "View Analytics",
+    create_reports: "Create Reports",
+    export_reports: "Export Reports",
+    share_reports: "Share Reports",
+    view_security: "View Security",
+    manage_permissions: "Manage Permissions",
+    audit_logs: "Audit Logs",
+    security_settings: "Security Settings"
+  };
+  return labels[permission] || permission;
+};
 
 const CreateUserPage = () => {
   const router = useRouter();
@@ -174,55 +341,44 @@ const CreateUserPage = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <div>
-              <Label htmlFor="name" className="text-sm font-medium">
-                User name
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="mt-2"
-                placeholder="Enter user name"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-destructive">{errors.name}</p>
-              )}
-              <p className="mt-2 text-sm text-muted-foreground">
-                The user name can have up to 64 characters. Valid characters: A-Z, a-z, 0-9, and +, =, ., @, _, - (hyphen)
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="mt-2"
-                placeholder="Enter email address"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="console-access"
-                className="mt-1"
-              />
-              <div className="space-y-1">
-                <Label htmlFor="console-access" className="text-sm font-medium">
-                  Enable console access
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow this user to access the system console
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">User name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter user name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  The user name can have up to 64 characters. Valid characters: A-Z, a-z, 0-9, and +, =, ., @, , - (hyphen)
                 </p>
               </div>
+              
+              <div>
+                <Label htmlFor="email">Email address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="console-access"
+                  checked={formData.status === "active"}
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, status: checked ? "active" : "disabled" })
+                  }
+                />
+                <Label htmlFor="console-access">Enable console access</Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Allow this user to access the system console
+              </p>
             </div>
           </div>
         );
@@ -230,66 +386,101 @@ const CreateUserPage = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium">Select role</Label>
-              <div className="mt-3 space-y-3">
-                {availableRoles.map((role) => (
-                  <div
-                    key={role.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      formData.role === role.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-background hover:border-border/50"
-                    }`}
-                    onClick={() => setFormData(prev => ({ ...prev, role: role.id }))}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium">{role.label}</h4>
-                        <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
-                      </div>
-                      {formData.role === role.id && (
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                  </div>
-                ))}
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Select role group</h3>
+                <p className="text-sm text-muted-foreground">
+                  Choose a security group for this user. Each user can only be assigned to one role group.
+                </p>
               </div>
-              {errors.role && (
-                <p className="mt-1 text-sm text-destructive">{errors.role}</p>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => router.push('/team/roles/create')}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create group
+              </Button>
             </div>
 
-            <Separator />
-
-            <div>
-              <Label className="text-sm font-medium">Additional permissions</Label>
-              <p className="text-sm text-muted-foreground mt-1">
-                Select specific permissions to grant to this user
-              </p>
-              
-              <div className="mt-4 space-y-4">
-                {Object.entries(getPermissionsByCategory()).map(([category, permissions]) => (
-                  <div key={category}>
-                    <h4 className="text-sm font-medium text-foreground mb-2">{category}</h4>
-                    <div className="space-y-2">
-                      {permissions.map((permission) => (
-                        <div key={permission.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={permission.id}
-                            checked={formData.permissions.includes(permission.id)}
-                            onCheckedChange={() => togglePermission(permission.id)}
-                          />
-                          <Label htmlFor={permission.id} className="text-sm">
-                            {permission.label}
-                          </Label>
+            <div className="overflow-hidden rounded-lg border border-gray-700">
+              <Table>
+                <TableHeader className="bg-stone-900">
+                  <TableRow className="border-gray-700">
+                    <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
+                    <TableHead className="text-gray-300 font-medium">Role Group</TableHead>
+                    <TableHead className="text-gray-300 font-medium">Users</TableHead>
+                    <TableHead className="text-gray-300 font-medium">Permissions</TableHead>
+                    <TableHead className="text-gray-300 font-medium">Created</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {roleGroups.map((roleGroup) => (
+                    <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/30">
+                      <TableCell>
+                        <Checkbox
+                          checked={formData.role === roleGroup.id}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setFormData({ ...formData, role: roleGroup.id });
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-white">{roleGroup.name}</div>
+                          <div className="text-sm text-gray-400">{roleGroup.description}</div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-300">{roleGroup.userCount}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="link" className="h-auto p-0 text-gray-300 hover:text-white">
+                              {roleGroup.permissions.length} permissions
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+                            <Command>
+                              <CommandInput placeholder="Search permissions..." className="border-gray-700" />
+                              <CommandList className="max-h-[300px]">
+                                <CommandEmpty>No permissions found.</CommandEmpty>
+                                <CommandGroup>
+                                  {roleGroup.permissions.map((permission) => (
+                                    <CommandItem key={permission} className="flex items-center gap-2 text-gray-300 hover:bg-gray-800">
+                                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                                      {getPermissionLabel(permission)}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-gray-300">{roleGroup.createdAt}</span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
+
+            {formData.role && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Selected role group: <strong>{roleGroups.find(r => r.id === formData.role)?.name}</strong>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         );
 
@@ -297,61 +488,50 @@ const CreateUserPage = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium mb-4">Review user details</h3>
+              <h3 className="text-lg font-semibold mb-4">Review user details</h3>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">User name</Label>
-                    <p className="mt-1">{formData.name}</p>
+                    <Label className="text-sm font-medium">User name</Label>
+                    <p className="text-sm text-muted-foreground mt-1">{formData.name}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                    <p className="mt-1">{formData.email}</p>
+                    <Label className="text-sm font-medium">Email</Label>
+                    <p className="text-sm text-muted-foreground mt-1">{formData.email}</p>
                   </div>
                 </div>
-
+                
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Role</Label>
-                  <Badge variant="outline" className="mt-1">
-                    {availableRoles.find(r => r.id === formData.role)?.label}
-                  </Badge>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Permissions</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {formData.permissions.length > 0 ? (
-                      formData.permissions.map(permissionId => {
-                        const permission = availablePermissions.find(p => p.id === permissionId);
-                        return (
-                          <Badge key={permissionId} variant="secondary" className="text-xs">
-                            {permission?.label}
-                          </Badge>
-                        );
-                      })
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No additional permissions selected</p>
-                    )}
+                  <Label className="text-sm font-medium">Role</Label>
+                  <div className="mt-1">
+                    <Badge variant="outline">
+                      {roleGroups.find(r => r.id === formData.role)?.name || "No role selected"}
+                    </Badge>
                   </div>
                 </div>
-
+                
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                  <Badge 
-                    variant="outline" 
-                    className={`mt-1 ${
-                      formData.status === "active" 
-                        ? "bg-green-500/10 text-green-600 border-green-500/20" 
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {formData.status === "active" ? "Active" : "Disabled"}
-                  </Badge>
+                  <Label className="text-sm font-medium">Permissions</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {formData.role 
+                      ? `${roleGroups.find(r => r.id === formData.role)?.permissions.length || 0} permissions from selected role group`
+                      : "No additional permissions selected"
+                    }
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <div className="mt-1">
+                    <Badge variant={formData.status === "active" ? "default" : "secondary"}>
+                      {formData.status === "active" ? "Active" : "Disabled"}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
-
+            
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
@@ -440,7 +620,7 @@ const CreateUserPage = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3 order-1 lg:order-2">
-            <Card className="bg-card border-border">
+            <Card className="bg-background border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {(() => {
