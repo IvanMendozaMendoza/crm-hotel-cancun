@@ -215,8 +215,8 @@ const columns: ColumnDef<typeof sampleUsers[0]>[] = [
     header: "Access",
     cell: ({ row }) => {
       const user = row.original;
-      const isAdmin = user.access === 'Admin';
       const isCurrentUser = user.id === '1';
+      const isDisabled = user.status === 'disabled';
 
       return (
         <Badge
@@ -224,9 +224,9 @@ const columns: ColumnDef<typeof sampleUsers[0]>[] = [
           className={`${
             isCurrentUser
               ? "bg-green-500/20 text-green-400 border-green-500/30"
-              : isAdmin
-              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-              : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"
+              : isDisabled
+              ? "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"
+              : "bg-blue-500/20 text-blue-400 border-blue-500/30"
           } border`}
         >
           {user.access}

@@ -362,10 +362,6 @@ function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
   )
 }
 
-
-
-
-
 const TeamRolesPage = () => {
   const router = useRouter();
   const [roleGroups, setRoleGroups] = useState(initialRoleGroups);
