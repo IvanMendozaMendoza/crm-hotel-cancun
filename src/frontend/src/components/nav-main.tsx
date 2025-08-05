@@ -29,6 +29,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { redirect } from "next/navigation"
 import Link from "next/link"
@@ -48,6 +49,7 @@ export function NavMain({
 }) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const iconMap = {
     dashboard: IconDashboard,
@@ -74,6 +76,14 @@ export function NavMain({
   };
 
   const isExpanded = (title: string) => expandedItems.includes(title);
+
+  // Function to handle navigation clicks and auto-close sidebar on mobile/tablet
+  const handleNavigationClick = () => {
+    // Close sidebar on mobile/tablet viewports
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Function to check if an item is active
   const isItemActive = (url: string) => {
@@ -154,7 +164,7 @@ export function NavMain({
                         </div>
                       </div>
                     ) : (
-                      <Link href={item.url} className="flex items-center gap-2">
+                      <Link href={item.url} className="flex items-center gap-2" onClick={handleNavigationClick}>
                         {Icon && <Icon />}
                         <span>{item.title}</span>
                       </Link>
@@ -187,7 +197,7 @@ export function NavMain({
                               asChild
                               className={`${isSubActive ? "bg-zinc-800/70 text-white" : ""}`}
                             >
-                              <Link href={subItem.url} className="flex items-center gap-2 text-sm">
+                              <Link href={subItem.url} className="flex items-center gap-2 text-sm" onClick={handleNavigationClick}>
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuButton>
