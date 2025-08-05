@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, ArrowRight, CheckCircle, Info, User, Shield, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 
 interface UserFormData {
   name: string;
@@ -385,10 +386,20 @@ const CreateUserPage = () => {
           {/* Vertical Steps Navigation */}
           <div className="lg:col-span-1 order-2 lg:order-1">
             <div className="lg:sticky lg:top-6">
-              <h3 className="text-lg font-semibold mb-6 lg:mb-8">Steps</h3>
+              {/* <h3 className="text-lg font-semibold mb-6 lg:mb-8">Steps</h3> */}
+              
+              {/* Progress Bar */}
+              <div className="mb-8 mt-8">
+                <Progress value={(currentStep / steps.length) * 100} className="h-0.5" />
+                <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                  <span>Step {currentStep}</span>
+                  <span>of {steps.length}</span>
+                </div>
+              </div>
+              
               <div className="relative">
                 {/* Vertical line connecting steps */}
-                <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-border" />
+                <div className="absolute left-3 top-8 bottom-8 w-0.5 bg-border" />
                 
                 <div className="space-y-6 sm:space-y-8">
                   {steps.map((step, index) => {
@@ -398,18 +409,14 @@ const CreateUserPage = () => {
                     return (
                       <div key={step.id} className="relative flex items-start">
                         {/* Step circle */}
-                        <div className={`relative z-10 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        <div className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                           isActive 
                             ? "bg-primary border-primary text-primary-foreground"
                             : isCompleted
                             ? "bg-primary border-primary text-primary-foreground"
                             : "bg-background border-border text-muted-foreground"
                         }`}>
-                          {isCompleted ? (
-                            <CheckCircle className="h-6 w-6" />
-                          ) : (
-                            <span className="text-sm font-medium">{step.id}</span>
-                          )}
+                          <span className="text-sm font-medium">{step.id}</span>
                         </div>
                         
                         {/* Step content */}
