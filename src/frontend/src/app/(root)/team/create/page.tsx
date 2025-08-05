@@ -419,7 +419,7 @@ const CreateUserPage = () => {
                 </TableHeader>
                 <TableBody>
                   {roleGroups.map((roleGroup) => (
-                    <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/30">
+                    <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/50">
                       <TableCell>
                         <Checkbox
                           className="ml-4"
