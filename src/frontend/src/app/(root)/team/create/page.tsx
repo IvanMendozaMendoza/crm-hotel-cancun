@@ -341,22 +341,22 @@ const CreateUserPage = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="name">User name</Label>
+                <Label htmlFor="name" className="text-sm font-medium mb-2 block">User name</Label>
                 <Input
                   id="name"
                   placeholder="Enter user name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-2">
                   The user name can have up to 64 characters. Valid characters: A-Z, a-z, 0-9, and +, =, ., @, , - (hyphen)
                 </p>
               </div>
               
               <div>
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="email" className="text-sm font-medium mb-2 block">Email address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -366,19 +366,22 @@ const CreateUserPage = () => {
                 />
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-2">
                 <Checkbox
                   id="console-access"
                   checked={formData.status === "active"}
                   onCheckedChange={(checked) => 
                     setFormData({ ...formData, status: checked ? "active" : "disabled" })
                   }
+                  className="mt-0.5"
                 />
-                <Label htmlFor="console-access">Enable console access</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="console-access" className="text-sm font-medium">Enable console access</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow this user to access the system console
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground ml-6">
-                Allow this user to access the system console
-              </p>
             </div>
           </div>
         );
