@@ -313,14 +313,7 @@ const CreateRoleGroupPage = () => {
                   Choose which capabilities this role will grant.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={selectVisible}>
-                  Select visible
-                </Button>
-                <Button variant="outline" size="sm" onClick={clearVisible}>
-                  Clear visible
-                </Button>
-              </div>
+
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
