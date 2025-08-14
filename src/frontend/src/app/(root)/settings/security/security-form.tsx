@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,6 +52,8 @@ const passwordSchema = z
     }
   );
 
+type PasswordFormData = z.infer<typeof passwordSchema>;
+
 interface SecurityFormProps {
   user: {
     username: string;
@@ -61,13 +63,107 @@ interface SecurityFormProps {
   };
 }
 
+// Reusable password input component
+const PasswordInput = ({ 
+  label, 
+  name, 
+  placeholder, 
+  showPassword, 
+  onTogglePassword, 
+  ...fieldProps 
+}: {
+  label: string;
+  name: string;
+  placeholder: string;
+  showPassword: boolean;
+  onTogglePassword: () => void;
+  [key: string]: any;
+}) => (
+  <FormItem>
+    <FormLabel className="text-gray-300">{label}</FormLabel>
+    <FormControl>
+      <div className="relative">
+        <Input 
+          type={showPassword ? "text" : "password"}
+          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
+          placeholder={placeholder}
+          {...fieldProps}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+          onClick={onTogglePassword}
+        >
+          {showPassword ? (
+            <EyeOff className="h-4 w-4 text-gray-400" />
+          ) : (
+            <Eye className="h-4 w-4 text-gray-400" />
+          )}
+        </Button>
+      </div>
+    </FormControl>
+    <FormMessage />
+  </FormItem>
+);
+
+// Reusable info card component
+const InfoCard = ({ 
+  title, 
+  description, 
+  icon: Icon, 
+  children 
+}: {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+}) => (
+  <Card className="bg-stone-900 border-gray-700">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2 text-white">
+        <Icon className="h-5 w-5" />
+        {title}
+      </CardTitle>
+      <CardDescription className="text-gray-400">
+        {description}
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      {children}
+    </CardContent>
+  </Card>
+);
+
+// Security tips data
+const SECURITY_TIPS = [
+  "Use a strong, unique password that you don't use elsewhere.",
+  "Enable two-factor authentication for additional security.",
+  "Never share your password or login credentials with anyone.",
+  "Log out from shared or public computers after use.",
+];
+
+// Security information data
+const SECURITY_INFO = [
+  { label: "Last Password Change", value: "January 15, 2024" },
+  { 
+    label: "Account Status", 
+    value: "Secure", 
+    status: { color: "green", indicator: "bg-green-500" } 
+  },
+  { label: "Last Login", value: "Today at 2:30 PM" },
+];
+
 export const SecurityForm = ({ user }: SecurityFormProps) => {
   const [isPending, setIsPending] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
-  const form = useForm<z.infer<typeof passwordSchema>>({
+  const form = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
       currentPassword: "",
@@ -76,7 +172,38 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof passwordSchema>) => {
+  // Memoized password fields configuration
+  const passwordFields = useMemo(() => [
+    {
+      name: "currentPassword" as const,
+      label: "Current Password",
+      placeholder: "Enter your current password",
+      key: "current",
+    },
+    {
+      name: "newPassword" as const,
+      label: "New Password",
+      placeholder: "Enter your new password",
+      key: "new",
+    },
+    {
+      name: "confirmPassword" as const,
+      label: "Confirm New Password",
+      placeholder: "Confirm your new password",
+      key: "confirm",
+    },
+  ], []);
+
+  // Optimized password visibility toggle
+  const togglePasswordVisibility = useCallback((field: keyof typeof passwordVisibility) => {
+    setPasswordVisibility(prev => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  }, []);
+
+  // Optimized form submission
+  const handleSubmit = useCallback(async (data: PasswordFormData) => {
     setIsPending(true);
     try {
       const pwResult = await updatePassword(
@@ -90,7 +217,6 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
           signOut({ callbackUrl: "/login" });
         }, 3500);
         
-        // Reset form
         form.reset();
       }
     } catch (err: any) {
@@ -98,223 +224,105 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
     } finally {
       setIsPending(false);
     }
-  };
+  }, [form]);
+
+  // Memoized form state
+  const isFormDirty = form.formState.isDirty;
+  const isSubmitDisabled = isPending || !isFormDirty;
 
   return (
     <div className="grid gap-6">
       {/* Password Change Card */}
-      <Card className="bg-stone-900 border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Lock className="h-5 w-5" />
-            Change Password
-          </CardTitle>
-          <CardDescription className="text-gray-400">
-            Update your password to keep your account secure. You will be logged out after changing your password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-1">
+      <InfoCard
+        title="Change Password"
+        description="Update your password to keep your account secure. You will be logged out after changing your password."
+        icon={Lock}
+      >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-1">
+              {passwordFields.map(({ name, label, placeholder, key }) => (
                 <FormField
+                  key={name}
                   control={form.control}
-                  name="currentPassword"
+                  name={name}
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Current Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type={showCurrentPassword ? "text" : "password"}
-                            {...field} 
-                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
-                            placeholder="Enter your current password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          >
-                            {showCurrentPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-400" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <PasswordInput
+                      label={label}
+                      name={name}
+                      placeholder={placeholder}
+                      showPassword={passwordVisibility[key as keyof typeof passwordVisibility]}
+                      onTogglePassword={() => togglePasswordVisibility(key as keyof typeof passwordVisibility)}
+                      {...field}
+                    />
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="newPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">New Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type={showNewPassword ? "text" : "password"}
-                            {...field} 
-                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
-                            placeholder="Enter your new password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                          >
-                            {showNewPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-400" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Confirm New Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type={showConfirmPassword ? "text" : "password"}
-                            {...field} 
-                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
-                            placeholder="Confirm your new password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-400" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              ))}
+            </div>
 
-              {/* Password Requirements */}
-              <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Password Requirements</h4>
-                <ul className="text-sm text-gray-400 space-y-1">
-                  <li>• At least 8 characters long</li>
-                  <li>• Must be different from your current password</li>
-                  <li>• Consider using a mix of letters, numbers, and symbols</li>
-                </ul>
-              </div>
+            {/* Password Requirements */}
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Password Requirements</h4>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• At least 8 characters long</li>
+                <li>• Must be different from your current password</li>
+                <li>• Consider using a mix of letters, numbers, and symbols</li>
+              </ul>
+            </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={isPending || !form.formState.isDirty}
-                  className="bg-white hover:bg-gray-100 text-gray-900 px-6"
-                >
-                  {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
-                  {isPending ? "Updating..." : "Update Password"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={isSubmitDisabled}
+                className="bg-white hover:bg-gray-100 text-gray-900 px-6"
+              >
+                {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
+                {isPending ? "Updating..." : "Update Password"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </InfoCard>
 
       {/* Security Information Card */}
-      <Card className="bg-stone-900 border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Shield className="h-5 w-5" />
-            Security Information
-          </CardTitle>
-          <CardDescription className="text-gray-400">
-            View your account security status and recent activity.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <Label className="text-gray-400 text-sm">Last Password Change</Label>
-              <p className="text-white font-medium">January 15, 2024</p>
+      <InfoCard
+        title="Security Information"
+        description="View your account security status and recent activity."
+        icon={Shield}
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          {SECURITY_INFO.map(({ label, value, status }) => (
+            <div key={label}>
+              <Label className="text-gray-400 text-sm">{label}</Label>
+              {status ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className={`w-2 h-2 ${status.indicator} rounded-full`}></div>
+                  <span className={`text-${status.color}-400 text-sm`}>{value}</span>
+                </div>
+              ) : (
+                <p className="text-white font-medium">{value}</p>
+              )}
             </div>
-            <div>
-              <Label className="text-gray-400 text-sm">Account Status</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-400 text-sm">Secure</span>
-              </div>
-            </div>
-            <div>
-              <Label className="text-gray-400 text-sm">Last Login</Label>
-              <p className="text-white font-medium">Today at 2:30 PM</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      </InfoCard>
 
       {/* Security Tips Card */}
-      <Card className="bg-stone-900 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-white">Security Tips</CardTitle>
-          <CardDescription className="text-gray-400">
-            Best practices to keep your account secure.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
+      <InfoCard
+        title="Security Tips"
+        description="Best practices to keep your account secure."
+        icon={Shield}
+      >
+        <div className="space-y-3">
+          {SECURITY_TIPS.map((tip, index) => (
+            <div key={index} className="flex items-start gap-3">
               <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-gray-300 text-sm">
-                Use a strong, unique password that you don't use elsewhere.
-              </p>
+              <p className="text-gray-300 text-sm">{tip}</p>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-gray-300 text-sm">
-                Enable two-factor authentication for additional security.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-gray-300 text-sm">
-                Never share your password or login credentials with anyone.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-gray-300 text-sm">
-                Log out from shared or public computers after use.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      </InfoCard>
     </div>
   );
 }; 
