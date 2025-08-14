@@ -1,7 +1,7 @@
-import { SectionCards, type SectionCardItem } from "@/components/section-cards"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import data from "./data.json"
+import { SectionCards, type SectionCardItem } from "@/components/section-cards";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import data from "./data.json";
 const sectionItems: SectionCardItem[] = [
   {
     description: "Total Revenue",
@@ -31,22 +31,15 @@ const sectionItems: SectionCardItem[] = [
     footerPrimary: "Steady performance increase",
     footerSecondary: "Meets growth projections",
   },
-]
+];
 
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col lg:px-12">
       <div className="@container/main flex flex-1 flex-col gap-2">
-        {/* Header */}
-        <div className="px-4 lg:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-            <div className="pt-6">
-              <h1 className="text-2xl font-semibold text-white">Analytics</h1>
-              <p className="text-gray-400">Comprehensive analytics and performance insights</p>
-            </div>
-          </div>
+        <div className="px-4 lg:px-6 pt-12">
+          <h1 className="text-2xl font-semibold text-white">Analytics</h1>
         </div>
-        
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <SectionCards items={sectionItems} />
           <div className="px-4 lg:px-6">
@@ -56,5 +49,5 @@ export default function Page() {
         </div>
       </div>
     </div>
-  )
+  );
 }
