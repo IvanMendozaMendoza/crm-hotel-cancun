@@ -317,28 +317,17 @@ const handleUpdateRoleGroup = (roleGroupName: string) => {
   toast.success(`"${roleGroupName}" details updated`);
 };
 
-// Create a separate component for the drag handle
-function DragHandle({ id }: { id: string }) {
-  const { attributes, listeners } = useSortable({
-    id,
-  })
-
-  return (
-    <Button
-      {...attributes}
-      {...listeners}
-      variant="ghost"
-      size="icon"
-      className="text-muted-foreground size-7 hover:bg-transparent"
-    >
-      <GripVertical className="text-muted-foreground size-3" />
-      <span className="sr-only">Drag to reorder</span>
-    </Button>
-  )
-}
-
+// Drag handle is rendered inside the row using the row's sortable activator
 function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+  const {
+    transform,
+    transition,
+    setNodeRef,
+    isDragging,
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+  } = useSortable({
     id: row.original.id,
   })
 
@@ -355,7 +344,21 @@ function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {cell.column.id === "drag" ? (
+            <Button
+              ref={(node: HTMLButtonElement | null) => setActivatorNodeRef(node)}
+              {...attributes}
+              {...listeners}
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground size-7 hover:bg-transparent"
+            >
+              <GripVertical className="text-muted-foreground size-3" />
+              <span className="sr-only">Drag to reorder</span>
+            </Button>
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
         </TableCell>
       ))}
     </TableRow>
@@ -368,17 +371,12 @@ const TeamRolesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sorting, setSorting] = useState<SortingState>([]);
-  const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
   );
-
-  const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => roleGroups?.map(({ id }) => id) || [],
-    [roleGroups]
-  );
+  
 
   const handleCreateRoleGroup = () => {
     router.push('/team/roles/create');
@@ -400,7 +398,7 @@ const TeamRolesPage = () => {
     {
       id: "drag",
       header: () => null,
-      cell: ({ row }) => <DragHandle id={row.original.id} />,
+      cell: () => null,
       size: 40,
     },
     {
@@ -651,7 +649,6 @@ const TeamRolesPage = () => {
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}
-            id={sortableId}
           >
             <Table>
               <TableHeader className="bg-stone-900">
@@ -673,7 +670,7 @@ const TeamRolesPage = () => {
               <TableBody>
                 {table.getRowModel().rows?.length ? (
                   <SortableContext
-                    items={dataIds}
+                    items={table.getRowModel().rows.map((r) => r.id)}
                     strategy={verticalListSortingStrategy}
                   >
                     {table.getRowModel().rows.map((row) => (

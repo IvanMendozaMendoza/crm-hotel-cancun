@@ -258,7 +258,7 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div>
               <Label className="text-gray-400 text-sm">Last Password Change</Label>
               <p className="text-white font-medium">January 15, 2024</p>
@@ -269,10 +269,6 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-green-400 text-sm">Secure</span>
               </div>
-            </div>
-            <div>
-              <Label className="text-gray-400 text-sm">Two-Factor Authentication</Label>
-              <p className="text-white font-medium">Not enabled</p>
             </div>
             <div>
               <Label className="text-gray-400 text-sm">Last Login</Label>
