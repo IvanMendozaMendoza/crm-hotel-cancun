@@ -19,7 +19,7 @@ export const AppSidebar = ({
   user,
   data,
   ...props
-}: { user: User; data: any } & React.ComponentProps<typeof Sidebar>) => {
+}: { user: User; data: { navMain: Array<{ title: string; url: string; icon?: string; items?: Array<{ title: string; url: string }> }> } } & React.ComponentProps<typeof Sidebar>) => {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

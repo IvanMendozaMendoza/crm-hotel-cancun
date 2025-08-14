@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreVertical, Search, Filter, ChevronDown, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { MoreVertical, Search, Filter, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   ColumnDef,
@@ -169,17 +169,17 @@ const sortOptions = [
 const getAccessBadgeColor = (access: string) => {
   switch (access) {
     case "Admin":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
-    case "Data Export":
+      return "bg-red-500/20 text-red-400 border-red-500/30";
+    case "User":
       return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-    case "Data Import":
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    case "Viewer":
+      return "bg-green-500/20 text-green-400 border-green-500/30";
     default:
       return "bg-gray-500/20 text-gray-400 border-gray-500/30";
   }
 };
 
-const UserAvatar = ({ user }: { user: any }) => (
+const UserAvatar = ({ user }: { user: { name: string; avatar: string; email: string } }) => (
   <div className="flex items-center gap-3">
     <Avatar className="h-10 w-10">
       <AvatarImage src={user.avatar} alt={user.name} />
@@ -194,7 +194,7 @@ const UserAvatar = ({ user }: { user: any }) => (
   </div>
 );
 
-const AccessBadge = ({ user }: { user: any }) => {
+const AccessBadge = ({ user }: { user: { id: string; status: string; access: string } }) => {
   const isCurrentUser = user.id === '1';
   const isDisabled = user.status === 'disabled';
 
@@ -214,7 +214,7 @@ const AccessBadge = ({ user }: { user: any }) => {
   );
 };
 
-const UserActions = ({ user, onUpdateUser }: { user: any; onUpdateUser: (name: string) => void }) => (
+const UserActions = ({ user, onUpdateUser }: { user: { name: string }; onUpdateUser: (name: string) => void }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -308,7 +308,7 @@ const SearchAndFilters = ({
   </div>
 );
 
-const Pagination = ({ table }: { table: any }) => (
+const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<any>> }) => (
   <div className="flex items-center justify-between px-4 mt-6">
     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} user(s) total.
@@ -421,185 +421,165 @@ const TeamPage = () => {
   const [users, setUsers] = useState(sampleUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
-  const [selectedSort, setSelectedSort] = useState("name_asc");
+  const [selectedSort, setSelectedSort] = useState("name");
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
 
-  useEffect(() => {
-    setGlobalFilter(searchTerm);
-  }, [searchTerm]);
+  const filteredUsers = useMemo(() => {
+    let filtered = users;
 
-  useEffect(() => {
-    if (selectedAccessFilter === 'all') {
-      setColumnFilters([]);
-    } else {
-      setColumnFilters([
-        {
-          id: 'access',
-          value: selectedAccessFilter,
-        },
-      ]);
+    if (searchTerm) {
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  }, [selectedAccessFilter]);
 
-  useEffect(() => {
-    const [id, order] = selectedSort.split("_");
-    if (id && order) {
-      setSorting([{ id, desc: order === "desc" }]);
+    if (selectedAccessFilter !== "all") {
+      filtered = filtered.filter(user => user.access === selectedAccessFilter);
     }
-  }, [selectedSort]);
 
-  const handleUpdateUser = useCallback((userName: string) => {
-    toast.success(`"${userName}" details updated`);
+    return filtered;
+  }, [users, searchTerm, selectedAccessFilter]);
+
+  const handleUpdateUser = useCallback((name: string) => {
+    toast.success(`User "${name}" updated successfully`);
   }, []);
 
   const handleAddUser = useCallback(() => {
     router.push('/team/create');
   }, [router]);
 
-  const columns = useMemo<ColumnDef<typeof sampleUsers[0]>[]>(() => [
+  const columns: ColumnDef<typeof users[0]>[] = [
     {
       accessorKey: "name",
-      header: "User name",
+      header: "User",
       cell: ({ row }) => <UserAvatar user={row.original} />,
     },
     {
       accessorKey: "access",
-      header: "Access",
+      header: "Access Level",
       cell: ({ row }) => <AccessBadge user={row.original} />,
-    },
-    {
-      accessorKey: "lastActive",
-      header: "Last active",
-      cell: ({ row }) => <span className="text-gray-300">{row.original.lastActive}</span>,
-    },
-    {
-      accessorKey: "dateAdded",
-      header: "Date added",
-      cell: ({ row }) => <span className="text-gray-300">{row.original.dateAdded}</span>,
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <span
-            className={
-              user.status === "active" ? "text-gray-300" : "text-gray-400"
-            }
-          >
-            {user.status === "active" ? "Active" : "Disabled"}
-          </span>
-        );
-      },
+      cell: ({ row }) => (
+        <Badge
+          variant="outline"
+          className={`${
+            row.original.status === "active"
+              ? "bg-green-500/20 text-green-400 border-green-500/30"
+              : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"
+          } border`}
+        >
+          {row.original.status}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "lastActive",
+      header: "Last Active",
+      cell: ({ row }) => (
+        <span className="text-gray-300">{row.original.lastActive}</span>
+      ),
+    },
+    {
+      accessorKey: "dateAdded",
+      header: "Date Added",
+      cell: ({ row }) => (
+        <span className="text-gray-300">{row.original.dateAdded}</span>
+      ),
     },
     {
       id: "actions",
       header: "",
       cell: ({ row }) => <UserActions user={row.original} onUpdateUser={handleUpdateUser} />,
     },
-  ], [handleUpdateUser]);
+  ];
 
   const table = useReactTable({
-    data: users,
+    data: filteredUsers,
     columns,
-    state: {
-      sorting,
-      pagination,
-      columnFilters,
-      globalFilter,
-    },
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      columnFilters,
+    },
   });
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-semibold text-white">All users {users.length}</h1>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <SearchAndFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              selectedAccessFilter={selectedAccessFilter}
-              onAccessFilterChange={setSelectedAccessFilter}
-              selectedSort={selectedSort}
-              onSortChange={setSelectedSort}
-            />
-            
-            <Button onClick={handleAddUser} className="bg-black text-white hover:bg-gray-900">
-              <Plus className="h-4 w-4 mr-2" />
-              Add user
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-white">Team</h1>
+          <p className="text-gray-400">Manage your team members and their access levels.</p>
         </div>
+        <Button onClick={handleAddUser} className="bg-white hover:bg-gray-100 text-gray-900">
+          <Plus className="h-4 w-4 mr-2" />
+          Add User
+        </Button>
+      </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-700">
-          <Table>
-            <TableHeader className="bg-stone-900">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-gray-700">
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-gray-300 font-medium">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+      <SearchAndFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedAccessFilter={selectedAccessFilter}
+        onAccessFilterChange={setSelectedAccessFilter}
+        selectedSort={selectedSort}
+        onSortChange={setSelectedSort}
+      />
+
+      <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader className="bg-gray-800">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="border-gray-700">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="text-gray-300 font-medium">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/60">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/30">
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
-                    No users found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {users.length > 0 && (
-          <Pagination table={table} />
-        )}
-
-        {users.length === 0 && (
-          <EmptyState
-            searchTerm={searchTerm}
-            selectedAccessFilter={selectedAccessFilter}
-            onAddUser={handleAddUser}
-          />
-        )}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <EmptyState
+                    searchTerm={searchTerm}
+                    selectedAccessFilter={selectedAccessFilter}
+                    onAddUser={handleAddUser}
+                  />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
+
+      <Pagination table={table} />
     </div>
   );
 };

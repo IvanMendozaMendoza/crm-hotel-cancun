@@ -5,21 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 import {
-  IconCamera,
-  IconChartBar,
-  IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
 
 import { getServerSession } from "next-auth";
@@ -27,7 +13,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { User } from "next-auth";
 
-let dataAdmin = {
+const dataAdmin = {
   navMain: [
     {
       title: "Dashboard",
@@ -161,7 +147,7 @@ let dataAdmin = {
   ],
 };
 
-let dataUser = {
+const dataUser = {
   navMain: [
     {
       title: "Dashboard",

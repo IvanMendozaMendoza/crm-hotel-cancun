@@ -40,8 +40,7 @@ export async function updateMe({
 
 export async function updatePassword(
   currentPassword: string,
-  newPassword: string,
-  newJwt?: string | null
+  newPassword: string
 ) {
   const jwt = await getJwt();
   const res = await fetch(Endpoints.UPDATE_PASSWORD, {
@@ -61,7 +60,7 @@ export async function updatePassword(
   let data;
   try {
     data = await res.json();
-  } catch (e) {
+  } catch {
     if (!res.ok) {
       if (res.status === 403)
         throw new Error("Your session is invalid. Please log in again.");
@@ -74,10 +73,7 @@ export async function updatePassword(
     throw new Error(data.message || "Failed to update password");
   }
 
-  const finalNewJwt = data.token || null;
-
   return {
     ...data,
-    newJwt: finalNewJwt,
   };
 }

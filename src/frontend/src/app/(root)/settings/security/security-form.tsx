@@ -80,7 +80,7 @@ const PasswordInput = ({
   placeholder: string;
   showPassword: boolean;
   onTogglePassword: () => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }) => (
   <FormItem>
     <FormLabel className="text-gray-300">{label}</FormLabel>
@@ -151,7 +151,7 @@ const SECURITY_INFO = [
   { label: "Last Login", value: "Today at 2:30 PM" },
 ];
 
-export const SecurityForm = ({ user }: SecurityFormProps) => {
+export const SecurityForm = ({ user: _user }: SecurityFormProps) => {
   const [isPending, setIsPending] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState({
     current: false,
@@ -221,8 +221,9 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
 
           form.reset();
         }
-      } catch (err: any) {
-        toast.error(err.message || "Failed to update password");
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to update password";
+        toast.error(errorMessage);
       } finally {
         setIsPending(false);
       }

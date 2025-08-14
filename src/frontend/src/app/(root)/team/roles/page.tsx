@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Users, Search, Filter, MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from "lucide-react";
+import { Plus, Users, Search, Filter, MoreVertical, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,7 +33,6 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
@@ -309,7 +308,7 @@ const permissionLabels: { [key: string]: string } = {
 
 const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
 
-const PermissionPopover = ({ roleGroup }: { roleGroup: any }) => {
+const PermissionPopover = ({ roleGroup }: { roleGroup: { permissions: string[] } }) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   
@@ -422,7 +421,7 @@ const SearchAndFilters = ({
   </div>
 );
 
-const Pagination = ({ table }: { table: any }) => (
+const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<any>> }) => (
   <div className="flex items-center justify-between px-4 mt-6">
     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} role group(s) total.
@@ -661,7 +660,7 @@ const TeamRolesPage = () => {
         const permissionCategory =
           permissionCategories[filterValue as keyof typeof permissionCategories] ||
           []
-        return permissionCategory.some((p: any) => permissions.includes(p))
+        return permissionCategory.some((p: string) => permissions.includes(p))
       },
     },
     state: {

@@ -7,11 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, CheckCircle, Info, User, Shield, Eye, Plus, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info, User, Shield, Eye, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -237,7 +236,7 @@ const permissionLabels: { [key: string]: string } = {
 
 const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
 
-const StepIndicator = ({ step, currentStep, totalSteps }: { step: any; currentStep: number; totalSteps: number }) => {
+const StepIndicator = ({ step, currentStep }: { step: { id: number; title: string; description: string }; currentStep: number }) => {
   const isActive = currentStep === step.id;
   const isCompleted = currentStep > step.id;
   
@@ -272,7 +271,7 @@ const RoleGroupTable = ({
   selectedRole, 
   onRoleSelect 
 }: { 
-  roleGroups: any[]; 
+  roleGroups: Array<{ id: string; name: string; description: string; userCount: number; permissions: string[]; createdAt: string }>; 
   selectedRole: string; 
   onRoleSelect: (roleId: string) => void; 
 }) => (
@@ -360,8 +359,6 @@ const CreateUserPage = () => {
     avatar: defaultAvatars[0]
   });
 
-  const [errors, setErrors] = useState<Partial<UserFormData>>({});
-
   const validateStep = useCallback((step: number): boolean => {
     const newErrors: Partial<UserFormData> = {};
 
@@ -387,7 +384,6 @@ const CreateUserPage = () => {
       }
     }
 
-    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
@@ -412,8 +408,9 @@ const CreateUserPage = () => {
         
         toast.success(`User "${formData.name}" created successfully`);
         router.push('/team');
-      } catch (error) {
-        toast.error("Failed to create user. Please try again.");
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to create user. Please try again.";
+        toast.error(errorMessage);
       }
     }
   }, [currentStep, formData.name, validateStep, router]);
@@ -613,7 +610,6 @@ const CreateUserPage = () => {
                       key={step.id} 
                       step={step} 
                       currentStep={currentStep} 
-                      totalSteps={steps.length} 
                     />
                   ))}
                 </div>

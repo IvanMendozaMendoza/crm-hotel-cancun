@@ -4,8 +4,6 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   IconCirclePlusFilled,
-  IconBell,
-  IconDashboard,
   IconUsers,
   IconSettings,
   IconHelp,
@@ -18,11 +16,9 @@ import {
   IconFileDescription,
   IconFileWord,
   IconFolder,
-  IconChevronDown,
   IconChevronRight,
 } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -52,7 +48,7 @@ export function NavMain({
   const { isMobile, setOpenMobile } = useSidebar();
 
   const iconMap = {
-    dashboard: IconDashboard,
+    dashboard: null, // No direct icon for dashboard, handled by default
     users: IconUsers,
     settings: IconSettings,
     help: IconHelp,
@@ -104,9 +100,9 @@ export function NavMain({
   };
 
   // Function to check if a parent item should be expanded due to active child
-  const shouldExpandParent = (item: any) => {
+  const shouldExpandParent = (item: { items?: Array<{ title: string; url: string }> }) => {
     if (!item.items) return false;
-    return item.items.some((subItem: any) => isSubItemActive(subItem.url));
+    return item.items.some((subItem: { title: string; url: string }) => isSubItemActive(subItem.url));
   };
 
   return (

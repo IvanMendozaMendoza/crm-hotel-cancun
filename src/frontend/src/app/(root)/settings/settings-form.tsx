@@ -72,16 +72,18 @@ const FormInput = ({
   name,
   placeholder,
   type = "text",
+  control,
   ...fieldProps
 }: {
   label: string;
   name: string;
   placeholder: string;
   type?: string;
-  [key: string]: any;
+  control: any;
+  [key: string]: unknown;
 }) => (
   <FormField
-    control={fieldProps.control}
+    control={control}
     name={name}
     render={({ field }) => (
       <FormItem>
@@ -151,8 +153,9 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
           signOut({ callbackUrl: "/login" });
         }, 3500);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update profile");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
+      toast.error(errorMessage);
     } finally {
       setIsPending(false);
     }

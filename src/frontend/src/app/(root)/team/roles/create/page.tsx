@@ -118,7 +118,7 @@ const steps = [
   },
 ];
 
-const StepIndicator = ({ step, currentStep }: { step: any; currentStep: number }) => {
+const StepIndicator = ({ step, currentStep }: { step: { id: number; title: string; description: string }; currentStep: number }) => {
   const isActive = currentStep === step.id;
   const isCompleted = currentStep > step.id;
 
@@ -157,7 +157,7 @@ const PermissionTable = ({
   formData,
   onTogglePermission,
 }: {
-  currentPageRows: any[];
+  currentPageRows: Array<{ category: string; key: string; label: string }>;
   formData: RoleFormData;
   onTogglePermission: (permissionId: string) => void;
 }) => (
@@ -354,8 +354,9 @@ const CreateRoleGroupPage = () => {
         icon: <CheckCircle className="h-4 w-4 text-green-400" />,
       });
       router.push("/team/roles");
-    } catch (e) {
-      toast.error("Failed to create role group. Please try again.");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create role group. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -377,18 +378,6 @@ const CreateRoleGroupPage = () => {
     })), [allPermissions]);
 
   const clearAll = useCallback(() => setFormData((prev) => ({ ...prev, permissions: [] })), []);
-
-  const selectVisible = useCallback(() =>
-    setFormData((prev) => ({
-      ...prev,
-      permissions: Array.from(new Set([...prev.permissions, ...filteredRows.map((r) => r.key)])),
-    })), [filteredRows]);
-
-  const clearVisible = useCallback(() =>
-    setFormData((prev) => ({
-      ...prev,
-      permissions: prev.permissions.filter((p) => !filteredRows.some((r) => r.key === p)),
-    })), [filteredRows]);
 
   const handlePageChange = useCallback((page: number) => {
     setPageIndex(page);
@@ -547,7 +536,7 @@ const CreateRoleGroupPage = () => {
       default:
         return null;
     }
-  }, [currentStep, formData, searchTerm, selectedCategory, currentPageRows, pageIndex, pageCount, errors.name, togglePermission, selectAll, clearAll, handlePageChange]);
+  }, [currentStep, formData, searchTerm, selectedCategory, currentPageRows, pageIndex, pageCount, errors.name, togglePermission, selectAll, clearAll, handlePageChange, filteredRows.length]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
