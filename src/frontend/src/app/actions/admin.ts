@@ -9,13 +9,13 @@ export async function getAllUsers() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${jwt}`,
+      Authorization: `Bearer ${jwt}`,
     },
-    cache: 'no-store',
+    cache: "no-store",
   });
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || "Failed to get all users");
   }
   return data;
-} 
+}

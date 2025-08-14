@@ -58,14 +58,6 @@ let dataAdmin = {
           title: "User Roles",
           url: "/team/roles",
         },
-        // {
-        //   title: "Security",
-        //   url: "/team/security",
-        // },
-        // {
-        //   title: "Permissions",
-        //   url: "/team/permissions",
-        // },
       ],
     },
 
@@ -134,16 +126,16 @@ let dataAdmin = {
     },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: "settings",
-    },
     // {
-    //   title: "Get Help",
+    //   title: "Settings",
     //   url: "#",
-    //   icon: IconHelp,
+    //   icon: "settings",
     // },
+    {
+      title: "Get Help",
+      url: "#",
+      icon: IconHelp,
+    },
     // {
     //   title: "Search",
     //   url: "#",
