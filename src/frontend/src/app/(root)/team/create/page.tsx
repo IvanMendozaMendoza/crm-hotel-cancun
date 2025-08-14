@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,6 @@ const defaultAvatars = [
   "/avatars/default-6.jpg"
 ];
 
-// Permission categories and their permissions
 const permissionCategories = {
   "User Management": [
     "view_users",
@@ -121,7 +120,6 @@ const permissionCategories = {
   ]
 };
 
-// Sample role groups data (same as in roles page)
 const roleGroups = [
   {
     id: "1",
@@ -206,40 +204,149 @@ const roleGroups = [
   },
 ];
 
-// Helper function to get permission label
-const getPermissionLabel = (permission: string) => {
-  const labels: { [key: string]: string } = {
-    view_users: "View Users",
-    create_users: "Create Users",
-    edit_users: "Edit Users", 
-    delete_users: "Delete Users",
-    assign_roles: "Assign Roles",
-    view_content: "View Content",
-    create_content: "Create Content",
-    edit_content: "Edit Content",
-    delete_content: "Delete Content",
-    publish_content: "Publish Content",
-    view_settings: "View Settings",
-    edit_settings: "Edit Settings",
-    view_logs: "View Logs",
-    manage_backups: "Manage Backups",
-    system_maintenance: "System Maintenance",
-    view_data: "View Data",
-    export_data: "Export Data",
-    import_data: "Import Data",
-    delete_data: "Delete Data",
-    anonymize_data: "Anonymize Data",
-    view_analytics: "View Analytics",
-    create_reports: "Create Reports",
-    export_reports: "Export Reports",
-    share_reports: "Share Reports",
-    view_security: "View Security",
-    manage_permissions: "Manage Permissions",
-    audit_logs: "Audit Logs",
-    security_settings: "Security Settings"
-  };
-  return labels[permission] || permission;
+const permissionLabels: { [key: string]: string } = {
+  view_users: "View Users",
+  create_users: "Create Users",
+  edit_users: "Edit Users", 
+  delete_users: "Delete Users",
+  assign_roles: "Assign Roles",
+  view_content: "View Content",
+  create_content: "Create Content",
+  edit_content: "Edit Content",
+  delete_content: "Delete Content",
+  publish_content: "Publish Content",
+  view_settings: "View Settings",
+  edit_settings: "Edit Settings",
+  view_logs: "View Logs",
+  manage_backups: "Manage Backups",
+  system_maintenance: "System Maintenance",
+  view_data: "View Data",
+  export_data: "Export Data",
+  import_data: "Import Data",
+  delete_data: "Delete Data",
+  anonymize_data: "Anonymize Data",
+  view_analytics: "View Analytics",
+  create_reports: "Create Reports",
+  export_reports: "Export Reports",
+  share_reports: "Share Reports",
+  view_security: "View Security",
+  manage_permissions: "Manage Permissions",
+  audit_logs: "Audit Logs",
+  security_settings: "Security Settings"
 };
+
+const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
+
+const StepIndicator = ({ step, currentStep, totalSteps }: { step: any; currentStep: number; totalSteps: number }) => {
+  const isActive = currentStep === step.id;
+  const isCompleted = currentStep > step.id;
+  
+  return (
+    <div className="relative flex items-start">
+      <div className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+        isActive 
+          ? "bg-primary border-primary text-primary-foreground"
+          : isCompleted
+          ? "bg-primary border-primary text-primary-foreground"
+          : "bg-background border-border text-muted-foreground"
+      }`}>
+        <span className="text-sm font-medium">{step.id}</span>
+      </div>
+      
+      <div className="ml-4 flex-1 min-w-0">
+        <h3 className={`font-medium text-sm ${
+          isActive ? "text-primary" : "text-foreground"
+        }`}>
+          {step.title}
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          {step.description}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const RoleGroupTable = ({ 
+  roleGroups, 
+  selectedRole, 
+  onRoleSelect 
+}: { 
+  roleGroups: any[]; 
+  selectedRole: string; 
+  onRoleSelect: (roleId: string) => void; 
+}) => (
+  <div className="overflow-hidden rounded-lg border border-gray-700">
+    <Table>
+      <TableHeader className="bg-stone-900">
+        <TableRow className="border-gray-700">
+          <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
+          <TableHead className="text-gray-300 font-medium">Role Group</TableHead>
+          <TableHead className="text-gray-300 font-medium">Users</TableHead>
+          <TableHead className="text-gray-300 font-medium">Permissions</TableHead>
+          <TableHead className="text-gray-300 font-medium">Created</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {roleGroups.map((roleGroup) => (
+          <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/60">
+            <TableCell>
+              <Checkbox
+                className="ml-4"
+                checked={selectedRole === roleGroup.id}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onRoleSelect(roleGroup.id);
+                  }
+                }}
+              />
+            </TableCell>
+            <TableCell>
+              <div>
+                <div className="font-medium text-white">{roleGroup.name}</div>
+                <div className="text-sm text-gray-400">{roleGroup.description}</div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-300">{roleGroup.userCount}</span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="link" className="h-auto p-0 text-gray-300 hover:text-white">
+                    {roleGroup.permissions.length} permissions
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+                  <Command>
+                    <CommandInput placeholder="Search permissions..." className="border-gray-700" />
+                    <CommandList className="max-h-[300px]">
+                      <CommandEmpty>No permissions found.</CommandEmpty>
+                      <CommandGroup>
+                        {roleGroup.permissions.map((permission: string) => (
+                          <CommandItem key={permission} className="flex items-center gap-2 text-gray-300 hover:bg-gray-800">
+                            <div className="w-2 h-2 rounded-full bg-blue-400" />
+                            {getPermissionLabel(permission)}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </TableCell>
+            <TableCell>
+              <span className="text-gray-300">{roleGroup.createdAt}</span>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+);
 
 const CreateUserPage = () => {
   const router = useRouter();
@@ -255,7 +362,7 @@ const CreateUserPage = () => {
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
 
-  const validateStep = (step: number): boolean => {
+  const validateStep = useCallback((step: number): boolean => {
     const newErrors: Partial<UserFormData> = {};
 
     if (step === 1) {
@@ -282,26 +389,25 @@ const CreateUserPage = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
       if (currentStep < steps.length) {
         setCurrentStep(currentStep + 1);
       }
     }
-  };
+  }, [currentStep, validateStep]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = useCallback(async () => {
     if (validateStep(currentStep)) {
       try {
-        // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         toast.success(`User "${formData.name}" created successfully`);
@@ -310,77 +416,64 @@ const CreateUserPage = () => {
         toast.error("Failed to create user. Please try again.");
       }
     }
-  };
+  }, [currentStep, formData.name, validateStep, router]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     router.push('/team');
-  };
+  }, [router]);
 
-  const togglePermission = (permissionId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permissionId)
-        ? prev.permissions.filter(p => p !== permissionId)
-        : [...prev.permissions, permissionId]
-    }));
-  };
+  const handleRoleSelect = useCallback((roleId: string) => {
+    setFormData(prev => ({ ...prev, role: roleId }));
+  }, []);
 
-  const getPermissionsByCategory = () => {
-    const categories: { [key: string]: typeof availablePermissions } = {};
-    availablePermissions.forEach(permission => {
-      if (!categories[permission.category]) {
-        categories[permission.category] = [];
-      }
-      categories[permission.category].push(permission);
-    });
-    return categories;
-  };
+  const selectedRoleGroup = useMemo(() => 
+    roleGroups.find(r => r.id === formData.role), 
+    [formData.role]
+  );
 
-  const renderStepContent = () => {
+  const renderStepContent = useCallback(() => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="name" className="text-sm font-medium mb-2 block">User name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter user name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-                <p className="text-sm text-muted-foreground mt-2">
-                  The user name can have up to 64 characters. Valid characters: A-Z, a-z, 0-9, and +, =, ., @, , - (hyphen)
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium mb-2 block">User name</Label>
+              <Input
+                id="name"
+                placeholder="Enter user name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                The user name can have up to 64 characters. Valid characters: A-Z, a-z, 0-9, and +, =, ., @, , - (hyphen)
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="email" className="text-sm font-medium mb-2 block">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="console-access"
+                checked={formData.status === "active"}
+                onCheckedChange={(checked) => 
+                  setFormData({ ...formData, status: checked ? "active" : "disabled" })
+                }
+                className="mt-0.5"
+              />
+              <div className="space-y-1">
+                <Label htmlFor="console-access" className="text-sm font-medium">Enable console access</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow this user to access the system console
                 </p>
-              </div>
-              
-              <div>
-                <Label htmlFor="email" className="text-sm font-medium mb-2 block">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter email address"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="console-access"
-                  checked={formData.status === "active"}
-                  onCheckedChange={(checked) => 
-                    setFormData({ ...formData, status: checked ? "active" : "disabled" })
-                  }
-                  className="mt-0.5"
-                />
-                <div className="space-y-1">
-                  <Label htmlFor="console-access" className="text-sm font-medium">Enable console access</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow this user to access the system console
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -406,82 +499,17 @@ const CreateUserPage = () => {
               </Button>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-gray-700">
-              <Table>
-                <TableHeader className="bg-stone-900">
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Role Group</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Users</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Permissions</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {roleGroups.map((roleGroup) => (
-                    <TableRow key={roleGroup.id} className="border-gray-700 hover:bg-gray-800/60">
-                      <TableCell>
-                        <Checkbox
-                          className="ml-4"
-                          checked={formData.role === roleGroup.id}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setFormData({ ...formData, role: roleGroup.id });
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-white">{roleGroup.name}</div>
-                          <div className="text-sm text-gray-400">{roleGroup.description}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-300">{roleGroup.userCount}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="link" className="h-auto p-0 text-gray-300 hover:text-white">
-                              {roleGroup.permissions.length} permissions
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
-                            <Command>
-                              <CommandInput placeholder="Search permissions..." className="border-gray-700" />
-                              <CommandList className="max-h-[300px]">
-                                <CommandEmpty>No permissions found.</CommandEmpty>
-                                <CommandGroup>
-                                  {roleGroup.permissions.map((permission) => (
-                                    <CommandItem key={permission} className="flex items-center gap-2 text-gray-300 hover:bg-gray-800">
-                                      <div className="w-2 h-2 rounded-full bg-blue-400" />
-                                      {getPermissionLabel(permission)}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-gray-300">{roleGroup.createdAt}</span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <RoleGroupTable 
+              roleGroups={roleGroups}
+              selectedRole={formData.role}
+              onRoleSelect={handleRoleSelect}
+            />
 
             {formData.role && (
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Selected role group: <strong>{roleGroups.find(r => r.id === formData.role)?.name}</strong>
+                  Selected role group: <strong>{selectedRoleGroup?.name}</strong>
                 </AlertDescription>
               </Alert>
             )}
@@ -510,7 +538,7 @@ const CreateUserPage = () => {
                   <Label className="text-sm font-medium">Role</Label>
                   <div className="mt-1">
                     <Badge variant="outline">
-                      {roleGroups.find(r => r.id === formData.role)?.name || "No role selected"}
+                      {selectedRoleGroup?.name || "No role selected"}
                     </Badge>
                   </div>
                 </div>
@@ -519,7 +547,7 @@ const CreateUserPage = () => {
                   <Label className="text-sm font-medium">Permissions</Label>
                   <p className="text-sm text-muted-foreground mt-1">
                     {formData.role 
-                      ? `${roleGroups.find(r => r.id === formData.role)?.permissions.length || 0} permissions from selected role group`
+                      ? `${selectedRoleGroup?.permissions.length || 0} permissions from selected role group`
                       : "No additional permissions selected"
                     }
                   </p>
@@ -548,12 +576,11 @@ const CreateUserPage = () => {
       default:
         return null;
     }
-  };
+  }, [currentStep, formData, router, selectedRoleGroup, handleRoleSelect]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
@@ -567,12 +594,8 @@ const CreateUserPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-24">
-          {/* Vertical Steps Navigation */}
           <div className="lg:col-span-1 order-2 lg:order-1">
             <div className="lg:sticky lg:top-6">
-              {/* <h3 className="text-lg font-semibold mb-6 lg:mb-8">Steps</h3> */}
-              
-              {/* Progress Bar */}
               <div className="mb-8 mt-8">
                 <Progress value={(currentStep / steps.length) * 100} className="h-1" />
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
@@ -582,47 +605,22 @@ const CreateUserPage = () => {
               </div>
               
               <div className="relative">
-                {/* Vertical line connecting steps */}
                 <div className="absolute left-3 top-8 bottom-8 w-0.5 bg-border" />
                 
                 <div className="space-y-6 sm:space-y-8">
-                  {steps.map((step, index) => {
-                    const isActive = currentStep === step.id;
-                    const isCompleted = currentStep > step.id;
-                    
-                    return (
-                      <div key={step.id} className="relative flex items-start">
-                        {/* Step circle */}
-                        <div className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          isActive 
-                            ? "bg-primary border-primary text-primary-foreground"
-                            : isCompleted
-                            ? "bg-primary border-primary text-primary-foreground"
-                            : "bg-background border-border text-muted-foreground"
-                        }`}>
-                          <span className="text-sm font-medium">{step.id}</span>
-                        </div>
-                        
-                        {/* Step content */}
-                        <div className="ml-4 flex-1 min-w-0">
-                          <h3 className={`font-medium text-sm ${
-                            isActive ? "text-primary" : "text-foreground"
-                          }`}>
-                            {step.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {steps.map((step) => (
+                    <StepIndicator 
+                      key={step.id} 
+                      step={step} 
+                      currentStep={currentStep} 
+                      totalSteps={steps.length} 
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3 order-1 lg:order-2">
             <Card className="bg-background border-border">
               <CardHeader>
@@ -642,7 +640,6 @@ const CreateUserPage = () => {
               </CardContent>
             </Card>
 
-            {/* Navigation Buttons */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
               <Button
                 variant="outline"

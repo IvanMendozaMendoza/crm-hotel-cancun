@@ -4,7 +4,13 @@ import React, { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Info, Lock, Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -63,17 +69,14 @@ interface SecurityFormProps {
   };
 }
 
-// Reusable password input component
-const PasswordInput = ({ 
-  label, 
-  name, 
-  placeholder, 
-  showPassword, 
-  onTogglePassword, 
-  ...fieldProps 
+const PasswordInput = ({
+  label,
+  placeholder,
+  showPassword,
+  onTogglePassword,
+  ...fieldProps
 }: {
   label: string;
-  name: string;
   placeholder: string;
   showPassword: boolean;
   onTogglePassword: () => void;
@@ -83,7 +86,7 @@ const PasswordInput = ({
     <FormLabel className="text-gray-300">{label}</FormLabel>
     <FormControl>
       <div className="relative">
-        <Input 
+        <Input
           type={showPassword ? "text" : "password"}
           className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
           placeholder={placeholder}
@@ -108,12 +111,11 @@ const PasswordInput = ({
   </FormItem>
 );
 
-// Reusable info card component
-const InfoCard = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  children 
+const InfoCard = ({
+  title,
+  description,
+  icon: Icon,
+  children,
 }: {
   title: string;
   description: string;
@@ -126,17 +128,12 @@ const InfoCard = ({
         <Icon className="h-5 w-5" />
         {title}
       </CardTitle>
-      <CardDescription className="text-gray-400">
-        {description}
-      </CardDescription>
+      <CardDescription className="text-gray-400">{description}</CardDescription>
     </CardHeader>
-    <CardContent>
-      {children}
-    </CardContent>
+    <CardContent>{children}</CardContent>
   </Card>
 );
 
-// Security tips data
 const SECURITY_TIPS = [
   "Use a strong, unique password that you don't use elsewhere.",
   "Enable two-factor authentication for additional security.",
@@ -144,13 +141,12 @@ const SECURITY_TIPS = [
   "Log out from shared or public computers after use.",
 ];
 
-// Security information data
 const SECURITY_INFO = [
   { label: "Last Password Change", value: "January 15, 2024" },
-  { 
-    label: "Account Status", 
-    value: "Secure", 
-    status: { color: "green", indicator: "bg-green-500" } 
+  {
+    label: "Account Status",
+    value: "Secure",
+    status: { color: "green", indicator: "bg-green-500" },
   },
   { label: "Last Login", value: "Today at 2:30 PM" },
 ];
@@ -172,74 +168,83 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
     },
   });
 
-  // Memoized password fields configuration
-  const passwordFields = useMemo(() => [
-    {
-      name: "currentPassword" as const,
-      label: "Current Password",
-      placeholder: "Enter your current password",
-      key: "current",
-    },
-    {
-      name: "newPassword" as const,
-      label: "New Password",
-      placeholder: "Enter your new password",
-      key: "new",
-    },
-    {
-      name: "confirmPassword" as const,
-      label: "Confirm New Password",
-      placeholder: "Confirm your new password",
-      key: "confirm",
-    },
-  ], []);
+  const passwordFields = useMemo(
+    () => [
+      {
+        name: "currentPassword" as const,
+        label: "Current Password",
+        placeholder: "Enter your current password",
+        key: "current",
+      },
+      {
+        name: "newPassword" as const,
+        label: "New Password",
+        placeholder: "Enter your new password",
+        key: "new",
+      },
+      {
+        name: "confirmPassword" as const,
+        label: "Confirm New Password",
+        placeholder: "Confirm your new password",
+        key: "confirm",
+      },
+    ],
+    []
+  );
 
-  // Optimized password visibility toggle
-  const togglePasswordVisibility = useCallback((field: keyof typeof passwordVisibility) => {
-    setPasswordVisibility(prev => ({
-      ...prev,
-      [field]: !prev[field],
-    }));
-  }, []);
+  const togglePasswordVisibility = useCallback(
+    (field: keyof typeof passwordVisibility) => {
+      setPasswordVisibility((prev) => ({
+        ...prev,
+        [field]: !prev[field],
+      }));
+    },
+    []
+  );
 
-  // Optimized form submission
-  const handleSubmit = useCallback(async (data: PasswordFormData) => {
-    setIsPending(true);
-    try {
-      const pwResult = await updatePassword(
-        data.currentPassword,
-        data.newPassword
-      );
-      
-      if (pwResult) {
-        toast.success("Password updated successfully. You need to log in again.");
-        setTimeout(() => {
-          signOut({ callbackUrl: "/login" });
-        }, 3500);
-        
-        form.reset();
+  const handleSubmit = useCallback(
+    async (data: PasswordFormData) => {
+      setIsPending(true);
+      try {
+        const pwResult = await updatePassword(
+          data.currentPassword,
+          data.newPassword
+        );
+
+        if (pwResult) {
+          toast.success(
+            "Password updated successfully. You need to log in again."
+          );
+          setTimeout(() => {
+            signOut({ callbackUrl: "/login" });
+          }, 3500);
+
+          form.reset();
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Failed to update password");
+      } finally {
+        setIsPending(false);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update password");
-    } finally {
-      setIsPending(false);
-    }
-  }, [form]);
+    },
+    [form]
+  );
 
-  // Memoized form state
   const isFormDirty = form.formState.isDirty;
   const isSubmitDisabled = isPending || !isFormDirty;
 
   return (
     <div className="grid gap-6">
-      {/* Password Change Card */}
       <InfoCard
         title="Change Password"
         description="Update your password to keep your account secure. You will be logged out after changing your password."
         icon={Lock}
       >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <div className="grid gap-6 md:grid-cols-1">
               {passwordFields.map(({ name, label, placeholder, key }) => (
                 <FormField
@@ -249,10 +254,17 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
                   render={({ field }) => (
                     <PasswordInput
                       label={label}
-                      name={name}
                       placeholder={placeholder}
-                      showPassword={passwordVisibility[key as keyof typeof passwordVisibility]}
-                      onTogglePassword={() => togglePasswordVisibility(key as keyof typeof passwordVisibility)}
+                      showPassword={
+                        passwordVisibility[
+                          key as keyof typeof passwordVisibility
+                        ]
+                      }
+                      onTogglePassword={() =>
+                        togglePasswordVisibility(
+                          key as keyof typeof passwordVisibility
+                        )
+                      }
                       {...field}
                     />
                   )}
@@ -260,9 +272,10 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
               ))}
             </div>
 
-            {/* Password Requirements */}
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-2">Password Requirements</h4>
+              <h4 className="text-sm font-medium text-gray-300 mb-2">
+                Password Requirements
+              </h4>
               <ul className="text-sm text-gray-400 space-y-1">
                 <li>• At least 8 characters long</li>
                 <li>• Must be different from your current password</li>
@@ -270,7 +283,6 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
               </ul>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end">
               <Button
                 type="submit"
@@ -285,7 +297,6 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
         </Form>
       </InfoCard>
 
-      {/* Security Information Card */}
       <InfoCard
         title="Security Information"
         description="View your account security status and recent activity."
@@ -297,8 +308,12 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
               <Label className="text-gray-400 text-sm">{label}</Label>
               {status ? (
                 <div className="flex items-center gap-2 mt-1">
-                  <div className={`w-2 h-2 ${status.indicator} rounded-full`}></div>
-                  <span className={`text-${status.color}-400 text-sm`}>{value}</span>
+                  <div
+                    className={`w-2 h-2 ${status.indicator} rounded-full`}
+                  ></div>
+                  <span className={`text-${status.color}-400 text-sm`}>
+                    {value}
+                  </span>
                 </div>
               ) : (
                 <p className="text-white font-medium">{value}</p>
@@ -308,8 +323,7 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
         </div>
       </InfoCard>
 
-      {/* Security Tips Card */}
-      <InfoCard
+       <InfoCard
         title="Security Tips"
         description="Best practices to keep your account secure."
         icon={Shield}
@@ -325,4 +339,4 @@ export const SecurityForm = ({ user }: SecurityFormProps) => {
       </InfoCard>
     </div>
   );
-}; 
+};
