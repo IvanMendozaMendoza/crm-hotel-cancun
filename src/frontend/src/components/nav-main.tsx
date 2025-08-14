@@ -122,15 +122,6 @@ export function NavMain({
               <IconCirclePlusFilled />
               <span>Upload file</span>
             </SidebarMenuButton>
-            <Button
-              size="icon"
-              className="size- group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-              onClick={() => redirect("/notifications")}
-            >
-              <IconBell />
-              <span className="sr-only">Notifications</span>
-            </Button>
           </SidebarMenuItem>
         </SidebarMenu>
 

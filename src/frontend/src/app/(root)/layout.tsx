@@ -42,15 +42,7 @@ let dataAdmin = {
         {
           title: "Overview",
           url: "/analytics",
-        },
-        {
-          title: "Reports",
-          url: "/analytics/reports",
-        },
-        {
-          title: "Metrics",
-          url: "/analytics/metrics",
-        },
+        }
       ],
     },
     {
@@ -89,10 +81,6 @@ let dataAdmin = {
         {
           title: "Security",
           url: "/settings/security",
-        },
-        {
-          title: "Notifications",
-          url: "/settings/notifications",
         },
       ],
     },
