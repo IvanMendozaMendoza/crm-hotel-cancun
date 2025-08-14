@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Info, Shield, Eye, CheckCircle, Search, Filter, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
@@ -15,8 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-// Permission categories and their permissions (consistent with roles page)
-const permissionCategories = {
+const permissionCategories: Record<string, string[]> = {
   "User Management": [
     "view_users",
     "create_users",
@@ -51,48 +50,46 @@ const permissionCategories = {
     "export_reports",
     "share_reports",
   ],
-  Security: [
+  "Security": [
     "view_security",
     "manage_permissions",
     "audit_logs",
     "security_settings",
   ],
-} as const;
-
-// Helper function to get permission label (consistent with roles page)
-const getPermissionLabel = (permission: string) => {
-  const labels: { [key: string]: string } = {
-    view_users: "View Users",
-    create_users: "Create Users",
-    edit_users: "Edit Users",
-    delete_users: "Delete Users",
-    assign_roles: "Assign Roles",
-    view_content: "View Content",
-    create_content: "Create Content",
-    edit_content: "Edit Content",
-    delete_content: "Delete Content",
-    publish_content: "Publish Content",
-    view_settings: "View Settings",
-    edit_settings: "Edit Settings",
-    view_logs: "View Logs",
-    manage_backups: "Manage Backups",
-    system_maintenance: "System Maintenance",
-    view_data: "View Data",
-    export_data: "Export Data",
-    import_data: "Import Data",
-    delete_data: "Delete Data",
-    anonymize_data: "Anonymize Data",
-    view_analytics: "View Analytics",
-    create_reports: "Create Reports",
-    export_reports: "Export Reports",
-    share_reports: "Share Reports",
-    view_security: "View Security",
-    manage_permissions: "Manage Permissions",
-    audit_logs: "Audit Logs",
-    security_settings: "Security Settings",
-  };
-  return labels[permission] || permission;
 };
+
+const permissionLabels: { [key: string]: string } = {
+  view_users: "View Users",
+  create_users: "Create Users",
+  edit_users: "Edit Users",
+  delete_users: "Delete Users",
+  assign_roles: "Assign Roles",
+  view_content: "View Content",
+  create_content: "Create Content",
+  edit_content: "Edit Content",
+  delete_content: "Delete Content",
+  publish_content: "Publish Content",
+  view_settings: "View Settings",
+  edit_settings: "Edit Settings",
+  view_logs: "View Logs",
+  manage_backups: "Manage Backups",
+  system_maintenance: "System Maintenance",
+  view_data: "View Data",
+  export_data: "Export Data",
+  import_data: "Import Data",
+  delete_data: "Delete Data",
+  anonymize_data: "Anonymize Data",
+  view_analytics: "View Analytics",
+  create_reports: "Create Reports",
+  export_reports: "Export Reports",
+  share_reports: "Share Reports",
+  view_security: "View Security",
+  manage_permissions: "Manage Permissions",
+  audit_logs: "Audit Logs",
+  security_settings: "Security Settings",
+};
+
+const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
 
 interface RoleFormData {
   name: string;
@@ -121,6 +118,157 @@ const steps = [
   },
 ];
 
+const StepIndicator = ({ step, currentStep }: { step: any; currentStep: number }) => {
+  const isActive = currentStep === step.id;
+  const isCompleted = currentStep > step.id;
+
+  return (
+    <div className="relative flex items-start">
+      <div
+        className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+          isActive
+            ? "bg-primary border-primary text-primary-foreground"
+            : isCompleted
+            ? "bg-primary border-primary text-primary-foreground"
+            : "bg-background border-border text-muted-foreground"
+        }`}
+      >
+        <span className="text-sm font-medium">{step.id}</span>
+      </div>
+
+      <div className="ml-4 flex-1 min-w-0">
+        <h3
+          className={`font-medium text-sm ${
+            isActive ? "text-primary" : "text-foreground"
+          }`}
+        >
+          {step.title}
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          {step.description}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const PermissionTable = ({
+  currentPageRows,
+  formData,
+  onTogglePermission,
+}: {
+  currentPageRows: any[];
+  formData: RoleFormData;
+  onTogglePermission: (permissionId: string) => void;
+}) => (
+  <div className="overflow-hidden rounded-lg border border-gray-700">
+    <Table>
+      <TableHeader className="bg-stone-900">
+        <TableRow className="border-gray-700">
+          <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
+          <TableHead className="text-gray-300 font-medium">Permission</TableHead>
+          <TableHead className="text-gray-300 font-medium">Category</TableHead>
+          <TableHead className="text-gray-300 font-medium">Key</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {currentPageRows.length ? (
+          currentPageRows.map((row) => (
+            <TableRow key={`${row.category}:${row.key}`} className="border-gray-700 hover:bg-gray-800/60">
+              <TableCell>
+                <Checkbox
+                  checked={formData.permissions.includes(row.key)}
+                  onCheckedChange={() => onTogglePermission(row.key)}
+                />
+              </TableCell>
+              <TableCell>
+                <div className="font-medium">{row.label}</div>
+                <div className="text-xs text-muted-foreground">{row.key}</div>
+              </TableCell>
+              <TableCell>
+                <span className="text-gray-300">{row.category}</span>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="text-gray-300 border-gray-700">
+                  {row.key}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={4} className="h-24 text-center text-gray-400">
+              No permissions found.
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  </div>
+);
+
+const Pagination = ({
+  pageIndex,
+  pageCount,
+  onPageChange,
+}: {
+  pageIndex: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
+}) => (
+  <div className="flex items-center justify-between px-4 mt-6">
+    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+      Page {pageIndex + 1} of {pageCount}
+    </div>
+    <div className="flex w-full items-center gap-8 lg:w-fit">
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+        Page {pageIndex + 1} of {pageCount}
+      </div>
+      <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <Button
+          variant="outline"
+          className="hidden h-8 w-8 p-0 lg:flex"
+          onClick={() => onPageChange(0)}
+          disabled={pageIndex === 0}
+        >
+          <span className="sr-only">Go to first page</span>
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => onPageChange(Math.max(0, pageIndex - 1))}
+          disabled={pageIndex === 0}
+        >
+          <span className="sr-only">Go to previous page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => onPageChange(Math.min(pageCount - 1, pageIndex + 1))}
+          disabled={pageIndex >= pageCount - 1}
+        >
+          <span className="sr-only">Go to next page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="hidden size-8 lg:flex"
+          size="icon"
+          onClick={() => onPageChange(pageCount - 1)}
+          disabled={pageIndex >= pageCount - 1}
+        >
+          <span className="sr-only">Go to last page</span>
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
 const CreateRoleGroupPage = () => {
   const router = useRouter();
 
@@ -134,10 +282,10 @@ const CreateRoleGroupPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [pageIndex, setPageIndex] = useState(0);
 
   const allPermissions = useMemo(() => Object.values(permissionCategories).flat(), []);
 
-  // Flatten permissions for table rows
   const permissionRows = useMemo(
     () =>
       Object.entries(permissionCategories).flatMap(([category, perms]) =>
@@ -159,19 +307,18 @@ const CreateRoleGroupPage = () => {
     });
   }, [permissionRows, searchTerm, selectedCategory]);
 
-  // Pagination (10 per page)
-  const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 10;
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const currentPageRows = useMemo(
     () => filteredRows.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize),
     [filteredRows, pageIndex]
   );
-  React.useEffect(() => {
+
+  useEffect(() => {
     setPageIndex(0);
   }, [searchTerm, selectedCategory]);
 
-  const validateStep = (step: number) => {
+  const validateStep = useCallback((step: number) => {
     const nextErrors: Partial<RoleFormData> = {};
 
     if (step === 1) {
@@ -184,21 +331,21 @@ const CreateRoleGroupPage = () => {
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  };
+  }, [formData.name]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
       if (currentStep < steps.length) setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep, validateStep]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
-  };
+  }, [currentStep]);
 
-  const handleCancel = () => router.push("/team/roles");
+  const handleCancel = useCallback(() => router.push("/team/roles"), [router]);
 
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     if (!validateStep(currentStep)) return;
     try {
       setIsSubmitting(true);
@@ -212,93 +359,72 @@ const CreateRoleGroupPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [currentStep, formData.name, validateStep, router]);
 
-  const togglePermission = (permissionId: string) => {
+  const togglePermission = useCallback((permissionId: string) => {
     setFormData((prev) => ({
       ...prev,
       permissions: prev.permissions.includes(permissionId)
         ? prev.permissions.filter((p) => p !== permissionId)
         : [...prev.permissions, permissionId],
     }));
-  };
+  }, []);
 
-  const isCategoryFullySelected = (category: keyof typeof permissionCategories) => {
-    const perms = permissionCategories[category];
-    return perms.every((p) => formData.permissions.includes(p));
-  };
-
-  const isCategoryPartiallySelected = (category: keyof typeof permissionCategories) => {
-    const perms = permissionCategories[category];
-    const selectedCount = perms.filter((p) => formData.permissions.includes(p)).length;
-    return selectedCount > 0 && selectedCount < perms.length;
-  };
-
-  const toggleCategory = (
-    category: keyof typeof permissionCategories,
-    checked: boolean
-  ) => {
-    const perms = permissionCategories[category];
-    setFormData((prev) => (
-      checked
-        ? { ...prev, permissions: Array.from(new Set([...prev.permissions, ...perms])) }
-        : { ...prev, permissions: prev.permissions.filter((p) => !perms.includes(p)) }
-    ));
-  };
-
-  const selectAll = () =>
+  const selectAll = useCallback(() =>
     setFormData((prev) => ({
       ...prev,
       permissions: Array.from(new Set([...prev.permissions, ...allPermissions])),
-    }));
+    })), [allPermissions]);
 
-  const clearAll = () => setFormData((prev) => ({ ...prev, permissions: [] }));
+  const clearAll = useCallback(() => setFormData((prev) => ({ ...prev, permissions: [] })), []);
 
-  // Select/Clear visible (filtered) rows only
-  const selectVisible = () =>
+  const selectVisible = useCallback(() =>
     setFormData((prev) => ({
       ...prev,
       permissions: Array.from(new Set([...prev.permissions, ...filteredRows.map((r) => r.key)])),
-    }));
-  const clearVisible = () =>
+    })), [filteredRows]);
+
+  const clearVisible = useCallback(() =>
     setFormData((prev) => ({
       ...prev,
       permissions: prev.permissions.filter((p) => !filteredRows.some((r) => r.key === p)),
-    }));
+    })), [filteredRows]);
 
-  const renderStepContent = () => {
+  const handlePageChange = useCallback((page: number) => {
+    setPageIndex(page);
+  }, []);
+
+  const renderStepContent = useCallback(() => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="name" className="text-sm font-medium mb-2 block">Role name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g. Content Managers"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-                <p className="text-sm text-muted-foreground mt-2">
-                  The role name can have up to 64 characters.
-                </p>
-                {errors.name && (
-                  <p className="text-xs text-red-400 mt-2">{errors.name}</p>
-                )}
-              </div>
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium mb-2 block">Role name</Label>
+              <Input
+                id="name"
+                placeholder="e.g. Content Managers"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                The role name can have up to 64 characters.
+              </p>
+              {errors.name && (
+                <p className="text-xs text-red-400 mt-2">{errors.name}</p>
+              )}
+            </div>
 
-              <div>
-                <Label htmlFor="description" className="text-sm font-medium mb-2 block">Description</Label>
-                <textarea
-                  id="description"
-                  rows={4}
-                  placeholder="Short description of what this role can do"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full rounded-md border bg-background border-border text-foreground placeholder-muted-foreground p-3 focus:outline-none focus:ring-2 focus:ring-gray-700"
-                />
-              </div>
+            <div>
+              <Label htmlFor="description" className="text-sm font-medium mb-2 block">Description</Label>
+              <textarea
+                id="description"
+                rows={4}
+                placeholder="Short description of what this role can do"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full rounded-md border bg-background border-border text-foreground placeholder-muted-foreground p-3 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
             </div>
           </div>
         );
@@ -313,7 +439,6 @@ const CreateRoleGroupPage = () => {
                   Choose which capabilities this role will grant.
                 </p>
               </div>
-
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
@@ -365,103 +490,18 @@ const CreateRoleGroupPage = () => {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-gray-700">
-              <Table>
-                <TableHeader className="bg-stone-900">
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Permission</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Category</TableHead>
-                    <TableHead className="text-gray-300 font-medium">Key</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentPageRows.length ? (
-                    currentPageRows.map((row) => (
-                      <TableRow key={`${row.category}:${row.key}`} className="border-gray-700 hover:bg-gray-800/60">
-                        <TableCell>
-                          <Checkbox
-                            checked={formData.permissions.includes(row.key)}
-                            onCheckedChange={() => togglePermission(row.key)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{row.label}</div>
-                          <div className="text-xs text-muted-foreground">{row.key}</div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-gray-300">{row.category}</span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-gray-300 border-gray-700">
-                            {row.key}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-gray-400">
-                        No permissions found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <PermissionTable
+              currentPageRows={currentPageRows}
+              formData={formData}
+              onTogglePermission={togglePermission}
+            />
 
             {filteredRows.length > 0 && (
-              <div className="flex items-center justify-between px-4 mt-6">
-                <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-                  {filteredRows.length} permission(s) total.
-                </div>
-                <div className="flex w-full items-center gap-8 lg:w-fit">
-                  <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
-                    Page {pageIndex + 1} of {pageCount}
-                  </div>
-                  <div className="ml-auto flex items-center gap-2 lg:ml-0">
-                    <Button
-                      variant="outline"
-                      className="hidden h-8 w-8 p-0 lg:flex"
-                      onClick={() => setPageIndex(0)}
-                      disabled={pageIndex === 0}
-                    >
-                      <span className="sr-only">Go to first page</span>
-                      <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="size-8"
-                      size="icon"
-                      onClick={() => setPageIndex((i) => Math.max(0, i - 1))}
-                      disabled={pageIndex === 0}
-                    >
-                      <span className="sr-only">Go to previous page</span>
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="size-8"
-                      size="icon"
-                      onClick={() => setPageIndex((i) => Math.min(pageCount - 1, i + 1))}
-                      disabled={pageIndex >= pageCount - 1}
-                    >
-                      <span className="sr-only">Go to next page</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="hidden size-8 lg:flex"
-                      size="icon"
-                      onClick={() => setPageIndex(pageCount - 1)}
-                      disabled={pageIndex >= pageCount - 1}
-                    >
-                      <span className="sr-only">Go to last page</span>
-                      <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <Pagination
+                pageIndex={pageIndex}
+                pageCount={pageCount}
+                onPageChange={handlePageChange}
+              />
             )}
           </div>
         );
@@ -507,12 +547,11 @@ const CreateRoleGroupPage = () => {
       default:
         return null;
     }
-  };
+  }, [currentStep, formData, searchTerm, selectedCategory, currentPageRows, pageIndex, pageCount, errors.name, togglePermission, selectAll, clearAll, handlePageChange]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" onClick={handleCancel} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -522,10 +561,8 @@ const CreateRoleGroupPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-24">
-          {/* Vertical Steps Navigation */}
           <div className="lg:col-span-1 order-2 lg:order-1">
             <div className="lg:sticky lg:top-6">
-              {/* Progress Bar */}
               <div className="mb-8 mt-8">
                 <Progress value={(currentStep / steps.length) * 100} className="h-1" />
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
@@ -535,50 +572,17 @@ const CreateRoleGroupPage = () => {
               </div>
 
               <div className="relative">
-                {/* Vertical line connecting steps */}
                 <div className="absolute left-3 top-8 bottom-8 w-0.5 bg-border" />
 
                 <div className="space-y-6 sm:space-y-8">
-                  {steps.map((step) => {
-                    const isActive = currentStep === step.id;
-                    const isCompleted = currentStep > step.id;
-
-                    return (
-                      <div key={step.id} className="relative flex items-start">
-                        {/* Step circle */}
-                        <div
-                          className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            isActive
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : isCompleted
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : "bg-background border-border text-muted-foreground"
-                          }`}
-                        >
-                          <span className="text-sm font-medium">{step.id}</span>
-                        </div>
-
-                        {/* Step content */}
-                        <div className="ml-4 flex-1 min-w-0">
-                          <h3
-                            className={`font-medium text-sm ${
-                              isActive ? "text-primary" : "text-foreground"
-                            }`}
-                          >
-                            {step.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                            {step.description}
-                          </p>                        </div>
-                      </div>
-                    );
-                  })}
+                  {steps.map((step) => (
+                    <StepIndicator key={step.id} step={step} currentStep={currentStep} />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3 order-1 lg:order-2">
             <Card className="bg-background border-border">
               <CardHeader>
@@ -594,7 +598,6 @@ const CreateRoleGroupPage = () => {
               <CardContent>{renderStepContent()}</CardContent>
             </Card>
 
-            {/* Navigation Buttons */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
               <Button
                 variant="outline"
