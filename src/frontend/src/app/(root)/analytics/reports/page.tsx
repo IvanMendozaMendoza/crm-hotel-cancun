@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -114,39 +114,130 @@ const reportsData = {
   ]
 };
 
+// Color helpers shared across list items (top-level for reuse)
+const getStatusColor = (status: string) => {
+	switch (status) {
+		case "Generated":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Technical":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Pending":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Failed":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		default:
+			return "bg-transparent border border-stone-500 text-stone-600";
+	}
+};
+
+const getTypeColor = (type: string) => {
+	switch (type) {
+		case "Performance":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Analytics":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Survey":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Operations":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		default:
+			return "bg-transparent border border-stone-500 text-stone-600";
+	}
+};
+
+const getFrequencyColor = (frequency: string) => {
+	switch (frequency) {
+		case "Weekly":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Monthly":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Quarterly":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		case "Annually":
+			return "bg-transparent border border-stone-500 text-stone-600";
+		default:
+			return "bg-transparent border border-stone-500 text-stone-600";
+	}
+};
+
+// Reusable components for DRY rendering
+const StatCard = ({ title, value, Icon, note }: { title: string; value: React.ReactNode; Icon: React.ComponentType<{ className?: string }>; note?: React.ReactNode }) => (
+	<Card className="bg-stone-900 border-gray-700">
+		<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+			<CardTitle className="text-sm font-medium text-gray-400">{title}</CardTitle>
+			<Icon className="h-4 w-4 text-gray-400" />
+		</CardHeader>
+		<CardContent>
+			<div className="text-2xl font-bold text-white">{value}</div>
+			{note ? <div className="flex items-center text-xs text-white mt-1">{note}</div> : null}
+		</CardContent>
+	</Card>
+);
+
+const ReportListItem = ({ report }: { report: { id: number; title: string; type: string; status: string; description: string; date: string; downloads: number; size: string } }) => (
+	<div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-700 rounded-lg gap-4">
+		<div className="flex-1 min-w-0">
+			<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+				<h3 className="font-medium text-white truncate">{report.title}</h3>
+				<div className="flex flex-wrap gap-2">
+					<Badge variant="outline" className={`${getTypeColor(report.type)}`}>{report.type}</Badge>
+					<Badge variant="outline" className={`${getStatusColor(report.status)}`}>{report.status}</Badge>
+				</div>
+			</div>
+			<p className="text-gray-400 text-sm mb-2 line-clamp-2">{report.description}</p>
+			<div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+				<span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{report.date}</span>
+				<span className="flex items-center gap-1"><Download className="h-3 w-3" />{report.downloads} downloads</span>
+				<span className="flex items-center gap-1"><FileText className="h-3 w-3" />{report.size}</span>
+			</div>
+		</div>
+		<div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+			<Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800"><Eye className="h-4 w-4" /></Button>
+			<Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800"><Download className="h-4 w-4" /></Button>
+			<Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800"><Share2 className="h-4 w-4" /></Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800"><MoreVertical className="h-4 w-4" /></Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent className="bg-stone-900 border-gray-700">
+					<DropdownMenuItem className="text-white hover:bg-gray-800">View Details</DropdownMenuItem>
+					<DropdownMenuItem className="text-white hover:bg-gray-800">Edit Report</DropdownMenuItem>
+					<DropdownMenuItem className="text-white hover:bg-gray-800">Duplicate</DropdownMenuItem>
+					<DropdownMenuItem className="text-red-400 hover:bg-gray-800">Delete</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</div>
+	</div>
+);
+
+const TemplateListItem = ({ template }: { template: { id: number; title: string; frequency: string; description: string; lastGenerated: string } }) => (
+	<div className="p-5 border border-gray-700 rounded-lg">
+		<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+			<h4 className="font-medium text-white">{template.title}</h4>
+			<Badge variant="outline" className={`${getFrequencyColor(template.frequency)}`}>{template.frequency}</Badge>
+		</div>
+		<p className="text-gray-400 text-sm mb-4">{template.description}</p>
+		<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+			<span className="text-xs text-gray-400">Last: {template.lastGenerated}</span>
+			<Button size="sm" className="w-full sm:w-auto bg-gray-800 text-white hover:bg-gray-700">Generate</Button>
+		</div>
+	</div>
+);
+
 const ReportsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("all");
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Generated": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Technical": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Pending": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Failed": return "bg-transparent border border-stone-500 text-stone-600";
-      default: return "bg-transparent border border-stone-500 text-stone-600";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Performance": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Analytics": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Survey": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Operations": return "bg-transparent border border-stone-500 text-stone-600";
-      default: return "bg-transparent border border-stone-500 text-stone-600";
-    }
-  };
-
-  const getFrequencyColor = (frequency: string) => {
-    switch (frequency) {
-      case "Weekly": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Monthly": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Quarterly": return "bg-transparent border border-stone-500 text-stone-600";
-      case "Annually": return "bg-transparent border border-stone-500 text-stone-600";
-      default: return "bg-transparent border border-stone-500 text-stone-600";
-    }
-  };
+  // Derived, filtered list (keeps render clean and DRY)
+  const filteredReports = useMemo(() => {
+    return reportsData.recentReports
+      .filter((r) => (selectedType === "all" ? true : r.type === selectedType))
+      .filter((r) => {
+        if (!searchTerm.trim()) return true;
+        const q = searchTerm.toLowerCase();
+        return r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
+      });
+  }, [searchTerm, selectedType]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -157,7 +248,6 @@ const ReportsPage = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-2xl font-semibold text-white mb-2">Reports</h1>
-                <p className="text-gray-400">Generate and manage detailed hotel performance reports and analytics</p>
               </div>
               
               <div className="flex items-center gap-3">
@@ -176,60 +266,14 @@ const ReportsPage = () => {
           {/* Report Statistics */}
           <div className="px-4 lg:px-6 max-w-7xl mx-auto w-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Total Reports</CardTitle>
-                  <FileText className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.totalReports}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    +12 this month
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Total Downloads</CardTitle>
-                  <Download className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.totalDownloads}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    +12% from last month
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">Avg Report Size</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.avgReportSize} MB</div>
-                  <div className="flex items-center text-xs text-gray-400 mt-1">
-                    Optimized for quick loading
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-stone-900 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">This Month</CardTitle>
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{reportsData.reportStats.thisMonth}</div>
-                  <div className="flex items-center text-xs text-white mt-1">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    +3 from last month
-                  </div>
-                </CardContent>
-              </Card>
+              {[
+                { title: "Total Reports", value: reportsData.reportStats.totalReports, Icon: FileText, note: (<><ArrowUpRight className="h-3 w-3 mr-1" />+12 this month</>) },
+                { title: "Total Downloads", value: reportsData.reportStats.totalDownloads, Icon: Download, note: (<><ArrowUpRight className="h-3 w-3 mr-1" />+12% from last month</>) },
+                { title: "Avg Report Size", value: `${reportsData.reportStats.avgReportSize} MB`, Icon: BarChart3, note: (<span className="text-gray-400">Optimized for quick loading</span>) },
+                { title: "This Month", value: reportsData.reportStats.thisMonth, Icon: Calendar, note: (<><ArrowUpRight className="h-3 w-3 mr-1" />+3 from last month</>) },
+              ].map((s) => (
+                <StatCard key={s.title} title={s.title} value={s.value} Icon={s.Icon} note={s.note} />
+              ))}
             </div>
           </div>
 
@@ -287,61 +331,8 @@ const ReportsPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {reportsData.recentReports.map((report) => (
-                        <div key={report.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-700 rounded-lg gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                              <h3 className="font-medium text-white truncate">{report.title}</h3>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
-                                  {report.type}
-                                </Badge>
-                                <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
-                                  {report.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <p className="text-gray-400 text-sm mb-2 line-clamp-2">{report.description}</p>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {report.date}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Download className="h-3 w-3" />
-                                {report.downloads} downloads
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                {report.size}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                              <Share2 className="h-4 w-4" />
-                            </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="bg-stone-900 border-gray-700">
-                                <DropdownMenuItem className="text-white hover:bg-gray-800">View Details</DropdownMenuItem>
-                                <DropdownMenuItem className="text-white hover:bg-gray-800">Edit Report</DropdownMenuItem>
-                                <DropdownMenuItem className="text-white hover:bg-gray-800">Duplicate</DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-400 hover:bg-gray-800">Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
+                      {filteredReports.map((report) => (
+                        <ReportListItem key={report.id} report={report} />
                       ))}
                     </div>
                   </CardContent>
@@ -361,23 +352,7 @@ const ReportsPage = () => {
                   <CardContent>
                     <div className="space-y-6">
                       {reportsData.reportTemplates.map((template) => (
-                        <div key={template.id} className="p-5 border border-gray-700 rounded-lg">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                            <h4 className="font-medium text-white">{template.title}</h4>
-                            <Badge variant="outline" className="bg-transparent border-stone-500 text-stone-600">
-                              {template.frequency}
-                            </Badge>
-                          </div>
-                          <p className="text-gray-400 text-sm mb-4">{template.description}</p>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <span className="text-xs text-gray-400">
-                              Last: {template.lastGenerated}
-                            </span>
-                            <Button size="sm" className="w-full sm:w-auto bg-gray-800 text-white hover:bg-gray-700">
-                              Generate
-                            </Button>
-                          </div>
-                        </div>
+                        <TemplateListItem key={template.id} template={template} />
                       ))}
                     </div>
                   </CardContent>
