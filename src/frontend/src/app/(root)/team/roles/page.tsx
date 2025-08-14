@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,8 +44,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// Permission categories and their permissions
-const permissionCategories = {
+const permissionCategories: Record<string, string[]> = {
   "User Management": [
     "view_users",
     "create_users", 
@@ -88,7 +87,6 @@ const permissionCategories = {
   ]
 };
 
-// Sample role groups data
 const initialRoleGroups = [
   {
     id: "1",
@@ -278,46 +276,231 @@ const initialRoleGroups = [
   },
 ];
 
-// Helper functions
-const getPermissionLabel = (permission: string) => {
-  const labels: { [key: string]: string } = {
-    view_users: "View Users",
-    create_users: "Create Users",
-    edit_users: "Edit Users", 
-    delete_users: "Delete Users",
-    assign_roles: "Assign Roles",
-    view_content: "View Content",
-    create_content: "Create Content",
-    edit_content: "Edit Content",
-    delete_content: "Delete Content",
-    publish_content: "Publish Content",
-    view_settings: "View Settings",
-    edit_settings: "Edit Settings",
-    view_logs: "View Logs",
-    manage_backups: "Manage Backups",
-    system_maintenance: "System Maintenance",
-    view_data: "View Data",
-    export_data: "Export Data",
-    import_data: "Import Data",
-    delete_data: "Delete Data",
-    anonymize_data: "Anonymize Data",
-    view_analytics: "View Analytics",
-    create_reports: "Create Reports",
-    export_reports: "Export Reports",
-    share_reports: "Share Reports",
-    view_security: "View Security",
-    manage_permissions: "Manage Permissions",
-    audit_logs: "Audit Logs",
-    security_settings: "Security Settings"
-  };
-  return labels[permission] || permission;
+const permissionLabels: { [key: string]: string } = {
+  view_users: "View Users",
+  create_users: "Create Users",
+  edit_users: "Edit Users", 
+  delete_users: "Delete Users",
+  assign_roles: "Assign Roles",
+  view_content: "View Content",
+  create_content: "Create Content",
+  edit_content: "Edit Content",
+  delete_content: "Delete Content",
+  publish_content: "Publish Content",
+  view_settings: "View Settings",
+  edit_settings: "Edit Settings",
+  view_logs: "View Logs",
+  manage_backups: "Manage Backups",
+  system_maintenance: "System Maintenance",
+  view_data: "View Data",
+  export_data: "Export Data",
+  import_data: "Import Data",
+  delete_data: "Delete Data",
+  anonymize_data: "Anonymize Data",
+  view_analytics: "View Analytics",
+  create_reports: "Create Reports",
+  export_reports: "Export Reports",
+  share_reports: "Share Reports",
+  view_security: "View Security",
+  manage_permissions: "Manage Permissions",
+  audit_logs: "Audit Logs",
+  security_settings: "Security Settings"
 };
 
-const handleUpdateRoleGroup = (roleGroupName: string) => {
-  toast.success(`"${roleGroupName}" details updated`);
+const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
+
+const PermissionPopover = ({ roleGroup }: { roleGroup: any }) => {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  
+  const allPermissions = Object.values(permissionCategories).flat();
+  const filteredPermissions = allPermissions.filter(permission =>
+    getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
+  );
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="link"
+          role="combobox"
+          aria-expanded={open}
+          className="-ml-6"
+        >
+          <span className="truncate">
+            {roleGroup.permissions.length} permissions
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+        <Command>
+          <CommandInput 
+            placeholder="Search permissions..." 
+            value={searchValue}
+            onValueChange={setSearchValue}
+            className="border-gray-700"
+          />
+          <CommandList className="max-h-[300px]">
+            <CommandEmpty>No permissions found.</CommandEmpty>
+            <CommandGroup>
+              {filteredPermissions.map((permission) => (
+                <CommandItem
+                  key={permission}
+                  className={`flex items-center gap-2 ${
+                    roleGroup.permissions.includes(permission) 
+                      ? "bg-blue-500/20 text-blue-400" 
+                      : "text-gray-300"
+                  }`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${
+                    roleGroup.permissions.includes(permission) 
+                      ? "bg-blue-400" 
+                      : "bg-gray-500"
+                  }`} />
+                  {getPermissionLabel(permission)}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 };
 
-// Drag handle is rendered inside the row using the row's sortable activator
+const SearchAndFilters = ({ 
+  searchTerm, 
+  onSearchChange, 
+  selectedCategory, 
+  onCategoryChange 
+}: { 
+  searchTerm: string; 
+  onSearchChange: (value: string) => void; 
+  selectedCategory: string; 
+  onCategoryChange: (category: string) => void; 
+}) => (
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      <Input
+        placeholder="Search"
+        type="search"
+        autoComplete="off"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
+      />
+    </div>
+    
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
+        <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuItem 
+          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
+          onClick={() => onCategoryChange("all")}
+        >
+          All Categories
+        </DropdownMenuItem>
+        {Object.keys(permissionCategories).map(category => (
+          <DropdownMenuItem 
+            key={category}
+            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
+            onClick={() => onCategoryChange(category)}
+          >
+            {category}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+);
+
+const Pagination = ({ table }: { table: any }) => (
+  <div className="flex items-center justify-between px-4 mt-6">
+    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+      {table.getFilteredRowModel().rows.length} role group(s) total.
+    </div>
+    <div className="flex w-full items-center gap-8 lg:w-fit">
+      <div className="hidden items-center gap-2 lg:flex">
+        <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
+          Rows per page
+        </Label>
+        <Select
+          value={`${table.getState().pagination.pageSize}`}
+          onValueChange={(value) => {
+            table.setPageSize(Number(value))
+          }}
+        >
+          <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
+            <SelectValue
+              placeholder={table.getState().pagination.pageSize}
+            />
+          </SelectTrigger>
+          <SelectContent side="top" className="bg-stone-900 border-gray-700">
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
+                {pageSize}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+        Page {table.getState().pagination.pageIndex + 1} of{" "}
+        {table.getPageCount()}
+      </div>
+      <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <Button
+          variant="outline"
+          className="hidden h-8 w-8 p-0 lg:flex"
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+        >
+          <span className="sr-only">Go to first page</span>
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          <span className="sr-only">Go to previous page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          <span className="sr-only">Go to next page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="hidden size-8 lg:flex"
+          size="icon"
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+        >
+          <span className="sr-only">Go to last page</span>
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
 function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
   const {
     transform,
@@ -371,18 +554,18 @@ const TeamRolesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sorting, setSorting] = useState<SortingState>([]);
+  
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
   );
-  
 
-  const handleCreateRoleGroup = () => {
+  const handleCreateRoleGroup = useCallback(() => {
     router.push('/team/roles/create');
-  };
+  }, [router]);
 
-  const handleDeleteRoleGroup = (id: string) => {
+  const handleDeleteRoleGroup = useCallback((id: string) => {
     const group = roleGroups.find(g => g.id === id);
     if (group && group.userCount > 0) {
       toast.error("Cannot delete role group with assigned users");
@@ -391,10 +574,9 @@ const TeamRolesPage = () => {
     
     setRoleGroups(prev => prev.filter(group => group.id !== id));
     toast.success("Role group deleted successfully");
-  };
+  }, [roleGroups]);
 
-  // Define columns for the table
-  const columns: ColumnDef<typeof initialRoleGroups[0]>[] = [
+  const columns = useMemo<ColumnDef<typeof initialRoleGroups[0]>[]>(() => [
     {
       id: "drag",
       header: () => null,
@@ -418,68 +600,7 @@ const TeamRolesPage = () => {
     {
       accessorKey: "permissions",
       header: "Permissions",
-      cell: ({ row }) => {
-        const roleGroup = row.original;
-        const [open, setOpen] = useState(false);
-        const [searchValue, setSearchValue] = useState("");
-        
-        // Get all available permissions
-        const allPermissions = Object.values(permissionCategories).flat();
-        
-        // Filter permissions based on search
-        const filteredPermissions = allPermissions.filter(permission =>
-          getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
-        );
-        
-        return (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="link"
-                role="combobox"
-                aria-expanded={open}
-                className="-ml-6"
-              >
-                <span className="truncate">
-                  {roleGroup.permissions.length} permissions
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
-              <Command>
-                <CommandInput 
-                  placeholder="Search permissions..." 
-                  value={searchValue}
-                  onValueChange={setSearchValue}
-                  className="border-gray-700"
-                />
-                <CommandList className="max-h-[300px]">
-                  <CommandEmpty>No permissions found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredPermissions.map((permission) => (
-                      <CommandItem
-                        key={permission}
-                        className={`flex items-center gap-2 ${
-                          roleGroup.permissions.includes(permission) 
-                            ? "bg-blue-500/20 text-blue-400" 
-                            : "text-gray-300"
-                        }`}
-                      >
-                        <div className={`w-2 h-2 rounded-full ${
-                          roleGroup.permissions.includes(permission) 
-                            ? "bg-blue-400" 
-                            : "bg-gray-500"
-                        }`} />
-                        {getPermissionLabel(permission)}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        );
-      },
+      cell: ({ row }) => <PermissionPopover roleGroup={row.original} />,
       size: 140,
     },
     {
@@ -529,9 +650,8 @@ const TeamRolesPage = () => {
       },
       size: 50,
     },
-  ];
+  ], [handleDeleteRoleGroup]);
 
-  // Create table instance
   const table = useReactTable({
     data: roleGroups,
     columns,
@@ -555,12 +675,11 @@ const TeamRolesPage = () => {
     getRowId: (row) => row.id,
   });
 
-  // Filter role groups based on search and category
-  React.useEffect(() => {
+  useEffect(() => {
     table.setGlobalFilter(searchTerm)
   }, [searchTerm, table])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedCategory === "all") {
       table.resetColumnFilters()
       return
@@ -573,7 +692,7 @@ const TeamRolesPage = () => {
     ])
   }, [selectedCategory, table])
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
       setRoleGroups((items) => {
@@ -582,59 +701,22 @@ const TeamRolesPage = () => {
         return arrayMove(items, oldIndex, newIndex)
       })
     }
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-white">User Roles {roleGroups.length}</h1>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search"
-                type="search"
-                autoComplete="off"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
-              />
-            </div>
+            <SearchAndFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
             
-            {/* Filters */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
-                <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem 
-                  className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
-                  onClick={() => setSelectedCategory("all")}
-                >
-                  All Categories
-                </DropdownMenuItem>
-                {Object.keys(permissionCategories).map(category => (
-                  <DropdownMenuItem 
-                    key={category}
-                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Add Role Group */}
             <Button onClick={handleCreateRoleGroup} className="bg-black text-white hover:bg-gray-900">
               <Plus className="h-4 w-4 mr-2" />
               Add role group
@@ -642,7 +724,6 @@ const TeamRolesPage = () => {
           </div>
         </div>
 
-                {/* Table View */}
         <div className="overflow-hidden rounded-lg border border-gray-700">
           <DndContext
             collisionDetection={closestCenter}
@@ -689,86 +770,8 @@ const TeamRolesPage = () => {
           </DndContext>
         </div>
 
-
-
-        {/* Pagination */}
         {table.getRowModel().rows.length > 0 && (
-          <div className="flex items-center justify-between px-4 mt-6">
-            <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-              {table.getFilteredRowModel().rows.length} role group(s) total.
-            </div>
-            <div className="flex w-full items-center gap-8 lg:w-fit">
-              <div className="hidden items-center gap-2 lg:flex">
-                <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
-                  Rows per page
-                </Label>
-                <Select
-                  value={`${table.getState().pagination.pageSize}`}
-                  onValueChange={(value) => {
-                    table.setPageSize(Number(value))
-                  }}
-                >
-                  <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
-                    <SelectValue
-                      placeholder={table.getState().pagination.pageSize}
-                    />
-                  </SelectTrigger>
-                  <SelectContent side="top" className="bg-stone-900 border-gray-700">
-                    {[10, 20, 30, 40, 50].map((pageSize) => (
-                      <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
-                        {pageSize}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="ml-auto flex items-center gap-2 lg:ml-0">
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to first page</span>
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8"
-                  size="icon"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to previous page</span>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8"
-                  size="icon"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to next page</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hidden size-8 lg:flex"
-                  size="icon"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to last page</span>
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Pagination table={table} />
         )}
       </div>
     </div>
