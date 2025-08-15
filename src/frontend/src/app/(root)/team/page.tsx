@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// FIX 1: Removed unused 'ChevronDown' import
 import { MoreVertical, Search, Filter, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,7 +25,6 @@ import {
 } from "@tanstack/react-table";
 
 const sampleUsers = [
-    // ... (sample user data remains the same)
     {
     id: "1",
     name: "Florence Shaw",
@@ -149,7 +147,6 @@ const sampleUsers = [
   },
 ];
 
-// FIX 2: Define a specific User type
 type User = typeof sampleUsers[0];
 
 const accessCategories = {
@@ -171,12 +168,9 @@ const sortOptions = [
   { value: "dateAdded_asc", label: "Date Added (Oldest)" }
 ];
 
-// FIX 3: Removed unused 'getAccessBadgeColor' function
-
-// FIX 4: Replaced 'any' with the 'User' type
 const UserAvatar = ({ user }: { user: User }) => (
   <div className="flex items-center gap-3">
-    <Avatar className="h-10 w-10">
+    <Avatar className="h-8 w-8">
       <AvatarImage src={user.avatar} alt={user.name} />
       <AvatarFallback className="bg-gray-700 text-white">
         {user.name[0]}
@@ -189,7 +183,6 @@ const UserAvatar = ({ user }: { user: User }) => (
   </div>
 );
 
-// FIX 5: Replaced 'any' with the 'User' type
 const AccessBadge = ({ user }: { user: User }) => {
   const isCurrentUser = user.id === '1';
   const isDisabled = user.status === 'disabled';
@@ -210,7 +203,6 @@ const AccessBadge = ({ user }: { user: User }) => {
   );
 };
 
-// FIX 6: Replaced 'any' with the 'User' type
 const UserActions = ({ user, onUpdateUser }: { user: User; onUpdateUser: (name: string) => void }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -305,7 +297,6 @@ const SearchAndFilters = ({
   </div>
 );
 
-// FIX 7: Replaced 'any' with a specific table type
 const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<User>> }) => (
   <div className="flex items-center justify-between px-4 mt-6">
     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
@@ -406,7 +397,7 @@ const EmptyState = ({
       }
     </p>
     {!searchTerm && selectedAccessFilter === "all" && (
-      <Button onClick={onAddUser} className="bg-blue-600 hover:bg-blue-700">
+      <Button onClick={onAddUser} >
         <Plus className="h-4 w-4 mr-2" />
         Add User
       </Button>
@@ -416,7 +407,6 @@ const EmptyState = ({
 
 const TeamPage = () => {
   const router = useRouter();
-  // FIX 8: Removed unused 'setUsers' by using a constant for static data
   const users = sampleUsers;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("all");
@@ -525,7 +515,7 @@ const TeamPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-white">All users {users.length}</h1>
@@ -539,8 +529,10 @@ const TeamPage = () => {
               selectedSort={selectedSort}
               onSortChange={setSelectedSort}
             />
-            
-            <Button onClick={handleAddUser} className="bg-black text-white hover:bg-gray-900">
+            <Button
+              onClick={handleAddUser}
+              className="bg-black text-white hover:bg-black"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add user
             </Button>
