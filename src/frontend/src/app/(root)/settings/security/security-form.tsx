@@ -151,7 +151,7 @@ const SECURITY_INFO = [
   { label: "Last Login", value: "Today at 2:30 PM" },
 ];
 
-export const SecurityForm = ({ user: _user }: SecurityFormProps) => {
+export const SecurityForm = ({}: SecurityFormProps) => {
   const [isPending, setIsPending] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState({
     current: false,

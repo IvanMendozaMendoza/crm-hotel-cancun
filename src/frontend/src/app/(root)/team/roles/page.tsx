@@ -4,7 +4,6 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Plus, Users, Search, Filter, MoreVertical, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -421,7 +420,7 @@ const SearchAndFilters = ({
   </div>
 );
 
-const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<any>> }) => (
+const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<typeof initialRoleGroups[0]>> }) => (
   <div className="flex items-center justify-between px-4 mt-6">
     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} role group(s) total.

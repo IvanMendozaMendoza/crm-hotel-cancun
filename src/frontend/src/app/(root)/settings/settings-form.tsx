@@ -73,14 +73,13 @@ const FormInput = ({
   placeholder,
   type = "text",
   control,
-  ...fieldProps
 }: {
   label: string;
   name: string;
   placeholder: string;
   type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: any;
-  [key: string]: unknown;
 }) => (
   <FormField
     control={control}

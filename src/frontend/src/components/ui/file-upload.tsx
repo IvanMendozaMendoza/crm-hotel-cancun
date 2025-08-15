@@ -381,6 +381,47 @@ function FileUploadRoot(props: FileUploadRootProps) {
     };
   }).current;
 
+  const onFilesUpload = React.useCallback(
+    async (files: File[]) => {
+      try {
+        for (const file of files) {
+          store.dispatch({ type: "SET_PROGRESS", file, progress: 0 });
+        }
+
+        if (onUpload) {
+          await onUpload(files, {
+            onProgress,
+            onSuccess: (file) => {
+              store.dispatch({ type: "SET_SUCCESS", file });
+            },
+            onError: (file, error) => {
+              store.dispatch({
+                type: "SET_ERROR",
+                file,
+                error: error.message ?? "Upload failed",
+              });
+            },
+          });
+        } else {
+          for (const file of files) {
+            store.dispatch({ type: "SET_SUCCESS", file });
+          }
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Upload failed";
+        for (const file of files) {
+          store.dispatch({
+            type: "SET_ERROR",
+            file,
+            error: errorMessage,
+          });
+        }
+      }
+    },
+    [store, onUpload, onProgress],
+  );
+
   React.useEffect(() => {
     if (isControlled) {
       store.dispatch({ type: "SET_FILES", files: value });
@@ -405,80 +446,48 @@ function FileUploadRoot(props: FileUploadRootProps) {
   }, [files, urlCache]);
 
   const onFilesChange = React.useCallback(
-    (originalFiles: File[]) => {
-      if (disabled) return;
-
-      let filesToProcess = [...originalFiles];
+    (files: File[]) => {
+      const acceptedFiles: File[] = [];
+      const rejectedFiles: Array<{ file: File; message: string }> = [];
       let invalid = false;
 
-      if (maxFiles) {
-        const currentCount = store.getState().files.size;
-        const remainingSlotCount = Math.max(0, maxFiles - currentCount);
-
-        if (remainingSlotCount < filesToProcess.length) {
-          const rejectedFiles = filesToProcess.slice(remainingSlotCount);
-          invalid = true;
-
-          filesToProcess = filesToProcess.slice(0, remainingSlotCount);
-
-          for (const file of rejectedFiles) {
-            let rejectionMessage = `Maximum ${maxFiles} files allowed`;
-
-            if (onFileValidate) {
-              const validationMessage = onFileValidate(file);
-              if (validationMessage) {
-                rejectionMessage = validationMessage;
-              }
-            }
-
-            onFileReject?.(file, rejectionMessage);
-          }
-        }
-      }
-
-      const acceptedFiles: File[] = [];
-      const rejectedFiles: { file: File; message: string }[] = [];
-
-      for (const file of filesToProcess) {
+      for (const file of files) {
         let rejected = false;
         let rejectionMessage = "";
 
-        if (onFileValidate) {
-          const validationMessage = onFileValidate(file);
-          if (validationMessage) {
-            rejectionMessage = validationMessage;
-            onFileReject?.(file, rejectionMessage);
-            rejected = true;
-            invalid = true;
-            continue;
-          }
-        }
-
-        if (acceptTypes) {
-          const fileType = file.type;
-          const fileExtension = `.${file.name.split(".").pop()}`;
-
-          if (
-            !acceptTypes.some(
-              (type) =>
-                type === fileType ||
-                type === fileExtension ||
-                (type.includes("/*") &&
-                  fileType.startsWith(type.replace("/*", "/"))),
-            )
-          ) {
-            rejectionMessage = "File type not accepted";
-            onFileReject?.(file, rejectionMessage);
-            rejected = true;
-            invalid = true;
-          }
+        if (maxFiles && store.getState().files.size + acceptedFiles.length >= maxFiles) {
+          rejectionMessage = `Maximum ${maxFiles} files allowed`;
+          rejected = true;
         }
 
         if (maxSize && file.size > maxSize) {
-          rejectionMessage = "File too large";
-          onFileReject?.(file, rejectionMessage);
+          rejectionMessage = `File size must be less than ${formatBytes(maxSize)}`;
           rejected = true;
-          invalid = true;
+        }
+
+        if (acceptTypes && acceptTypes.length > 0) {
+          const fileType = file.type;
+          const fileExtension = file.name.split(".").pop()?.toLowerCase();
+          const isAccepted = acceptTypes.some((type) => {
+            if (type.startsWith(".")) {
+              return fileExtension === type.slice(1);
+            }
+            return fileType === type || fileType.startsWith(type + "/");
+          });
+
+          if (!isAccepted) {
+            rejectionMessage = `File type not allowed. Allowed types: ${acceptTypes.join(", ")}`;
+            rejected = true;
+          }
+        }
+
+        if (onFileValidate) {
+          const validationResult = onFileValidate(file);
+          if (validationResult) {
+            rejectionMessage = validationResult;
+            rejected = true;
+            invalid = true;
+          }
         }
 
         if (!rejected) {
@@ -529,52 +538,10 @@ function FileUploadRoot(props: FileUploadRootProps) {
       onUpload,
       maxFiles,
       onFileValidate,
-      onFileReject,
       acceptTypes,
       maxSize,
-      disabled,
+      onFilesUpload,
     ],
-  );
-
-  const onFilesUpload = React.useCallback(
-    async (files: File[]) => {
-      try {
-        for (const file of files) {
-          store.dispatch({ type: "SET_PROGRESS", file, progress: 0 });
-        }
-
-        if (onUpload) {
-          await onUpload(files, {
-            onProgress,
-            onSuccess: (file) => {
-              store.dispatch({ type: "SET_SUCCESS", file });
-            },
-            onError: (file, error) => {
-              store.dispatch({
-                type: "SET_ERROR",
-                file,
-                error: error.message ?? "Upload failed",
-              });
-            },
-          });
-        } else {
-          for (const file of files) {
-            store.dispatch({ type: "SET_SUCCESS", file });
-          }
-        }
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Upload failed";
-        for (const file of files) {
-          store.dispatch({
-            type: "SET_ERROR",
-            file,
-            error: errorMessage,
-          });
-        }
-      }
-    },
-    [store, onUpload, onProgress, onFilesChange],
   );
 
   const onInputChange = React.useCallback(

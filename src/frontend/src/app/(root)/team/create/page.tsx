@@ -46,27 +46,6 @@ const steps = [
   }
 ];
 
-const availableRoles = [
-  { id: "admin", label: "Admin", description: "Full system access with all permissions" },
-  { id: "user", label: "User", description: "Standard user access with limited permissions" },
-  { id: "viewer", label: "Viewer", description: "Read-only access to basic content" }
-];
-
-const availablePermissions = [
-  { id: "view_users", label: "View Users", category: "User Management" },
-  { id: "create_users", label: "Create Users", category: "User Management" },
-  { id: "edit_users", label: "Edit Users", category: "User Management" },
-  { id: "delete_users", label: "Delete Users", category: "User Management" },
-  { id: "view_content", label: "View Content", category: "Content Management" },
-  { id: "create_content", label: "Create Content", category: "Content Management" },
-  { id: "edit_content", label: "Edit Content", category: "Content Management" },
-  { id: "delete_content", label: "Delete Content", category: "Content Management" },
-  { id: "view_analytics", label: "View Analytics", category: "Analytics & Reports" },
-  { id: "create_reports", label: "Create Reports", category: "Analytics & Reports" },
-  { id: "export_data", label: "Export Data", category: "Data Management" },
-  { id: "import_data", label: "Import Data", category: "Data Management" }
-];
-
 const defaultAvatars = [
   "/avatars/default-1.jpg",
   "/avatars/default-2.jpg",
