@@ -176,7 +176,7 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
             className="space-y-6"
           >
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-12 w-12">
                 <AvatarImage
                   src={user.avatar || "/avatars/default.jpg"}
                   alt={user.username}
