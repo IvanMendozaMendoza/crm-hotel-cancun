@@ -113,8 +113,8 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      username: user.username || "",
-      email: user.email || "",
+      username: "",
+      email: "",
     },
   });
 
@@ -123,17 +123,17 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
       {
         name: "username" as const,
         label: "Username",
-        placeholder: "Enter your username",
+        placeholder: user.username || "Enter your username",
         type: "text",
       },
       {
         name: "email" as const,
         label: "Email Address",
-        placeholder: "Enter your email",
+        placeholder: user.email || "Enter your email",
         type: "email",
       },
     ],
-    []
+    [user.username, user.email]
   );
 
   const handleSubmit = useCallback(async (data: ProfileFormData) => {
