@@ -37,7 +37,7 @@ export default function Page() {
   return (
     <div className="flex flex-1 flex-col lg:px-12">
       <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="pl-4 pt-6">
+        <div className="pl-4 py-6">
           <h1 className="text-2xl font-semibold text-white">Overview</h1>
         </div>
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-2">
