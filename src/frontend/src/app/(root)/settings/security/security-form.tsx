@@ -227,7 +227,7 @@ export const SecurityForm = ({}: SecurityFormProps) => {
           );
           setTimeout(() => {
             signOut({ callbackUrl: "/login" });
-          }, 3500);
+          }, 2500);
 
           form.reset();
         }
