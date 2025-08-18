@@ -142,13 +142,24 @@ const SECURITY_TIPS = [
 
 const SECURITY_INFO = [
   { label: "Last Password Change", value: "January 15, 2024" },
+  { label: "Last Login", value: "Today at 2:30 PM" },
   {
     label: "Account Status",
-    value: "Secure",
-    status: { color: "green", indicator: "bg-green-500" },
+    value: "Active",
+    status: { color: "emerald", indicator: "bg-emerald-600/70" },
   },
-  { label: "Last Login", value: "Today at 2:30 PM" },
 ];
+
+// Helper function to get status styling
+const getStatusStyling = (status: string) => {
+  if (status === "Active") {
+    return { color: "emerald", indicator: "bg-emerald-600/70" };
+  }
+  if (status === "Disabled") {
+    return { color: "gray", indicator: "bg-gray-500/70" };
+  }
+  return { color: "gray", indicator: "bg-gray-500/70" };
+};
 
 export const SecurityForm = ({}: SecurityFormProps) => {
   const [isPending, setIsPending] = useState(false);
@@ -310,23 +321,26 @@ export const SecurityForm = ({}: SecurityFormProps) => {
         icon={Shield}
       >
         <div className="grid gap-4 md:grid-cols-3">
-          {SECURITY_INFO.map(({ label, value, status }) => (
-            <div key={label}>
-              <Label className="text-gray-400 text-sm">{label}</Label>
-              {status ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <div
-                    className={`w-2 h-2 ${status.indicator} rounded-full`}
-                  ></div>
-                  <span className={`text-${status.color}-400 text-sm`}>
-                    {value}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-white font-medium">{value}</p>
-              )}
-            </div>
-          ))}
+          {SECURITY_INFO.map(({ label, value, status }) => {
+            const statusStyling = status || getStatusStyling(value);
+            return (
+              <div key={label}>
+                <Label className="text-gray-400 text-sm">{label}</Label>
+                {statusStyling ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <div
+                      className={`w-2 h-2 ${statusStyling.indicator} rounded-full`}
+                    ></div>
+                    <span className={`text-${statusStyling.color}-200 text-sm`}>
+                      {value}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-white font-medium">{value}</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </InfoCard>
 
