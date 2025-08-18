@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Info, Lock, Shield, Eye, EyeOff } from "lucide-react";
+import { Info, Lock, Shield, Eye, EyeOff, Check } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { updatePassword } from "@/app/actions/account";
@@ -122,7 +122,7 @@ const InfoCard = ({
   icon: React.ElementType;
   children: React.ReactNode;
 }) => (
-  <Card className="bg-stone-900 border-gray-700">
+  <Card className="bg-stone-900 border-stone-700">
     <CardHeader>
       <CardTitle className="flex items-center gap-2 text-white">
         <Icon className="h-5 w-5" />
@@ -136,7 +136,6 @@ const InfoCard = ({
 
 const SECURITY_TIPS = [
   "Use a strong, unique password that you don't use elsewhere.",
-  "Enable two-factor authentication for additional security.",
   "Never share your password or login credentials with anyone.",
   "Log out from shared or public computers after use.",
 ];
@@ -329,11 +328,14 @@ export const SecurityForm = ({}: SecurityFormProps) => {
         description="Best practices to keep your account secure."
         icon={Shield}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {SECURITY_TIPS.map((tip, index) => (
-            <div key={index} className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-gray-300 text-sm">{tip}</p>
+            <div key={index} className="flex items-start gap-4">
+              <div className="relative flex-shrink-0 mt-1.5">
+                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                <div className="absolute inset-0 w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-gray-300 text-sm leading-relaxed">{tip}</p>
             </div>
           ))}
         </div>

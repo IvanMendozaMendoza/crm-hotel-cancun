@@ -55,7 +55,7 @@ const InfoCard = ({
   icon: React.ElementType;
   children: React.ReactNode;
 }) => (
-  <Card className="bg-stone-900 border-gray-700">
+  <Card className="bg-stone-900 border-stone-700">
     <CardHeader>
       <CardTitle className="flex items-center gap-2 text-white">
         <Icon className="h-5 w-5" />
