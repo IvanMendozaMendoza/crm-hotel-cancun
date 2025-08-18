@@ -113,8 +113,8 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      username: "",
-      email: "",
+      username: user.username || "",
+      email: user.email || "",
     },
   });
 
@@ -123,26 +123,41 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
       {
         name: "username" as const,
         label: "Username",
-        placeholder: user.username || "Enter your username",
+        placeholder: "Enter your username",
         type: "text",
       },
       {
         name: "email" as const,
         label: "Email Address",
-        placeholder: user.email || "Enter your email",
+        placeholder: "Enter your email",
         type: "email",
       },
     ],
-    [user.username, user.email]
+    []
   );
 
   const handleSubmit = useCallback(async (data: ProfileFormData) => {
     setIsPending(true);
     try {
-      const meResult = await updateMe({
-        username: data.username,
-        email: data.email,
-      });
+      // Only send fields that have actually changed from the original values
+      const updateData: { username?: string; email?: string } = {};
+      
+      if (data.username !== user.username) {
+        updateData.username = data.username;
+      }
+      
+      if (data.email !== user.email) {
+        updateData.email = data.email;
+      }
+
+      // Only proceed if there are actual changes
+      if (Object.keys(updateData).length === 0) {
+        toast.info("No changes to save");
+        setIsPending(false);
+        return;
+      }
+
+      const meResult = await updateMe(updateData);
 
       if (meResult) {
         toast.success(
@@ -158,10 +173,15 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
     } finally {
       setIsPending(false);
     }
-  }, []);
+  }, [user.username, user.email]);
 
-  const isFormDirty = form.formState.isDirty;
-  const isSubmitDisabled = isPending || !isFormDirty;
+  // Check if form has any changes from the original values
+  const hasChanges = useMemo(() => {
+    const values = form.getValues();
+    return values.username !== user.username || values.email !== user.email;
+  }, [form.watch(), user.username, user.email]);
+
+  const isSubmitDisabled = isPending || !hasChanges;
 
   return (
     <div className="grid gap-6">
