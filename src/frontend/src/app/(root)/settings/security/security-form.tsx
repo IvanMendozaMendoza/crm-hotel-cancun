@@ -230,8 +230,15 @@ export const SecurityForm = ({}: SecurityFormProps) => {
     [form]
   );
 
-  const isFormDirty = form.formState.isDirty;
-  const isSubmitDisabled = isPending || !isFormDirty;
+  // Check if all three password fields are filled
+  const areAllFieldsFilled = useMemo(() => {
+    const values = form.getValues();
+    return values.currentPassword.trim() !== "" && 
+           values.newPassword.trim() !== "" && 
+           values.confirmPassword.trim() !== "";
+  }, [form.watch()]);
+
+  const isSubmitDisabled = isPending || !areAllFieldsFilled;
 
   return (
     <div className="grid gap-6">
@@ -287,7 +294,7 @@ export const SecurityForm = ({}: SecurityFormProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="bg-white hover:bg-gray-100 text-gray-900 px-6"
+                className="bg-white hover:bg-gray-100 text-gray-900 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
                 {isPending ? "Updating..." : "Update Password"}
