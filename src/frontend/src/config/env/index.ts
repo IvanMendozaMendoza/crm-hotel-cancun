@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { table, error } from "@/lib/logger";
 
 const envSchema = z.object({
   NEXTAUTH_SECRET: z.string().min(1, "NEXTAUTH_SECRET is required"),
@@ -13,8 +14,8 @@ const _env = envSchema.safeParse({
 });
 
 if (!_env.success) {
-  console.table(_env.error.flatten().fieldErrors);
-  console.error("❌ Invalid environment variables:");
+  table(_env.error.flatten().fieldErrors);
+  error("❌ Invalid environment variables:", _env.error);
   throw new Error("❌ Environment validation failed.");
 }
 

@@ -27,9 +27,11 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+import { SIDEBAR } from "@/lib/constants";
+
+const SIDEBAR_WIDTH = SIDEBAR.WIDTH;
+const SIDEBAR_WIDTH_MOBILE = SIDEBAR.WIDTH_MOBILE;
+const SIDEBAR_WIDTH_ICON = SIDEBAR.WIDTH_ICON;
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextProps = {

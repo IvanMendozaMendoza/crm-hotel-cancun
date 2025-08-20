@@ -9,8 +9,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
+import { useSharedNavigation } from "@/hooks/use-shared-navigation"
 
 export function NavSecondary({
   items,
@@ -22,15 +22,7 @@ export function NavSecondary({
     icon: Icon
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
-  const { isMobile, setOpenMobile } = useSidebar();
-
-  // Function to handle navigation clicks and auto-close sidebar on mobile/tablet
-  const handleNavigationClick = () => {
-    // Close sidebar on mobile/tablet viewports
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  };
+  const { handleLinkClick } = useSharedNavigation();
 
   return (
     <SidebarGroup {...props}>
@@ -39,7 +31,7 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <a href={item.url} onClick={handleNavigationClick}>
+                <a href={item.url} onClick={handleLinkClick}>
                   <item.icon />
                   <span>{item.title}</span>
                 </a>
