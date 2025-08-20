@@ -88,5 +88,4 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// Export types for use in other parts of the application
 export type { AuthApiResponse, AuthCredentials, AuthUser };
