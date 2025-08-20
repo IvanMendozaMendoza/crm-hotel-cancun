@@ -5,21 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 import {
-  IconCamera,
-  IconChartBar,
-  IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
 
 import { getServerSession } from "next-auth";
@@ -27,7 +13,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { User } from "next-auth";
 
-let dataAdmin = {
+const dataAdmin = {
   navMain: [
     {
       title: "Dashboard",
@@ -42,15 +28,7 @@ let dataAdmin = {
         {
           title: "Overview",
           url: "/analytics",
-        },
-        {
-          title: "Reports",
-          url: "/analytics/reports",
-        },
-        {
-          title: "Metrics",
-          url: "/analytics/metrics",
-        },
+        }
       ],
     },
     {
@@ -66,14 +44,6 @@ let dataAdmin = {
           title: "User Roles",
           url: "/team/roles",
         },
-        // {
-        //   title: "Security",
-        //   url: "/team/security",
-        // },
-        // {
-        //   title: "Permissions",
-        //   url: "/team/permissions",
-        // },
       ],
     },
 
@@ -89,10 +59,6 @@ let dataAdmin = {
         {
           title: "Security",
           url: "/settings/security",
-        },
-        {
-          title: "Notifications",
-          url: "/settings/notifications",
         },
       ],
     },
@@ -146,16 +112,16 @@ let dataAdmin = {
     },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: "settings",
-    },
     // {
-    //   title: "Get Help",
+    //   title: "Settings",
     //   url: "#",
-    //   icon: IconHelp,
+    //   icon: "settings",
     // },
+    {
+      title: "Get Help",
+      url: "#",
+      icon: IconHelp,
+    },
     // {
     //   title: "Search",
     //   url: "#",
@@ -181,7 +147,7 @@ let dataAdmin = {
   ],
 };
 
-let dataUser = {
+const dataUser = {
   navMain: [
     {
       title: "Dashboard",

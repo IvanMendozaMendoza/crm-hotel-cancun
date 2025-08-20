@@ -1,24 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Users, Shield, Settings, Database, FileText, ChartBar, Bell, Lock, Globe, Code, Palette, Search, Filter } from "lucide-react";
-import { Combobox } from "@/components/ui/combobox";
+import { Plus, Users, Search, Filter, MoreVertical, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { ColorPicker } from "@/components/ui/color-picker";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { CreateRoleGroupDialog } from "@/components/create-role-group-dialog";
-import { EditRoleGroupDialog } from "@/components/edit-role-group-dialog";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  Row,
+} from "@tanstack/react-table";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-// Permission categories and their permissions
-const permissionCategories = {
+const permissionCategories: Record<string, string[]> = {
   "User Management": [
     "view_users",
     "create_users", 
@@ -61,13 +85,11 @@ const permissionCategories = {
   ]
 };
 
-// Sample role groups data
 const initialRoleGroups = [
   {
     id: "1",
     name: "Administrators",
     description: "Full system access with all permissions",
-    color: "#ef4444", // red-500
     permissions: Object.values(permissionCategories).flat(),
     userCount: 3,
     createdAt: "2024-01-15"
@@ -76,7 +98,6 @@ const initialRoleGroups = [
     id: "2", 
     name: "Content Managers",
     description: "Manage content and moderate user-generated content",
-    color: "#3b82f6", // blue-500
     permissions: [
       "view_users",
       "view_content",
@@ -93,7 +114,6 @@ const initialRoleGroups = [
     id: "3",
     name: "Data Analysts", 
     description: "Access to analytics and reporting features",
-    color: "#22c55e", // green-500
     permissions: [
       "view_data",
       "export_data", 
@@ -106,10 +126,9 @@ const initialRoleGroups = [
     createdAt: "2024-01-25"
   },
   {
-    id: "4",
+    id: "42",
     name: "Viewers",
     description: "Read-only access to basic content",
-    color: "#6b7280", // gray-500
     permissions: [
       "view_users",
       "view_content",
@@ -117,98 +136,434 @@ const initialRoleGroups = [
     ],
     userCount: 12,
     createdAt: "2024-02-01"
-  }
+  },
+  {
+    id: "565",
+    name: "Moderators",
+    description: "Moderate user content and manage reports",
+    permissions: [
+      "view_users",
+      "view_content",
+      "edit_content",
+      "delete_content",
+      "view_analytics",
+      "create_reports"
+    ],
+    userCount: 6,
+    createdAt: "2024-02-05"
+  },
+  {
+    id: "654",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "6433",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "621",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "2121",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "99",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "19",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "8",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "6",
+    name: "Developers",
+    description: "Technical access for development and debugging",
+    permissions: [
+      "view_settings",
+      "edit_settings",
+      "view_logs",
+      "system_maintenance",
+      "view_data",
+      "export_data"
+    ],
+    userCount: 4,
+    createdAt: "2024-02-10"
+  },
 ];
 
+const permissionLabels: { [key: string]: string } = {
+  view_users: "View Users",
+  create_users: "Create Users",
+  edit_users: "Edit Users", 
+  delete_users: "Delete Users",
+  assign_roles: "Assign Roles",
+  view_content: "View Content",
+  create_content: "Create Content",
+  edit_content: "Edit Content",
+  delete_content: "Delete Content",
+  publish_content: "Publish Content",
+  view_settings: "View Settings",
+  edit_settings: "Edit Settings",
+  view_logs: "View Logs",
+  manage_backups: "Manage Backups",
+  system_maintenance: "System Maintenance",
+  view_data: "View Data",
+  export_data: "Export Data",
+  import_data: "Import Data",
+  delete_data: "Delete Data",
+  anonymize_data: "Anonymize Data",
+  view_analytics: "View Analytics",
+  create_reports: "Create Reports",
+  export_reports: "Export Reports",
+  share_reports: "Share Reports",
+  view_security: "View Security",
+  manage_permissions: "Manage Permissions",
+  audit_logs: "Audit Logs",
+  security_settings: "Security Settings"
+};
+
+const getPermissionLabel = (permission: string) => permissionLabels[permission] || permission;
+
+const PermissionPopover = ({ roleGroup }: { roleGroup: { permissions: string[] } }) => {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  
+  const allPermissions = Object.values(permissionCategories).flat();
+  const filteredPermissions = allPermissions.filter(permission =>
+    getPermissionLabel(permission).toLowerCase().includes(searchValue.toLowerCase())
+  );
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="link"
+          role="combobox"
+          aria-expanded={open}
+          className="-ml-6"
+        >
+          <span className="truncate">
+            {roleGroup.permissions.length} permissions
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+        <Command>
+          <CommandInput 
+            placeholder="Search permissions..." 
+            value={searchValue}
+            onValueChange={setSearchValue}
+            className="border-gray-700"
+          />
+          <CommandList className="max-h-[300px]">
+            <CommandEmpty>No permissions found.</CommandEmpty>
+            <CommandGroup>
+              {filteredPermissions.map((permission) => (
+                <CommandItem
+                  key={permission}
+                  className={`flex items-center gap-2 ${
+                    roleGroup.permissions.includes(permission) 
+                      ? "bg-blue-500/20 text-blue-400" 
+                      : "text-gray-300"
+                  }`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${
+                    roleGroup.permissions.includes(permission) 
+                      ? "bg-blue-400" 
+                      : "bg-gray-500"
+                  }`} />
+                  {getPermissionLabel(permission)}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const SearchAndFilters = ({ 
+  searchTerm, 
+  onSearchChange, 
+  selectedCategory, 
+  onCategoryChange 
+}: { 
+  searchTerm: string; 
+  onSearchChange: (value: string) => void; 
+  selectedCategory: string; 
+  onCategoryChange: (category: string) => void; 
+}) => (
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      <Input
+        placeholder="Search"
+        type="search"
+        autoComplete="off"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
+      />
+    </div>
+    
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
+        <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuItem 
+          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
+          onClick={() => onCategoryChange("all")}
+        >
+          All Categories
+        </DropdownMenuItem>
+        {Object.keys(permissionCategories).map(category => (
+          <DropdownMenuItem 
+            key={category}
+            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
+            onClick={() => onCategoryChange(category)}
+          >
+            {category}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+);
+
+const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<typeof initialRoleGroups[0]>> }) => (
+  <div className="flex items-center justify-between px-4 mt-6">
+    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+      {table.getFilteredRowModel().rows.length} role group(s) total.
+    </div>
+    <div className="flex w-full items-center gap-8 lg:w-fit">
+      <div className="hidden items-center gap-2 lg:flex">
+        <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
+          Rows per page
+        </Label>
+        <Select
+          value={`${table.getState().pagination.pageSize}`}
+          onValueChange={(value) => {
+            table.setPageSize(Number(value))
+          }}
+        >
+          <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
+            <SelectValue
+              placeholder={table.getState().pagination.pageSize}
+            />
+          </SelectTrigger>
+          <SelectContent side="top" className="bg-stone-900 border-gray-700">
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
+                {pageSize}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+        Page {table.getState().pagination.pageIndex + 1} of{" "}
+        {table.getPageCount()}
+      </div>
+      <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <Button
+          variant="outline"
+          className="hidden h-8 w-8 p-0 lg:flex"
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+        >
+          <span className="sr-only">Go to first page</span>
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          <span className="sr-only">Go to previous page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="size-8"
+          size="icon"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          <span className="sr-only">Go to next page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          className="hidden size-8 lg:flex"
+          size="icon"
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+        >
+          <span className="sr-only">Go to last page</span>
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
+function DraggableRow({ row }: { row: Row<typeof initialRoleGroups[0]> }) {
+  const {
+    transform,
+    transition,
+    setNodeRef,
+    isDragging,
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+  } = useSortable({
+    id: row.original.id,
+  })
+
+  return (
+    <TableRow
+      data-state={row.getIsSelected() && "selected"}
+      data-dragging={isDragging}
+      ref={setNodeRef}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 border-gray-700 hover:bg-gray-800/30"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {cell.column.id === "drag" ? (
+            <Button
+              ref={(node: HTMLButtonElement | null) => setActivatorNodeRef(node)}
+              {...attributes}
+              {...listeners}
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground size-7 hover:bg-transparent"
+            >
+              <GripVertical className="text-muted-foreground size-3" />
+              <span className="sr-only">Drag to reorder</span>
+            </Button>
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+}
+
 const TeamRolesPage = () => {
+  const router = useRouter();
   const [roleGroups, setRoleGroups] = useState(initialRoleGroups);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingRoleGroup, setEditingRoleGroup] = useState<any>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   
-  // Form state for creating/editing role groups
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    color: "#3b82f6", // blue-500 hex
-    permissions: [] as string[]
-  });
+  const sensors = useSensors(
+    useSensor(MouseSensor, {}),
+    useSensor(TouchSensor, {}),
+    useSensor(KeyboardSensor, {})
+  );
 
-  // Ensure color is always defined
-  const currentColor = formData.color || "#3b82f6";
+  const handleCreateRoleGroup = useCallback(() => {
+    router.push('/team/roles/create');
+  }, [router]);
 
-  const colorOptions = [
-    { value: "bg-red-500", label: "Red" },
-    { value: "bg-blue-500", label: "Blue" },
-    { value: "bg-green-500", label: "Green" },
-    { value: "bg-yellow-500", label: "Yellow" },
-    { value: "bg-purple-500", label: "Purple" },
-    { value: "bg-pink-500", label: "Pink" },
-    { value: "bg-indigo-500", label: "Indigo" },
-    { value: "bg-gray-500", label: "Gray" }
-  ];
-
-  // Filter role groups based on search and category
-  const filteredRoleGroups = roleGroups.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || 
-                           group.permissions.some(perm => 
-                             Object.values(permissionCategories[selectedCategory as keyof typeof permissionCategories] || []).includes(perm)
-                           );
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleCreateRoleGroup = (data: any) => {
-    console.log("handleCreateRoleGroup called with:", data);
-    if (!data.name.trim()) {
-      toast.error("Role group name is required");
-      return;
-    }
-    if (data.permissions.length === 0) {
-      toast.error("At least one permission is required");
-      return;
-    }
-
-    const newRoleGroup = {
-      id: Date.now().toString(),
-      ...data,
-      userCount: 0,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-
-    console.log("Creating new role group:", newRoleGroup);
-    setRoleGroups(prev => [...prev, newRoleGroup]);
-    setIsCreateDialogOpen(false);
-    toast.success("Role group created successfully");
-  };
-
-  const handleEditRoleGroup = (data: any) => {
-    console.log("handleEditRoleGroup called with:", data);
-    if (!data.name.trim()) {
-      toast.error("Role group name is required");
-      return;
-    }
-    if (data.permissions.length === 0) {
-      toast.error("At least one permission is required");
-      return;
-    }
-
-    console.log("Updating role group:", editingRoleGroup?.id, "with data:", data);
-    setRoleGroups(prev => prev.map(group => 
-      group.id === editingRoleGroup.id 
-        ? { ...group, ...data }
-        : group
-    ));
-    
-    setIsEditDialogOpen(false);
-    setEditingRoleGroup(null);
-    toast.success("Role group updated successfully");
-  };
-
-  const handleDeleteRoleGroup = (id: string) => {
+  const handleDeleteRoleGroup = useCallback((id: string) => {
     const group = roleGroups.find(g => g.id === id);
     if (group && group.userCount > 0) {
       toast.error("Cannot delete role group with assigned users");
@@ -217,227 +572,204 @@ const TeamRolesPage = () => {
     
     setRoleGroups(prev => prev.filter(group => group.id !== id));
     toast.success("Role group deleted successfully");
-  };
+  }, [roleGroups]);
 
-  const openEditDialog = (roleGroup: any) => {
-    setEditingRoleGroup(roleGroup);
-    setIsEditDialogOpen(true);
-  };
+  const columns = useMemo<ColumnDef<typeof initialRoleGroups[0]>[]>(() => [
+    {
+      id: "drag",
+      header: () => null,
+      cell: () => null,
+      size: 40,
+    },
+    {
+      accessorKey: "name",
+      header: "Role name",
+      cell: ({ row }) => {
+        const roleGroup = row.original;
+        return (
+          <div className="min-w-0">
+            <div className="font-medium text-white truncate">{roleGroup.name}</div>
+            <div className="text-sm text-gray-400 truncate">{roleGroup.description}</div>
+          </div>
+        );
+      },
+      size: 280,
+    },
+    {
+      accessorKey: "permissions",
+      header: "Permissions",
+      cell: ({ row }) => <PermissionPopover roleGroup={row.original} />,
+      size: 140,
+    },
+    {
+      accessorKey: "userCount",
+      header: "Users",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-gray-400" />
+          <span className="text-gray-300">{row.original.userCount}</span>
+        </div>
+      ),
+      size: 100,
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => (
+        <span className="text-gray-300">{row.original.createdAt}</span>
+      ),
+      size: 120,
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const roleGroup = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+              <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-red-400 hover:bg-gray-700"
+                onClick={() => handleDeleteRoleGroup(roleGroup.id)}
+              >
+                Delete role
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+      size: 50,
+    },
+  ], [handleDeleteRoleGroup]);
 
-  const togglePermission = (permission: string) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permission)
-        ? prev.permissions.filter(p => p !== permission)
-        : [...prev.permissions, permission]
-    }));
-  };
+  const table = useReactTable({
+    data: roleGroups,
+    columns,
+    filterFns: {
+      permissions: (row, id, filterValue) => {
+        const permissions = row.getValue(id) as string[]
+        const permissionCategory =
+          permissionCategories[filterValue as keyof typeof permissionCategories] ||
+          []
+        return permissionCategory.some((p: string) => permissions.includes(p))
+      },
+    },
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getRowId: (row) => row.id,
+  });
 
-  const toggleCategoryPermissions = (category: string, permissions: string[]) => {
-    const allSelected = permissions.every(perm => formData.permissions.includes(perm));
-    
-    setFormData(prev => ({
-      ...prev,
-      permissions: allSelected
-        ? prev.permissions.filter(p => !permissions.includes(p))
-        : [...new Set([...prev.permissions, ...permissions])]
-    }));
-  };
+  useEffect(() => {
+    table.setGlobalFilter(searchTerm)
+  }, [searchTerm, table])
 
-  const getPermissionLabel = (permission: string) => {
-    const labels: { [key: string]: string } = {
-      view_users: "View Users",
-      create_users: "Create Users",
-      edit_users: "Edit Users", 
-      delete_users: "Delete Users",
-      assign_roles: "Assign Roles",
-      view_content: "View Content",
-      create_content: "Create Content",
-      edit_content: "Edit Content",
-      delete_content: "Delete Content",
-      publish_content: "Publish Content",
-      view_settings: "View Settings",
-      edit_settings: "Edit Settings",
-      view_logs: "View Logs",
-      manage_backups: "Manage Backups",
-      system_maintenance: "System Maintenance",
-      view_data: "View Data",
-      export_data: "Export Data",
-      import_data: "Import Data",
-      delete_data: "Delete Data",
-      anonymize_data: "Anonymize Data",
-      view_analytics: "View Analytics",
-      create_reports: "Create Reports",
-      export_reports: "Export Reports",
-      share_reports: "Share Reports",
-      view_security: "View Security",
-      manage_permissions: "Manage Permissions",
-      audit_logs: "Audit Logs",
-      security_settings: "Security Settings"
-    };
-    return labels[permission] || permission;
-  };
+  useEffect(() => {
+    if (selectedCategory === "all") {
+      table.resetColumnFilters()
+      return
+    }
+    table.setColumnFilters([
+      {
+        id: "permissions",
+        value: selectedCategory,
+      },
+    ])
+  }, [selectedCategory, table])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    if (active && over && active.id !== over.id) {
+      setRoleGroups((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-white">User Roles {roleGroups.length}</h1>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search"
-                type="search"
-                autoComplete="off"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
-              />
-            </div>
+            <SearchAndFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
             
-            {/* Filters */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
-                <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem 
-                  className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
-                  onClick={() => setSelectedCategory("all")}
-                >
-                  All Categories
-                </DropdownMenuItem>
-                {Object.keys(permissionCategories).map(category => (
-                  <DropdownMenuItem 
-                    key={category}
-                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Add Role Group */}
-            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-black text-white hover:bg-gray-900">
+            <Button onClick={handleCreateRoleGroup} className="bg-black text-white hover:bg-gray-900">
               <Plus className="h-4 w-4 mr-2" />
               Add role group
             </Button>
-            
-            <CreateRoleGroupDialog 
-              open={isCreateDialogOpen} 
-              onOpenChange={setIsCreateDialogOpen}
-              onSubmit={handleCreateRoleGroup}
-            />
           </div>
         </div>
 
-        {/* Role Groups Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRoleGroups.map((roleGroup) => (
-            <Card key={roleGroup.id} className="bg-stone-900 border-gray-700">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: roleGroup.color }} />
-                    <div>
-                      <CardTitle className="text-white">{roleGroup.name}</CardTitle>
-                      <CardDescription className="text-gray-400">
-                        {roleGroup.permissions.length} permissions
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(roleGroup)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteRoleGroup(roleGroup.id)}
-                      className="text-gray-400 hover:text-red-400"
-                      disabled={roleGroup.userCount > 0}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <p className="text-gray-300 text-sm">{roleGroup.description}</p>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Users className="h-4 w-4" />
-                    <span>{roleGroup.userCount} users</span>
-                  </div>
-                  <div className="text-gray-400">
-                    Created {roleGroup.createdAt}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-300">Key Permissions:</Label>
-                  <div className="flex flex-wrap gap-1">
-                    {roleGroup.permissions.slice(0, 5).map(permission => (
-                                             <Badge key={permission} variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
-                        {getPermissionLabel(permission)}
-                      </Badge>
+        <div className="overflow-hidden rounded-lg border border-gray-700">
+          <DndContext
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
+          >
+            <Table>
+              <TableHeader className="bg-stone-900">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-gray-700">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="text-gray-300 font-medium">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
-                    {roleGroup.permissions.length > 5 && (
-                                             <Badge variant="outline" className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">
-                        +{roleGroup.permissions.length - 5} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  <SortableContext
+                    items={table.getRowModel().rows.map((r) => r.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {table.getRowModel().rows.map((row) => (
+                      <DraggableRow key={row.id} row={row} />
+                    ))}
+                  </SortableContext>
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                      No role groups found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </DndContext>
         </div>
 
-        {/* Edit Dialog */}
-        <EditRoleGroupDialog 
-          open={isEditDialogOpen} 
-          onOpenChange={setIsEditDialogOpen}
-          roleGroup={editingRoleGroup}
-          onSubmit={handleEditRoleGroup}
-        />
-
-        {/* Empty State */}
-        {filteredRoleGroups.length === 0 && (
-          <div className="text-center py-12">
-            <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No role groups found</h3>
-            <p className="text-gray-400 mb-4">
-              {searchTerm || selectedCategory !== "all" 
-                ? "Try adjusting your search or filter criteria"
-                : "Get started by creating your first role group"
-              }
-            </p>
-            {!searchTerm && selectedCategory === "all" && (
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Role Group
-              </Button>
-            )}
-          </div>
+        {table.getRowModel().rows.length > 0 && (
+          <Pagination table={table} />
         )}
       </div>
     </div>
