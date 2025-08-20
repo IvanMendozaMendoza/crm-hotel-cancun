@@ -6,7 +6,9 @@ import { Input } from "./input";
 import { 
   AccessibilityProps, 
   generateAriaId,
-  srOnly 
+  srOnly,
+  ariaBuilder,
+  screenReader
 } from "@/lib/accessibility";
 
 export interface AccessibleInputProps 
@@ -114,38 +116,20 @@ export const AccessibleInput = forwardRef<
   // Determine if field is invalid
   const isInvalid = invalid || !!error;
 
-  // Build ARIA attributes
-  const ariaAttributes: AccessibilityProps = {
-    id: inputId,
-    'aria-labelledby': labelId,
-    ...(description && {
-      'aria-describedby': descriptionId,
-    }),
-    ...(error && {
-      'aria-describedby': `${descriptionId || ''} ${errorId}`.trim(),
-      'aria-invalid': true,
-    }),
-    ...(characterCount && {
-      'aria-describedby': `${descriptionId || ''} ${characterCountId}`.trim(),
-    }),
-    ...(hasAutocomplete && {
-      'aria-autocomplete': 'list',
-      'aria-controls': suggestionsId,
-      'aria-expanded': autocompleteSuggestions.length > 0,
-    }),
-    ...(required && {
-      'aria-required': true,
-    }),
-    ...(readOnly && {
-      'aria-readonly': true,
-    }),
-    ...(disabled && {
-      'aria-disabled': true,
-    }),
-    ...(placeholder && {
-      'aria-placeholder': placeholder,
-    }),
-  };
+  // Build ARIA attributes using utility
+  const ariaAttributes: AccessibilityProps = ariaBuilder.input(inputId, {
+    label: labelId,
+    description: descriptionId,
+    error: errorId,
+    characterCount: characterCountId,
+    hasAutocomplete,
+    suggestionsId,
+    required,
+    readOnly,
+    disabled,
+    placeholder,
+    autocompleteSuggestions,
+  });
 
   // Enhanced change handler with character count announcements
   const enhancedChangeHandler = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,16 +140,7 @@ export const AccessibleInput = forwardRef<
     // Announce character count changes to screen readers if enabled
     if (announceCharacterCount && characterCount && !event.defaultPrevented) {
       const currentCount = event.target.value.length;
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', 'polite');
-      announcement.setAttribute('aria-atomic', 'true');
-      announcement.className = srOnly;
-      announcement.textContent = `${currentCount} of ${characterCount.max} characters`;
-      
-      document.body.appendChild(announcement);
-      setTimeout(() => {
-        document.body.removeChild(announcement);
-      }, 1000);
+      screenReader.announceCharacterCount(currentCount, characterCount.max);
     }
   }, [onChange, announceCharacterCount, characterCount]);
 
@@ -177,16 +152,7 @@ export const AccessibleInput = forwardRef<
     
     // Announce field focus to screen readers
     if (label && !event.defaultPrevented) {
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', 'polite');
-      announcement.setAttribute('aria-atomic', 'true');
-      announcement.className = srOnly;
-      announcement.textContent = `Focused on ${label} field`;
-      
-      document.body.appendChild(announcement);
-      setTimeout(() => {
-        document.body.removeChild(announcement);
-      }, 1000);
+      screenReader.announceFieldFocus(label);
     }
   }, [onFocus, label]);
 

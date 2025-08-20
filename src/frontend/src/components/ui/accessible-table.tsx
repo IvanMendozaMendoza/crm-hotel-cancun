@@ -10,10 +10,10 @@ import {
 } from "./table";
 import { 
   AccessibilityProps, 
-  ARIA_LABELS,
   createKeyboardHandlers,
   generateAriaId,
-  srOnly
+  srOnly,
+  ariaBuilder
 } from "@/lib/accessibility";
 
 export interface AccessibleTableProps 
@@ -204,24 +204,13 @@ export const AccessibleTable = forwardRef<
   const descriptionId = description ? generateAriaId('table', 'description') : undefined;
   const statusId = generateAriaId('table', 'status');
 
-  // Build ARIA attributes
-  const ariaAttributes: AccessibilityProps = {
-    id: tableId,
-    role: 'table',
-    'aria-label': ARIA_LABELS.TABLE,
-    ...(caption && {
-      'aria-labelledby': captionId,
-    }),
-    ...(description && {
-      'aria-describedby': descriptionId,
-    }),
-    ...(sortable && {
-      'aria-sort': 'none',
-    }),
-    ...(selectable && {
-      'aria-multiselectable': true,
-    }),
-  };
+  // Build ARIA attributes using utility
+  const ariaAttributes: AccessibilityProps = ariaBuilder.table(tableId, {
+    caption: captionId,
+    description: descriptionId,
+    sortable,
+    selectable,
+  });
 
   // Enhanced keyboard handlers for table navigation
   const enhancedKeyboardHandlers = React.useMemo(() => {
@@ -443,31 +432,17 @@ export const AccessibleTableRow = forwardRef<
   const rowId = React.useMemo(() => generateAriaId('row'), []);
   const descriptionId = description ? generateAriaId('row', 'description') : undefined;
 
-  // Build ARIA attributes
-  const ariaAttributes: AccessibilityProps = {
-    id: rowId,
-    role: 'row',
-    'aria-rowindex': rowIndex,
-    'aria-setsize': totalRows,
-    ...(description && {
-      'aria-describedby': descriptionId,
-    }),
-    ...(selected !== undefined && {
-      'aria-selected': selected,
-    }),
-    ...(expanded !== undefined && {
-      'aria-expanded': expanded,
-    }),
-    ...(hasActions && {
-      'aria-haspopup': true,
-    }),
-    ...(isLoading && {
-      'aria-busy': true,
-    }),
-    ...(disabled && {
-      'aria-disabled': true,
-    }),
-  };
+  // Build ARIA attributes using utility
+  const ariaAttributes: AccessibilityProps = ariaBuilder.tableRow(rowId, {
+    rowIndex,
+    totalRows,
+    description: descriptionId,
+    selected,
+    expanded,
+    hasActions,
+    isLoading,
+    disabled,
+  });
 
   return (
     <>
@@ -515,25 +490,15 @@ export const AccessibleTableCell = forwardRef<
   const cellId = React.useMemo(() => generateAriaId('cell'), []);
   const descriptionId = description ? generateAriaId('cell', 'description') : undefined;
 
-  // Build ARIA attributes
-  const ariaAttributes: AccessibilityProps = {
-    id: cellId,
-    role: isHeader ? 'columnheader' : 'cell',
-    'aria-colindex': colIndex,
-    'aria-colspan': 1,
-    ...(description && {
-      'aria-describedby': descriptionId,
-    }),
-    ...(sortable && {
-      'aria-sort': 'none',
-    }),
-    ...(selectable && {
-      'aria-selected': false,
-    }),
-    ...(expandable && {
-      'aria-expanded': false,
-    }),
-  };
+  // Build ARIA attributes using utility
+  const ariaAttributes: AccessibilityProps = ariaBuilder.tableCell(cellId, {
+    colIndex,
+    description: descriptionId,
+    isHeader,
+    sortable,
+    selectable,
+    expandable,
+  });
 
   return (
     <>

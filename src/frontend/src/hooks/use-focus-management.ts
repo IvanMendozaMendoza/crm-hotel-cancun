@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { KEYBOARD_KEYS, focusManagement } from "@/lib/accessibility";
+import { KEYBOARD_KEYS, focusManagement, screenReader } from "@/lib/accessibility";
 
 export interface FocusManagementOptions {
   /**
@@ -160,16 +160,7 @@ export const useFocusManagement = (
 
     // Announce focus change to screen readers
     if (announceFocus && element.textContent) {
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', 'polite');
-      announcement.setAttribute('aria-atomic', 'true');
-      announcement.className = 'sr-only';
-      announcement.textContent = `Focused on ${element.textContent.trim()}`;
-      
-      document.body.appendChild(announcement);
-      setTimeout(() => {
-        document.body.removeChild(announcement);
-      }, 1000);
+      screenReader.announceFocus(element.textContent);
     }
   }, [getFocusableElements, announceFocus]);
 

@@ -253,6 +253,228 @@ export const createKeyboardHandlers = {
 };
 
 /**
+ * Screen reader announcement utilities
+ */
+export const screenReader = {
+  /**
+   * Announce a message to screen readers
+   */
+  announce: (message: string, type: 'polite' | 'assertive' = 'polite', duration: number = 1000) => {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', type);
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = message;
+    
+    document.body.appendChild(announcement);
+    
+    setTimeout(() => {
+      if (document.body.contains(announcement)) {
+        document.body.removeChild(announcement);
+      }
+    }, duration);
+  },
+
+  /**
+   * Announce focus changes
+   */
+  announceFocus: (elementText: string) => {
+    screenReader.announce(`Focused on ${elementText.trim()}`);
+  },
+
+  /**
+   * Announce loading states
+   */
+  announceLoading: (text: string) => {
+    screenReader.announce(text);
+  },
+
+  /**
+   * Announce state changes
+   */
+  announceState: (text: string) => {
+    screenReader.announce(text);
+  },
+
+  /**
+   * Announce character count
+   */
+  announceCharacterCount: (current: number, max: number) => {
+    screenReader.announce(`${current} of ${max} characters`);
+  },
+
+  /**
+   * Announce field focus
+   */
+  announceFieldFocus: (label: string) => {
+    screenReader.announce(`Focused on ${label} field`);
+  },
+};
+
+/**
+ * ARIA attribute building utilities
+ */
+export const ariaBuilder = {
+  /**
+   * Build basic ARIA attributes
+   */
+  basic: (id: string, label?: string, description?: string) => ({
+    id,
+    ...(label && { 'aria-label': label }),
+    ...(description && { 'aria-describedby': description }),
+  }),
+
+  /**
+   * Build button ARIA attributes
+   */
+  button: (id: string, options: {
+    label?: string;
+    description?: string;
+    isLoading?: boolean;
+    isActive?: boolean;
+    isExpanded?: boolean;
+    hasPopup?: boolean;
+    isGrouped?: boolean;
+    groupPosition?: number;
+    groupSize?: number;
+    disabled?: boolean;
+    announceChanges?: boolean;
+  }): AccessibilityProps => {
+    const { label, description, isLoading, isActive, isExpanded, hasPopup, isGrouped, groupPosition, groupSize, disabled, announceChanges } = options;
+    
+    return {
+      id,
+      'aria-label': label,
+      ...(description && { 'aria-describedby': description }),
+      ...(isLoading && {
+        'aria-busy': true,
+        'aria-live': announceChanges ? 'polite' : 'off',
+      }),
+      ...(isActive !== undefined && { 'aria-pressed': isActive }),
+      ...(isExpanded !== undefined && { 'aria-expanded': isExpanded }),
+      ...(hasPopup && { 'aria-haspopup': true }),
+      ...(isGrouped && groupPosition && groupSize && {
+        'aria-posinset': groupPosition,
+        'aria-setsize': groupSize,
+      }),
+      ...(disabled && { 'aria-disabled': true }),
+    };
+  },
+
+  /**
+   * Build input ARIA attributes
+   */
+  input: (id: string, options: {
+    label?: string;
+    description?: string;
+    error?: string;
+    characterCount?: string;
+    hasAutocomplete?: boolean;
+    suggestionsId?: string;
+    required?: boolean;
+    readOnly?: boolean;
+    disabled?: boolean;
+    placeholder?: string;
+    autocompleteSuggestions?: string[];
+  }): AccessibilityProps => {
+    const { label, description, error, characterCount, hasAutocomplete, suggestionsId, required, readOnly, disabled, placeholder, autocompleteSuggestions } = options;
+    
+    return {
+      id,
+      'aria-labelledby': label,
+      ...(description && { 'aria-describedby': description }),
+      ...(error && { 'aria-describedby': `${description || ''} ${error}`.trim() }),
+      ...(characterCount && { 'aria-describedby': `${description || ''} ${characterCount}`.trim() }),
+      ...(hasAutocomplete && {
+        'aria-autocomplete': 'list' as const,
+        'aria-controls': suggestionsId,
+        'aria-expanded': (autocompleteSuggestions?.length ?? 0) > 0,
+      }),
+      ...(required && { 'aria-required': true }),
+      ...(readOnly && { 'aria-readonly': true }),
+      ...(disabled && { 'aria-disabled': true }),
+      ...(placeholder && { 'aria-placeholder': placeholder }),
+    };
+  },
+
+  /**
+   * Build table ARIA attributes
+   */
+  table: (id: string, options: {
+    caption?: string;
+    description?: string;
+    sortable?: boolean;
+    selectable?: boolean;
+  }): AccessibilityProps => {
+    const { caption, description, sortable, selectable } = options;
+    
+    return {
+      id,
+      role: 'table',
+      'aria-label': ARIA_LABELS.TABLE,
+      ...(caption && { 'aria-labelledby': caption }),
+      ...(description && { 'aria-describedby': description }),
+      ...(sortable && { 'aria-sort': 'none' as const }),
+      ...(selectable && { 'aria-multiselectable': true }),
+    };
+  },
+
+  /**
+   * Build table row ARIA attributes
+   */
+  tableRow: (id: string, options: {
+    rowIndex: number;
+    totalRows: number;
+    description?: string;
+    selected?: boolean;
+    expanded?: boolean;
+    hasActions?: boolean;
+    isLoading?: boolean;
+    disabled?: boolean;
+  }) => {
+    const { rowIndex, totalRows, description, selected, expanded, hasActions, isLoading, disabled } = options;
+    
+    return {
+      id,
+      role: 'row',
+      'aria-rowindex': rowIndex,
+      'aria-setsize': totalRows,
+      ...(description && { 'aria-describedby': description }),
+      ...(selected !== undefined && { 'aria-selected': selected }),
+      ...(expanded !== undefined && { 'aria-expanded': expanded }),
+      ...(hasActions && { 'aria-haspopup': true }),
+      ...(isLoading && { 'aria-busy': true }),
+      ...(disabled && { 'aria-disabled': true }),
+    };
+  },
+
+  /**
+   * Build table cell ARIA attributes
+   */
+  tableCell: (id: string, options: {
+    colIndex: number;
+    description?: string;
+    isHeader?: boolean;
+    sortable?: boolean;
+    selectable?: boolean;
+    expandable?: boolean;
+  }): AccessibilityProps => {
+    const { colIndex, description, isHeader, sortable, selectable, expandable } = options;
+    
+    return {
+      id,
+      role: isHeader ? 'columnheader' : 'cell',
+      'aria-colindex': colIndex,
+      'aria-colspan': 1,
+      ...(description && { 'aria-describedby': description }),
+      ...(sortable && { 'aria-sort': 'none' as const }),
+      ...(selectable && { 'aria-selected': false }),
+      ...(expandable && { 'aria-expanded': false }),
+    };
+  },
+};
+
+/**
  * Generate unique IDs for ARIA relationships
  */
 export const generateAriaId = (prefix: string, suffix?: string): string => {

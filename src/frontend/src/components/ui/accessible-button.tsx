@@ -6,7 +6,9 @@ import { Button } from "./button";
 import { 
   AccessibilityProps, 
   createKeyboardHandlers,
-  generateAriaId 
+  generateAriaId,
+  ariaBuilder,
+  screenReader
 } from "@/lib/accessibility";
 
 export interface AccessibleButtonProps 
@@ -91,34 +93,20 @@ export const AccessibleButton = forwardRef<
   const loadingId = isLoading ? generateAriaId('button', 'loading') : undefined;
   const activeId = isActive ? generateAriaId('button', 'active') : undefined;
 
-  // Build ARIA attributes
-  const ariaAttributes: AccessibilityProps = {
-    id: buttonId,
-    'aria-label': ariaLabel || (typeof children === 'string' ? children : undefined),
-    ...(ariaDescription && {
-      'aria-describedby': descriptionId,
-    }),
-    ...(isLoading && {
-      'aria-busy': true,
-      'aria-live': announceChanges ? 'polite' : 'off',
-    }),
-    ...(isActive !== undefined && {
-      'aria-pressed': isActive,
-    }),
-    ...(isExpanded !== undefined && {
-      'aria-expanded': isExpanded,
-    }),
-    ...(hasPopup && {
-      'aria-haspopup': true,
-    }),
-    ...(isGrouped && groupPosition && groupSize && {
-      'aria-posinset': groupPosition,
-      'aria-setsize': groupSize,
-    }),
-    ...(disabled && {
-      'aria-disabled': true,
-    }),
-  };
+  // Build ARIA attributes using utility
+  const ariaAttributes: AccessibilityProps = ariaBuilder.button(buttonId, {
+    label: ariaLabel || (typeof children === 'string' ? children : undefined),
+    description: descriptionId,
+    isLoading,
+    isActive,
+    isExpanded,
+    hasPopup,
+    isGrouped,
+    groupPosition,
+    groupSize,
+    disabled,
+    announceChanges,
+  });
 
   // Enhanced keyboard handlers
   const enhancedKeyboardHandlers = React.useMemo(() => {
@@ -149,22 +137,10 @@ export const AccessibleButton = forwardRef<
     
     // Announce state changes to screen readers if enabled
     if (announceChanges && !event.defaultPrevented) {
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', 'polite');
-      announcement.setAttribute('aria-atomic', 'true');
-      announcement.className = 'sr-only';
-      
       if (isLoading) {
-        announcement.textContent = loadingText;
+        screenReader.announceLoading(loadingText);
       } else if (isActive !== undefined) {
-        announcement.textContent = isActive ? activeText : 'Inactive';
-      }
-      
-      if (announcement.textContent) {
-        document.body.appendChild(announcement);
-        setTimeout(() => {
-          document.body.removeChild(announcement);
-        }, 1000);
+        screenReader.announceState(isActive ? activeText : 'Inactive');
       }
     }
   }, [onClick, announceChanges, isLoading, isActive, loadingText, activeText]);
