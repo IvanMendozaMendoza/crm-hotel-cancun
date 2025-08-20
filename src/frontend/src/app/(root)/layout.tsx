@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { ClientErrorBoundary } from "@/components/error-boundary/client-error-boundary";
 
 import {
   IconHelp,
@@ -207,25 +208,29 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      {session.user.roles.includes("ADMIN") ? (
-        <AppSidebar variant="inset" user={user} data={dataAdmin} />
-      ) : (
-        <AppSidebar variant="inset" user={user} data={dataUser} />
-      )}
-      <SidebarInset>
-        <SiteHeader />
-        {children}
-      </SidebarInset>
-      <Toaster />
-    </SidebarProvider>
+    <ClientErrorBoundary>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        {session.user.roles.includes("ADMIN") ? (
+          <AppSidebar variant="inset" user={user} data={dataAdmin} />
+        ) : (
+          <AppSidebar variant="inset" user={user} data={dataUser} />
+        )}
+        <SidebarInset>
+          <SiteHeader />
+          <ClientErrorBoundary>
+            {children}
+          </ClientErrorBoundary>
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
+    </ClientErrorBoundary>
   );
 };
 
