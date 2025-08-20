@@ -11,7 +11,7 @@ export const useErrorHandler = () => {
   const handleErrorWithContext = useCallback((
     error: Error, 
     componentName: string, 
-    props?: Record<string, any>
+    props?: Record<string, unknown>
   ) => {
     logErrorWithContext(error, componentName, props);
   }, []);
@@ -53,15 +53,15 @@ export const useAsyncErrorHandler = () => {
 
 // Hook for component-specific error handling
 export const useComponentErrorHandler = (componentName: string) => {
-  const { handleErrorWithContext, handleAsyncError } = useErrorHandler();
+  const { handleErrorWithContext } = useErrorHandler();
 
-  const handleComponentError = useCallback((error: Error, props?: Record<string, any>) => {
+  const handleComponentError = useCallback((error: Error, props?: Record<string, unknown>) => {
     handleErrorWithContext(error, componentName, props);
   }, [componentName, handleErrorWithContext]);
 
   const handleComponentAsyncError = useCallback(async <T>(
     asyncFn: () => Promise<T>,
-    props?: Record<string, any>
+    props?: Record<string, unknown>
   ): Promise<T | null> => {
     try {
       return await asyncFn();
@@ -70,7 +70,7 @@ export const useComponentErrorHandler = (componentName: string) => {
       handleComponentError(errorObj, props);
       return null;
     }
-  }, [componentName, handleComponentError]);
+  }, [handleComponentError]);
 
   return {
     handleComponentError,

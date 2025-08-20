@@ -50,12 +50,12 @@ export const useNavigation = (items: NavigationItem[]) => {
     );
   }, []);
 
-  const setActiveItem = useCallback((url: string) => {
+  const setActiveItem = useCallback(() => {
     // This could be used for programmatic navigation
     // For now, it's handled by the pathname
   }, []);
 
-  const setActiveSubItem = useCallback((url: string) => {
+  const setActiveSubItem = useCallback(() => {
     // This could be used for programmatic navigation
     // For now, it's handled by the pathname
   }, []);

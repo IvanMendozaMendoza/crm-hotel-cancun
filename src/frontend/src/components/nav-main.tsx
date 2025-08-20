@@ -20,7 +20,7 @@ interface NavMainProps {
 }
 
 export function NavMain({ items }: NavMainProps) {
-  const { state, actions, helpers } = useNavigation(items);
+  const { actions, helpers } = useNavigation(items);
   const { getIcon } = useNavigationIcons();
 
   return (

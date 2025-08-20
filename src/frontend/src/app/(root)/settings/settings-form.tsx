@@ -176,10 +176,10 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
   }, [user.username, user.email]);
 
   // Check if form has any changes from the original values
+  const watchedValues = form.watch();
   const hasChanges = useMemo(() => {
-    const values = form.getValues();
-    return values.username !== user.username || values.email !== user.email;
-  }, [form.watch(), user.username, user.email]);
+    return watchedValues.username !== user.username || watchedValues.email !== user.email;
+  }, [watchedValues.username, watchedValues.email, user.username, user.email]);
 
   const isSubmitDisabled = isPending || !hasChanges;
 

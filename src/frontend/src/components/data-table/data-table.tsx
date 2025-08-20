@@ -24,6 +24,7 @@ import { createTableColumns } from "./table-columns";
 import { TableToolbar } from "./table-toolbar";
 import { TablePagination } from "./table-pagination";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { TableSkeleton, LoadingSpinner } from "@/components/loading";
 import {
   Table,
   TableBody,
@@ -34,7 +35,12 @@ import {
 } from "@/components/ui/table";
 import type { DataTableProps, DataTableItem } from "@/types/data-table";
 
-const DataTableContent = ({ data, onDataChange }: DataTableProps) => {
+interface DataTableContentProps extends DataTableProps {
+  isLoading?: boolean;
+  error?: Error | null;
+}
+
+const DataTableContent = ({ data, onDataChange, isLoading, error }: DataTableContentProps) => {
   const [items, setItems] = useState<DataTableItem[]>(data);
   const columns = createTableColumns();
   const { table } = useDataTable(items, columns);
@@ -61,6 +67,48 @@ const DataTableContent = ({ data, onDataChange }: DataTableProps) => {
       toast.success("Items reordered successfully");
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <div className="flex items-center py-4">
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center space-x-2">
+              <LoadingSpinner size="sm" />
+              <span className="text-sm text-muted-foreground">Loading table data...</span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-md border">
+          <TableSkeleton rows={8} columns={8} />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full p-8 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+          <svg className="h-8 w-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="mb-2 text-lg font-semibold">Failed to load data</h3>
+        <p className="text-muted-foreground mb-4">
+          {error.message || "Something went wrong while loading the table data."}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -136,7 +184,7 @@ const DataTableContent = ({ data, onDataChange }: DataTableProps) => {
   );
 };
 
-export const DataTable = (props: DataTableProps) => {
+export const DataTable = (props: DataTableProps & { isLoading?: boolean; error?: Error | null }) => {
   return (
     <ErrorBoundary
       fallback={

@@ -4,7 +4,6 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home, ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 export interface Props {
   children: ReactNode;

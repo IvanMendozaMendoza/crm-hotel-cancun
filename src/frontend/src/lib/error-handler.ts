@@ -138,7 +138,7 @@ export const logError = (error: Error, context?: string) => {
   });
 };
 
-export const logErrorWithContext = (error: Error, componentName: string, props?: Record<string, any>) => {
+export const logErrorWithContext = (error: Error, componentName: string, props?: Record<string, unknown>) => {
   errorHandler.handleError(error, {
     componentStack: `${componentName}${props ? ` - Props: ${JSON.stringify(props)}` : ""}`,
   });

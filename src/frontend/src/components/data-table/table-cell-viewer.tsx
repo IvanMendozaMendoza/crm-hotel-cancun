@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { IconTrendingUp } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -15,21 +14,6 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import type { DataTableItem } from "@/types/data-table";
 
 interface TableCellViewerProps {
@@ -51,7 +35,7 @@ export const TableCellViewer = ({ item }: TableCellViewerProps) => {
           <DrawerHeader>
             <DrawerTitle>Edit Item</DrawerTitle>
             <DrawerDescription>
-              Make changes to your item here. Click save when you're done.
+              Make changes to your item here. Click save when you&apos;re done.
             </DrawerDescription>
           </DrawerHeader>
           <div className="grid gap-4 py-4">
@@ -61,7 +45,7 @@ export const TableCellViewer = ({ item }: TableCellViewerProps) => {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" defaultValue="@{item.header}" />
+              <Input id="username" defaultValue={`@${item.header}`} />
             </div>
           </div>
           <DrawerFooter>

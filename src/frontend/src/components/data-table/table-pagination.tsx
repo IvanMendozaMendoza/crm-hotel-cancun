@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,

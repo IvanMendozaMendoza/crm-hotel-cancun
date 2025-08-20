@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Info, Lock, Shield, Eye, EyeOff, Check } from "lucide-react";
+import { Info, Lock, Shield, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { updatePassword } from "@/app/actions/account";
@@ -242,12 +242,12 @@ export const SecurityForm = ({}: SecurityFormProps) => {
   );
 
   // Check if all three password fields are filled
+  const watchedValues = form.watch();
   const areAllFieldsFilled = useMemo(() => {
-    const values = form.getValues();
-    return values.currentPassword.trim() !== "" && 
-           values.newPassword.trim() !== "" && 
-           values.confirmPassword.trim() !== "";
-  }, [form.watch()]);
+    return watchedValues.currentPassword.trim() !== "" && 
+           watchedValues.newPassword.trim() !== "" && 
+           watchedValues.confirmPassword.trim() !== "";
+  }, [watchedValues.currentPassword, watchedValues.newPassword, watchedValues.confirmPassword]);
 
   const isSubmitDisabled = isPending || !areAllFieldsFilled;
 
