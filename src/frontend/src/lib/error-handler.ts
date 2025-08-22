@@ -29,9 +29,12 @@ export class ErrorHandler {
   private setupGlobalErrorHandlers() {
     // Handle unhandled promise rejections
     window.addEventListener("unhandledrejection", (event) => {
-      this.handleError(new Error(event.reason?.message || "Unhandled promise rejection"), {
-        componentStack: "Global Promise Rejection",
-      });
+      this.handleError(
+        new Error(event.reason?.message || "Unhandled promise rejection"),
+        {
+          componentStack: "Global Promise Rejection",
+        }
+      );
     });
 
     // Handle global JavaScript errors
@@ -99,7 +102,7 @@ export class ErrorHandler {
         //   headers: { 'Content-Type': 'application/json' },
         //   body: JSON.stringify(errorInfo)
         // });
-        
+
         // For now, just log to console
         console.error("Error sent to monitoring service:", errorInfo);
       }
@@ -138,8 +141,14 @@ export const logError = (error: Error, context?: string) => {
   });
 };
 
-export const logErrorWithContext = (error: Error, componentName: string, props?: Record<string, unknown>) => {
+export const logErrorWithContext = (
+  error: Error,
+  componentName: string,
+  props?: Record<string, unknown>
+) => {
   errorHandler.handleError(error, {
-    componentStack: `${componentName}${props ? ` - Props: ${JSON.stringify(props)}` : ""}`,
+    componentStack: `${componentName}${
+      props ? ` - Props: ${JSON.stringify(props)}` : ""
+    }`,
   });
-}; 
+};

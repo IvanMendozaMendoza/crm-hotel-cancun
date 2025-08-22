@@ -7,10 +7,39 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreVertical, Search, Filter, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  MoreVertical,
+  Search,
+  Filter,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   ColumnDef,
@@ -25,7 +54,7 @@ import {
 } from "@tanstack/react-table";
 
 const sampleUsers = [
-    {
+  {
     id: "1",
     name: "Florence Shaw",
     email: "florence@untitledui.com",
@@ -147,14 +176,14 @@ const sampleUsers = [
   },
 ];
 
-type User = typeof sampleUsers[0];
+type User = (typeof sampleUsers)[0];
 
 const accessCategories = {
-  "Admin": ["Admin"],
+  Admin: ["Admin"],
   "Data Export": ["Data Export"],
   "Data Import": ["Data Import"],
   "Full Access": ["Admin", "Data Export", "Data Import"],
-  "Limited Access": ["Data Export", "Data Import"]
+  "Limited Access": ["Data Export", "Data Import"],
 };
 
 const sortOptions = [
@@ -165,7 +194,7 @@ const sortOptions = [
   { value: "lastActive_desc", label: "Last Active (Newest)" },
   { value: "lastActive_asc", label: "Last Active (Oldest)" },
   { value: "dateAdded_desc", label: "Date Added (Newest)" },
-  { value: "dateAdded_asc", label: "Date Added (Oldest)" }
+  { value: "dateAdded_asc", label: "Date Added (Oldest)" },
 ];
 
 const UserAvatar = ({ user }: { user: User }) => (
@@ -184,8 +213,8 @@ const UserAvatar = ({ user }: { user: User }) => (
 );
 
 const AccessBadge = ({ user }: { user: User }) => {
-  const isCurrentUser = user.id === '1';
-  const isDisabled = user.status === 'disabled';
+  const isCurrentUser = user.id === "1";
+  const isDisabled = user.status === "disabled";
 
   return (
     <Badge
@@ -203,7 +232,13 @@ const AccessBadge = ({ user }: { user: User }) => {
   );
 };
 
-const UserActions = ({ user, onUpdateUser }: { user: User; onUpdateUser: (name: string) => void }) => (
+const UserActions = ({
+  user,
+  onUpdateUser,
+}: {
+  user: User;
+  onUpdateUser: (name: string) => void;
+}) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -211,7 +246,7 @@ const UserActions = ({ user, onUpdateUser }: { user: User; onUpdateUser: (name: 
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-      <DropdownMenuItem 
+      <DropdownMenuItem
         className="text-gray-300 hover:bg-gray-700"
         onClick={() => onUpdateUser(user.name)}
       >
@@ -227,17 +262,17 @@ const UserActions = ({ user, onUpdateUser }: { user: User; onUpdateUser: (name: 
   </DropdownMenu>
 );
 
-const SearchAndFilters = ({ 
-  searchTerm, 
-  onSearchChange, 
-  selectedAccessFilter, 
+const SearchAndFilters = ({
+  searchTerm,
+  onSearchChange,
+  selectedAccessFilter,
   onAccessFilterChange,
   selectedSort,
-  onSortChange
-}: { 
-  searchTerm: string; 
-  onSearchChange: (value: string) => void; 
-  selectedAccessFilter: string; 
+  onSortChange,
+}: {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  selectedAccessFilter: string;
   onAccessFilterChange: (filter: string) => void;
   selectedSort: string;
   onSortChange: (sort: string) => void;
@@ -254,27 +289,39 @@ const SearchAndFilters = ({
         className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
       />
     </div>
-    
+
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+        <Button
+          variant="outline"
+          className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800"
+        >
           <Filter className="h-4 w-4 mr-2" />
           Filters
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-zinc-900 border-gray-700 w-56">
-        <DropdownMenuLabel className="text-gray-300">Filter by Access Level</DropdownMenuLabel>
+      <DropdownMenuContent
+        align="end"
+        className="bg-zinc-900 border-gray-700 w-56"
+      >
+        <DropdownMenuLabel className="text-gray-300">
+          Filter by Access Level
+        </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuItem 
-          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedAccessFilter === "all" ? "bg-gray-800/50" : ""}`}
+        <DropdownMenuItem
+          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
+            selectedAccessFilter === "all" ? "bg-gray-800/50" : ""
+          }`}
           onClick={() => onAccessFilterChange("all")}
         >
           All Access Levels
         </DropdownMenuItem>
-        {Object.keys(accessCategories).map(accessLevel => (
-          <DropdownMenuItem 
+        {Object.keys(accessCategories).map((accessLevel) => (
+          <DropdownMenuItem
             key={accessLevel}
-            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedAccessFilter === accessLevel ? "bg-gray-800/50" : ""}`}
+            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
+              selectedAccessFilter === accessLevel ? "bg-gray-800/50" : ""
+            }`}
             onClick={() => onAccessFilterChange(accessLevel)}
           >
             {accessLevel}
@@ -283,10 +330,12 @@ const SearchAndFilters = ({
         <DropdownMenuSeparator className="bg-gray-700" />
         <DropdownMenuLabel className="text-gray-300">Sort by</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-700" />
-        {sortOptions.map(sortOption => (
-          <DropdownMenuItem 
+        {sortOptions.map((sortOption) => (
+          <DropdownMenuItem
             key={sortOption.value}
-            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedSort === sortOption.value ? "bg-gray-800/50" : ""}`}
+            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
+              selectedSort === sortOption.value ? "bg-gray-800/50" : ""
+            }`}
             onClick={() => onSortChange(sortOption.value)}
           >
             {sortOption.label}
@@ -297,30 +346,43 @@ const SearchAndFilters = ({
   </div>
 );
 
-const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<User>> }) => (
+const Pagination = ({
+  table,
+}: {
+  table: ReturnType<typeof useReactTable<User>>;
+}) => (
   <div className="flex items-center justify-between px-4 mt-6">
     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} user(s) total.
     </div>
     <div className="flex w-full items-center gap-8 lg:w-fit">
       <div className="hidden items-center gap-2 lg:flex">
-        <Label htmlFor="rows-per-page" className="text-sm font-medium text-gray-300">
+        <Label
+          htmlFor="rows-per-page"
+          className="text-sm font-medium text-gray-300"
+        >
           Rows per page
         </Label>
         <Select
           value={`${table.getState().pagination.pageSize}`}
           onValueChange={(value) => {
-            table.setPageSize(Number(value))
+            table.setPageSize(Number(value));
           }}
         >
-          <SelectTrigger size="sm" className="w-20 bg-stone-900 border-gray-700 text-gray-300" id="rows-per-page">
-            <SelectValue
-              placeholder={table.getState().pagination.pageSize}
-            />
+          <SelectTrigger
+            size="sm"
+            className="w-20 bg-stone-900 border-gray-700 text-gray-300"
+            id="rows-per-page"
+          >
+            <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top" className="bg-stone-900 border-gray-700">
             {[10, 20, 30, 40, 50].map((pageSize) => (
-              <SelectItem key={pageSize} value={`${pageSize}`} className="text-gray-300">
+              <SelectItem
+                key={pageSize}
+                value={`${pageSize}`}
+                className="text-gray-300"
+              >
                 {pageSize}
               </SelectItem>
             ))}
@@ -376,14 +438,14 @@ const Pagination = ({ table }: { table: ReturnType<typeof useReactTable<User>> }
   </div>
 );
 
-const EmptyState = ({ 
-  searchTerm, 
-  selectedAccessFilter, 
-  onAddUser 
-}: { 
-  searchTerm: string; 
-  selectedAccessFilter: string; 
-  onAddUser: () => void; 
+const EmptyState = ({
+  searchTerm,
+  selectedAccessFilter,
+  onAddUser,
+}: {
+  searchTerm: string;
+  selectedAccessFilter: string;
+  onAddUser: () => void;
 }) => (
   <div className="text-center py-12">
     <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -391,13 +453,12 @@ const EmptyState = ({
     </div>
     <h3 className="text-lg font-medium text-gray-300 mb-2">No users found</h3>
     <p className="text-gray-400 mb-4">
-      {searchTerm || selectedAccessFilter !== "all" 
+      {searchTerm || selectedAccessFilter !== "all"
         ? "Try adjusting your search or filter criteria"
-        : "Get started by adding your first user"
-      }
+        : "Get started by adding your first user"}
     </p>
     {!searchTerm && selectedAccessFilter === "all" && (
-      <Button onClick={onAddUser} >
+      <Button onClick={onAddUser}>
         <Plus className="h-4 w-4 mr-2" />
         Add User
       </Button>
@@ -417,19 +478,19 @@ const TeamPage = () => {
     pageSize: 10,
   });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   useEffect(() => {
     setGlobalFilter(searchTerm);
   }, [searchTerm]);
 
   useEffect(() => {
-    if (selectedAccessFilter === 'all') {
+    if (selectedAccessFilter === "all") {
       setColumnFilters([]);
     } else {
       setColumnFilters([
         {
-          id: 'access',
+          id: "access",
           value: selectedAccessFilter,
         },
       ]);
@@ -448,52 +509,61 @@ const TeamPage = () => {
   }, []);
 
   const handleAddUser = useCallback(() => {
-    router.push('/team/create');
+    router.push("/team/create");
   }, [router]);
 
-  const columns = useMemo<ColumnDef<User>[]>(() => [
-    {
-      accessorKey: "name",
-      header: "User name",
-      cell: ({ row }) => <UserAvatar user={row.original} />,
-    },
-    {
-      accessorKey: "access",
-      header: "Access",
-      cell: ({ row }) => <AccessBadge user={row.original} />,
-    },
-    {
-      accessorKey: "lastActive",
-      header: "Last active",
-      cell: ({ row }) => <span className="text-gray-300">{row.original.lastActive}</span>,
-    },
-    {
-      accessorKey: "dateAdded",
-      header: "Date added",
-      cell: ({ row }) => <span className="text-gray-300">{row.original.dateAdded}</span>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <span
-            className={
-              user.status === "active" ? "text-gray-300" : "text-gray-400"
-            }
-          >
-            {user.status === "active" ? "Active" : "Disabled"}
-          </span>
-        );
+  const columns = useMemo<ColumnDef<User>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: "User name",
+        cell: ({ row }) => <UserAvatar user={row.original} />,
       },
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => <UserActions user={row.original} onUpdateUser={handleUpdateUser} />,
-    },
-  ], [handleUpdateUser]);
+      {
+        accessorKey: "access",
+        header: "Access",
+        cell: ({ row }) => <AccessBadge user={row.original} />,
+      },
+      {
+        accessorKey: "lastActive",
+        header: "Last active",
+        cell: ({ row }) => (
+          <span className="text-gray-300">{row.original.lastActive}</span>
+        ),
+      },
+      {
+        accessorKey: "dateAdded",
+        header: "Date added",
+        cell: ({ row }) => (
+          <span className="text-gray-300">{row.original.dateAdded}</span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <span
+              className={
+                user.status === "active" ? "text-gray-300" : "text-gray-400"
+              }
+            >
+              {user.status === "active" ? "Active" : "Disabled"}
+            </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <UserActions user={row.original} onUpdateUser={handleUpdateUser} />
+        ),
+      },
+    ],
+    [handleUpdateUser]
+  );
 
   const table = useReactTable({
     data: users,
@@ -518,8 +588,10 @@ const TeamPage = () => {
     <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-semibold text-white">All users {users.length}</h1>
-          
+          <h1 className="text-xl sm:text-2xl font-semibold text-white">
+            All users {users.length}
+          </h1>
+
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <SearchAndFilters
               searchTerm={searchTerm}
@@ -545,7 +617,10 @@ const TeamPage = () => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-gray-700">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-gray-300 font-medium">
+                    <TableHead
+                      key={header.id}
+                      className="text-gray-300 font-medium"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -560,17 +635,26 @@ const TeamPage = () => {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="border-gray-700 hover:bg-gray-800/30">
+                  <TableRow
+                    key={row.id}
+                    className="border-gray-700 hover:bg-gray-800/30"
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-400">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-gray-400"
+                  >
                     No users found.
                   </TableCell>
                 </TableRow>
@@ -579,9 +663,7 @@ const TeamPage = () => {
           </Table>
         </div>
 
-        {table.getRowModel().rows.length > 0 && (
-          <Pagination table={table} />
-        )}
+        {table.getRowModel().rows.length > 0 && <Pagination table={table} />}
 
         {table.getRowModel().rows.length === 0 && (
           <EmptyState

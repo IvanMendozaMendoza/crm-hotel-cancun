@@ -37,4 +37,4 @@ export interface NavigationActions {
   setActiveItem: (url: string) => void;
   setActiveSubItem: (url: string) => void;
   handleNavigationClick: () => void;
-} 
+}

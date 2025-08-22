@@ -1,20 +1,20 @@
 /**
  * Application-wide constants
- * 
+ *
  * Centralized location for magic numbers, dimensions, and configuration values.
  * This file serves as a single source of truth for all application constants,
  * making it easier to maintain, update, and reuse values across components.
- * 
+ *
  * @example
  * ```tsx
  * import { SIDEBAR, ANIMATION, VALIDATION } from '@/lib/constants';
- * 
+ *
  * // Use sidebar dimensions
  * const sidebarStyle = { width: SIDEBAR.WIDTH };
- * 
+ *
  * // Use animation durations
  * const transitionClass = `transition-all duration-${ANIMATION.NORMAL}`;
- * 
+ *
  * // Use validation rules
  * if (password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
  *   throw new Error('Password too short');
@@ -24,7 +24,7 @@
 
 /**
  * Sidebar dimensions and sizing constants
- * 
+ *
  * Defines the standard widths for the application sidebar in different states:
  * - Default: Standard sidebar width for desktop
  * - Mobile: Wider sidebar for mobile devices (better touch targets)
@@ -41,7 +41,7 @@ export const SIDEBAR = {
 
 /**
  * Animation duration constants
- * 
+ *
  * Standardized animation durations for consistent user experience across
  * the application. These values are used in CSS transitions and animations.
  */
@@ -58,7 +58,7 @@ export const ANIMATION = {
 
 /**
  * Z-index layer constants
- * 
+ *
  * Defines the stacking order for different UI elements to ensure
  * proper layering and prevent z-index conflicts.
  */
@@ -75,16 +75,16 @@ export const Z_INDEX = {
 
 /**
  * Responsive breakpoint constants
- * 
+ *
  * Standard breakpoints for responsive design. These values are used
  * in CSS media queries and JavaScript responsive logic.
- * 
+ *
  * @example
  * ```tsx
  * import { BREAKPOINTS } from '@/lib/constants';
- * 
+ *
  * const isMobile = window.innerWidth < BREAKPOINTS.MOBILE;
- * const isTablet = window.innerWidth >= BREAKPOINTS.MOBILE && 
+ * const isTablet = window.innerWidth >= BREAKPOINTS.MOBILE &&
  *                  window.innerWidth < BREAKPOINTS.TABLET;
  * ```
  */
@@ -101,7 +101,7 @@ export const BREAKPOINTS = {
 
 /**
  * API configuration constants
- * 
+ *
  * Centralized API settings including base URLs, timeouts, and retry logic.
  * These values can be overridden by environment variables.
  */
@@ -116,7 +116,7 @@ export const API = {
 
 /**
  * Pagination default values
- * 
+ *
  * Standard pagination settings used across data tables and lists.
  * These values provide consistent pagination behavior throughout the app.
  */
@@ -131,14 +131,14 @@ export const PAGINATION = {
 
 /**
  * Form validation rules and constraints
- * 
+ *
  * Standard validation rules for form inputs including length limits,
  * file size restrictions, and other validation constraints.
- * 
+ *
  * @example
  * ```tsx
  * import { VALIDATION } from '@/lib/constants';
- * 
+ *
  * const validatePassword = (password: string) => {
  *   if (password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
  *     return 'Password must be at least 8 characters';
@@ -165,7 +165,7 @@ export const VALIDATION = {
 
 /**
  * Theme configuration constants
- * 
+ *
  * Default theme settings and storage keys for theme management.
  */
 export const THEME = {
@@ -177,17 +177,17 @@ export const THEME = {
 
 /**
  * Local storage key constants
- * 
+ *
  * Standardized keys for local storage to prevent naming conflicts
  * and ensure consistent data persistence across the application.
- * 
+ *
  * @example
  * ```tsx
  * import { STORAGE_KEYS } from '@/lib/constants';
- * 
+ *
  * // Save user preferences
  * localStorage.setItem(STORAGE_KEYS.USER_PREFERENCES, JSON.stringify(prefs));
- * 
+ *
  * // Load theme preference
  * const theme = localStorage.getItem(STORAGE_KEYS.THEME) || THEME.DEFAULT;
  * ```
@@ -199,4 +199,4 @@ export const STORAGE_KEYS = {
   SIDEBAR_STATE: "sidebar-state",
   /** User preferences storage key */
   USER_PREFERENCES: "user-preferences",
-} as const; 
+} as const;

@@ -16,7 +16,10 @@ import {
 } from "@tanstack/react-table";
 import type { DataTableItem } from "@/types/data-table";
 
-export const useDataTable = (data: DataTableItem[], columns: ColumnDef<DataTableItem>[]) => {
+export const useDataTable = (
+  data: DataTableItem[],
+  columns: ColumnDef<DataTableItem>[]
+) => {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -50,4 +53,4 @@ export const useDataTable = (data: DataTableItem[], columns: ColumnDef<DataTable
     columnFilters,
     sorting,
   };
-}; 
+};

@@ -3,7 +3,11 @@
 import { useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/components/ui/sidebar";
-import type { NavigationItem, NavigationState, NavigationActions } from "@/types/navigation";
+import type {
+  NavigationItem,
+  NavigationState,
+  NavigationActions,
+} from "@/types/navigation";
 
 export const useNavigation = (items: NavigationItem[]) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -21,7 +25,7 @@ export const useNavigation = (items: NavigationItem[]) => {
         activeItem = item.url;
         break;
       }
-      
+
       if (item.items) {
         for (const subItem of item.items) {
           if (pathname === subItem.url) {
@@ -43,9 +47,9 @@ export const useNavigation = (items: NavigationItem[]) => {
 
   // Actions
   const toggleExpanded = useCallback((title: string) => {
-    setExpandedItems(prev => 
-      prev.includes(title) 
-        ? prev.filter(item => item !== title)
+    setExpandedItems((prev) =>
+      prev.includes(title)
+        ? prev.filter((item) => item !== title)
         : [...prev, title]
     );
   }, []);
@@ -67,26 +71,43 @@ export const useNavigation = (items: NavigationItem[]) => {
   }, [isMobile, setOpenMobile]);
 
   // Helper functions
-  const isExpanded = useCallback((title: string) => {
-    return expandedItems.includes(title);
-  }, [expandedItems]);
+  const isExpanded = useCallback(
+    (title: string) => {
+      return expandedItems.includes(title);
+    },
+    [expandedItems]
+  );
 
-  const isItemActive = useCallback((url: string) => {
-    return navigationState.activeItem === url && !navigationState.activeSubItem;
-  }, [navigationState.activeItem, navigationState.activeSubItem]);
+  const isItemActive = useCallback(
+    (url: string) => {
+      return (
+        navigationState.activeItem === url && !navigationState.activeSubItem
+      );
+    },
+    [navigationState.activeItem, navigationState.activeSubItem]
+  );
 
-  const isSubItemActive = useCallback((url: string) => {
-    return navigationState.activeSubItem === url;
-  }, [navigationState.activeSubItem]);
+  const isSubItemActive = useCallback(
+    (url: string) => {
+      return navigationState.activeSubItem === url;
+    },
+    [navigationState.activeSubItem]
+  );
 
-  const shouldExpandParent = useCallback((item: NavigationItem) => {
-    if (!item.items) return false;
-    return item.items.some(subItem => isSubItemActive(subItem.url));
-  }, [isSubItemActive]);
+  const shouldExpandParent = useCallback(
+    (item: NavigationItem) => {
+      if (!item.items) return false;
+      return item.items.some((subItem) => isSubItemActive(subItem.url));
+    },
+    [isSubItemActive]
+  );
 
-  const getExpandedState = useCallback((item: NavigationItem) => {
-    return isExpanded(item.title) || shouldExpandParent(item);
-  }, [isExpanded, shouldExpandParent]);
+  const getExpandedState = useCallback(
+    (item: NavigationItem) => {
+      return isExpanded(item.title) || shouldExpandParent(item);
+    },
+    [isExpanded, shouldExpandParent]
+  );
 
   const actions: NavigationActions = {
     toggleExpanded,
@@ -106,4 +127,4 @@ export const useNavigation = (items: NavigationItem[]) => {
       getExpandedState,
     },
   };
-}; 
+};

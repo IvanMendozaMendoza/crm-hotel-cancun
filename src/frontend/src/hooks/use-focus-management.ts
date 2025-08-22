@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { KEYBOARD_KEYS, focusManagement, screenReader } from "@/lib/accessibility";
+import {
+  KEYBOARD_KEYS,
+  focusManagement,
+  screenReader,
+} from "@/lib/accessibility";
 
 export interface FocusManagementOptions {
   /**
@@ -128,41 +132,44 @@ export const useFocusManagement = (
   // Get focusable elements from the container
   const getFocusableElements = useCallback((): HTMLElement[] => {
     if (!containerRef.current) return [];
-    
+
     const elements = Array.from(
       containerRef.current.querySelectorAll(focusableSelector)
     ) as HTMLElement[];
-    
-    return elements.filter(element => focusManagement.isFocusable(element));
+
+    return elements.filter((element) => focusManagement.isFocusable(element));
   }, [containerRef, focusableSelector]);
 
   // Update focus state
-  const updateFocusState = useCallback((element: HTMLElement | null) => {
-    if (!element) {
+  const updateFocusState = useCallback(
+    (element: HTMLElement | null) => {
+      if (!element) {
+        setFocusState({
+          focusedElement: null,
+          hasFocus: false,
+          focusedIndex: -1,
+          totalFocusable: focusableElementsRef.current.length,
+        });
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+      const index = focusableElements.indexOf(element);
+
       setFocusState({
-        focusedElement: null,
-        hasFocus: false,
-        focusedIndex: -1,
-        totalFocusable: focusableElementsRef.current.length,
+        focusedElement: element,
+        hasFocus: true,
+        focusedIndex: index,
+        totalFocusable: focusableElements.length,
       });
-      return;
-    }
 
-    const focusableElements = getFocusableElements();
-    const index = focusableElements.indexOf(element);
-    
-    setFocusState({
-      focusedElement: element,
-      hasFocus: true,
-      focusedIndex: index,
-      totalFocusable: focusableElements.length,
-    });
-
-    // Announce focus change to screen readers
-    if (announceFocus && element.textContent) {
-      screenReader.announceFocus(element.textContent);
-    }
-  }, [getFocusableElements, announceFocus]);
+      // Announce focus change to screen readers
+      if (announceFocus && element.textContent) {
+        screenReader.announceFocus(element.textContent);
+      }
+    },
+    [getFocusableElements, announceFocus]
+  );
 
   // Focus actions
   const focusFirst = useCallback(() => {
@@ -197,21 +204,29 @@ export const useFocusManagement = (
     elements[prevIndex].focus();
   }, [getFocusableElements, focusState.focusedIndex]);
 
-  const focusByIndex = useCallback((index: number) => {
-    const elements = getFocusableElements();
-    if (index >= 0 && index < elements.length) {
-      elements[index].focus();
-    }
-  }, [getFocusableElements]);
+  const focusByIndex = useCallback(
+    (index: number) => {
+      const elements = getFocusableElements();
+      if (index >= 0 && index < elements.length) {
+        elements[index].focus();
+      }
+    },
+    [getFocusableElements]
+  );
 
-  const focusBySelector = useCallback((selector: string) => {
-    if (!containerRef.current) return;
-    
-    const element = containerRef.current.querySelector(selector) as HTMLElement;
-    if (element && focusManagement.isFocusable(element)) {
-      element.focus();
-    }
-  }, [containerRef]);
+  const focusBySelector = useCallback(
+    (selector: string) => {
+      if (!containerRef.current) return;
+
+      const element = containerRef.current.querySelector(
+        selector
+      ) as HTMLElement;
+      if (element && focusManagement.isFocusable(element)) {
+        element.focus();
+      }
+    },
+    [containerRef]
+  );
 
   const focusById = useCallback((id: string) => {
     const element = document.getElementById(id) as HTMLElement;
@@ -229,118 +244,127 @@ export const useFocusManagement = (
   }, [focusFirst]);
 
   // Handle focus events
-  const handleFocus = useCallback((event: FocusEvent) => {
-    const target = event.target as HTMLElement;
-    if (containerRef.current?.contains(target)) {
-      updateFocusState(target);
-    }
-  }, [containerRef, updateFocusState]);
-
-  const handleBlur = useCallback((event: FocusEvent) => {
-    const target = event.target as HTMLElement;
-    if (containerRef.current?.contains(target)) {
-      // Check if focus is moving to another element within the container
-      const relatedTarget = event.relatedTarget as HTMLElement;
-      if (!containerRef.current?.contains(relatedTarget)) {
-        updateFocusState(null);
+  const handleFocus = useCallback(
+    (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      if (containerRef.current?.contains(target)) {
+        updateFocusState(target);
       }
-    }
-  }, [containerRef, updateFocusState]);
+    },
+    [containerRef, updateFocusState]
+  );
+
+  const handleBlur = useCallback(
+    (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      if (containerRef.current?.contains(target)) {
+        // Check if focus is moving to another element within the container
+        const relatedTarget = event.relatedTarget as HTMLElement;
+        if (!containerRef.current?.contains(relatedTarget)) {
+          updateFocusState(null);
+        }
+      }
+    },
+    [containerRef, updateFocusState]
+  );
 
   // Handle keyboard navigation
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!containerRef.current) return;
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!containerRef.current) return;
 
-    const target = event.target as HTMLElement;
-    if (!containerRef.current.contains(target)) return;
+      const target = event.target as HTMLElement;
+      if (!containerRef.current.contains(target)) return;
 
-    switch (event.key) {
-      case KEYBOARD_KEYS.ARROW_DOWN:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusNext();
-        }
-        break;
+      switch (event.key) {
+        case KEYBOARD_KEYS.ARROW_DOWN:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusNext();
+          }
+          break;
 
-      case KEYBOARD_KEYS.ARROW_UP:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusPrevious();
-        }
-        break;
+        case KEYBOARD_KEYS.ARROW_UP:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusPrevious();
+          }
+          break;
 
-      case KEYBOARD_KEYS.ARROW_LEFT:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusPrevious();
-        }
-        break;
+        case KEYBOARD_KEYS.ARROW_LEFT:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusPrevious();
+          }
+          break;
 
-      case KEYBOARD_KEYS.ARROW_RIGHT:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusNext();
-        }
-        break;
+        case KEYBOARD_KEYS.ARROW_RIGHT:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusNext();
+          }
+          break;
 
-      case KEYBOARD_KEYS.HOME:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusFirst();
-        }
-        break;
+        case KEYBOARD_KEYS.HOME:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusFirst();
+          }
+          break;
 
-      case KEYBOARD_KEYS.END:
-        if (arrowNavigation) {
-          event.preventDefault();
-          focusLast();
-        }
-        break;
+        case KEYBOARD_KEYS.END:
+          if (arrowNavigation) {
+            event.preventDefault();
+            focusLast();
+          }
+          break;
 
-      case KEYBOARD_KEYS.TAB:
-        if (tabNavigation && trapFocus) {
-          const elements = getFocusableElements();
-          if (elements.length === 0) return;
+        case KEYBOARD_KEYS.TAB:
+          if (tabNavigation && trapFocus) {
+            const elements = getFocusableElements();
+            if (elements.length === 0) return;
 
-          const currentIndex = focusState.focusedIndex;
-          
-          if (event.shiftKey) {
-            // Tab backwards
-            if (currentIndex <= 0) {
-              event.preventDefault();
-              elements[elements.length - 1].focus();
-            }
-          } else {
-            // Tab forwards
-            if (currentIndex >= elements.length - 1) {
-              event.preventDefault();
-              elements[0].focus();
+            const currentIndex = focusState.focusedIndex;
+
+            if (event.shiftKey) {
+              // Tab backwards
+              if (currentIndex <= 0) {
+                event.preventDefault();
+                elements[elements.length - 1].focus();
+              }
+            } else {
+              // Tab forwards
+              if (currentIndex >= elements.length - 1) {
+                event.preventDefault();
+                elements[0].focus();
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case KEYBOARD_KEYS.ESCAPE:
-        if (escapeKey) {
-          event.preventDefault();
-          // Focus the container or trigger escape action
-          containerRef.current?.focus();
-        }
-        break;
-    }
-  }, [
-    containerRef,
-    arrowNavigation,
-    tabNavigation,
-    trapFocus,
-    escapeKey,
-    focusNext,
-    focusPrevious,
-    focusFirst,
-    focusLast,
-    getFocusableElements,
-    focusState.focusedIndex,
-  ]);
+        case KEYBOARD_KEYS.ESCAPE:
+          if (escapeKey) {
+            event.preventDefault();
+            // Focus the container or trigger escape action
+            containerRef.current?.focus();
+          }
+          break;
+      }
+    },
+    [
+      containerRef,
+      arrowNavigation,
+      tabNavigation,
+      trapFocus,
+      escapeKey,
+      focusNext,
+      focusPrevious,
+      focusFirst,
+      focusLast,
+      getFocusableElements,
+      focusState.focusedIndex,
+    ]
+  );
 
   // Initialize focus management
   useEffect(() => {
@@ -361,15 +385,15 @@ export const useFocusManagement = (
     }
 
     // Add event listeners
-    container.addEventListener('focusin', handleFocus);
-    container.addEventListener('focusout', handleBlur);
-    document.addEventListener('keydown', handleKeyDown);
+    container.addEventListener("focusin", handleFocus);
+    container.addEventListener("focusout", handleBlur);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       // Remove event listeners
-      container.removeEventListener('focusin', handleFocus);
-      container.removeEventListener('focusout', handleBlur);
-      document.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener("focusin", handleFocus);
+      container.removeEventListener("focusout", handleBlur);
+      document.removeEventListener("keydown", handleKeyDown);
 
       // Restore previous focus
       if (restoreFocus && previousFocusRef.current) {
@@ -389,7 +413,7 @@ export const useFocusManagement = (
   // Update focusable elements when container changes
   useEffect(() => {
     focusableElementsRef.current = getFocusableElements();
-    setFocusState(prev => ({
+    setFocusState((prev) => ({
       ...prev,
       totalFocusable: focusableElementsRef.current.length,
     }));
@@ -409,4 +433,4 @@ export const useFocusManagement = (
   };
 
   return [focusState, actions];
-}; 
+};

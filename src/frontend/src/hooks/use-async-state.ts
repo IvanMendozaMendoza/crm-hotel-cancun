@@ -21,64 +21,68 @@ export const useAsyncState = <T = unknown>(initialData?: T) => {
     };
   }, []);
 
-  const execute = useCallback(async <R = T>(
-    asyncFn: (signal?: AbortSignal) => Promise<R>,
-    options?: {
-      onSuccess?: (data: R) => void;
-      onError?: (error: Error) => void;
-      preserveData?: boolean;
-    }
-  ): Promise<R | null> => {
-    // Cancel previous request if it exists
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
-    setState(prev => ({
-      ...prev,
-      state: "loading",
-      error: undefined,
-      ...(options?.preserveData ? {} : { data: undefined }),
-    }));
-
-    try {
-      const result = await asyncFn(signal);
-      
-      // Check if request was aborted
-      if (signal.aborted) {
-        return null;
+  const execute = useCallback(
+    async <R = T>(
+      asyncFn: (signal?: AbortSignal) => Promise<R>,
+      options?: {
+        onSuccess?: (data: R) => void;
+        onError?: (error: Error) => void;
+        preserveData?: boolean;
+      }
+    ): Promise<R | null> => {
+      // Cancel previous request if it exists
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      setState({
-        state: "success",
-        data: result as T,
-        error: undefined,
-      });
+      // Create new abort controller
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
-      options?.onSuccess?.(result);
-      return result;
-    } catch (error) {
-      // Don't update state if request was aborted
-      if (signal.aborted) {
-        return null;
-      }
-
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        state: "error",
-        error: errorObj,
+        state: "loading",
+        error: undefined,
+        ...(options?.preserveData ? {} : { data: undefined }),
       }));
 
-      options?.onError?.(errorObj);
-      return null;
-    }
-  }, []);
+      try {
+        const result = await asyncFn(signal);
+
+        // Check if request was aborted
+        if (signal.aborted) {
+          return null;
+        }
+
+        setState({
+          state: "success",
+          data: result as T,
+          error: undefined,
+        });
+
+        options?.onSuccess?.(result);
+        return result;
+      } catch (error) {
+        // Don't update state if request was aborted
+        if (signal.aborted) {
+          return null;
+        }
+
+        const errorObj =
+          error instanceof Error ? error : new Error(String(error));
+
+        setState((prev) => ({
+          ...prev,
+          state: "error",
+          error: errorObj,
+        }));
+
+        options?.onError?.(errorObj);
+        return null;
+      }
+    },
+    []
+  );
 
   const reset = useCallback(() => {
     if (abortControllerRef.current) {
@@ -92,7 +96,7 @@ export const useAsyncState = <T = unknown>(initialData?: T) => {
   }, [initialData]);
 
   const setData = useCallback((data: T) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       data,
       state: "success",
@@ -101,7 +105,7 @@ export const useAsyncState = <T = unknown>(initialData?: T) => {
   }, []);
 
   const setError = useCallback((error: Error) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error,
       state: "error",
@@ -109,7 +113,7 @@ export const useAsyncState = <T = unknown>(initialData?: T) => {
   }, []);
 
   const setLoading = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       state: "loading",
       error: undefined,
@@ -128,4 +132,4 @@ export const useAsyncState = <T = unknown>(initialData?: T) => {
     setError,
     setLoading,
   };
-}; 
+};

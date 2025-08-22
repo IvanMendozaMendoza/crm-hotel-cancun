@@ -19,4 +19,4 @@ export interface SkeletonConfig {
   height?: string | number;
   className?: string;
   animated?: boolean;
-} 
+}

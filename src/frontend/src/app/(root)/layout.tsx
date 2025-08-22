@@ -5,9 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { ClientErrorBoundary } from "@/components/error-boundary/client-error-boundary";
 
-import {
-  IconHelp,
-} from "@tabler/icons-react";
+import { IconHelp } from "@tabler/icons-react";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -29,7 +27,7 @@ const dataAdmin = {
         {
           title: "Overview",
           url: "/analytics",
-        }
+        },
       ],
     },
     {
@@ -224,9 +222,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
         )}
         <SidebarInset>
           <SiteHeader />
-          <ClientErrorBoundary>
-            {children}
-          </ClientErrorBoundary>
+          <ClientErrorBoundary>{children}</ClientErrorBoundary>
         </SidebarInset>
         <Toaster />
       </SidebarProvider>

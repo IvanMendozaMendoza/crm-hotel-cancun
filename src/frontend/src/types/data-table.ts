@@ -32,4 +32,4 @@ export interface TablePaginationProps {
 
 export interface TableToolbarProps {
   table: Table<DataTableItem>;
-} 
+}
