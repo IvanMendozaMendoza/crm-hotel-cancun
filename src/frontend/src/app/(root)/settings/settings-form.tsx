@@ -18,7 +18,7 @@ import { z } from "zod";
 import { updateMe } from "@/app/actions/account";
 import { signOut } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Control, useForm } from "react-hook-form";
 import {
   Form,
   FormField,
@@ -75,11 +75,10 @@ const FormInput = ({
   control,
 }: {
   label: string;
-  name: string;
+  name: keyof ProfileFormData;
   placeholder: string;
   type?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
+  control: Control<ProfileFormData>;
 }) => (
   <FormField
     control={control}
@@ -136,49 +135,53 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
     []
   );
 
-  const handleSubmit = useCallback(async (data: ProfileFormData) => {
-    setIsPending(true);
-    try {
-      // Only send fields that have actually changed from the original values
-      const updateData: { username?: string; email?: string } = {};
-      
-      if (data.username !== user.username) {
-        updateData.username = data.username;
-      }
-      
-      if (data.email !== user.email) {
-        updateData.email = data.email;
-      }
+  const handleSubmit = useCallback(
+    async (data: ProfileFormData) => {
+      setIsPending(true);
+      try {
+        const updateData: { username?: string; email?: string } = {};
 
-      // Only proceed if there are actual changes
-      if (Object.keys(updateData).length === 0) {
-        toast.info("No changes to save");
+        if (data.username !== user.username) {
+          updateData.username = data.username;
+        }
+
+        if (data.email !== user.email) {
+          updateData.email = data.email;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+          toast.info("No changes to save");
+          setIsPending(false);
+          return;
+        }
+
+        const meResult = await updateMe(updateData);
+
+        if (meResult) {
+          toast.success(
+            "Profile updated successfully. You need to log in again."
+          );
+          setTimeout(() => {
+            signOut({ callbackUrl: "/login" });
+          }, 3500);
+        }
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update profile";
+        toast.error(errorMessage);
+      } finally {
         setIsPending(false);
-        return;
       }
+    },
+    [user.username, user.email]
+  );
 
-      const meResult = await updateMe(updateData);
-
-      if (meResult) {
-        toast.success(
-          "Profile updated successfully. You need to log in again."
-        );
-        setTimeout(() => {
-          signOut({ callbackUrl: "/login" });
-        }, 3500);
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
-      toast.error(errorMessage);
-    } finally {
-      setIsPending(false);
-    }
-  }, [user.username, user.email]);
-
-  // Check if form has any changes from the original values
   const watchedValues = form.watch();
   const hasChanges = useMemo(() => {
-    return watchedValues.username !== user.username || watchedValues.email !== user.email;
+    return (
+      watchedValues.username !== user.username ||
+      watchedValues.email !== user.email
+    );
   }, [watchedValues.username, watchedValues.email, user.username, user.email]);
 
   const isSubmitDisabled = isPending || !hasChanges;

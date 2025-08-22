@@ -1,12 +1,12 @@
-import { LoginForm } from "@/components/login-form"
-import { authOptions } from "@/lib/auth"
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
+import { LoginForm } from "@/components/login-form";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export default async function LoginPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
 
-  if (session) redirect("/")
+  if (session) redirect("/");
 
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -14,5 +14,5 @@ export default async function LoginPage() {
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }

@@ -150,7 +150,6 @@ const SECURITY_INFO = [
   },
 ];
 
-// Helper function to get status styling
 const getStatusStyling = (status: string) => {
   if (status === "Active") {
     return { color: "emerald", indicator: "bg-emerald-600/70" };
@@ -241,7 +240,6 @@ export const SecurityForm = ({}: SecurityFormProps) => {
     [form]
   );
 
-  // Check if all three password fields are filled
   const watchedValues = form.watch();
   const areAllFieldsFilled = useMemo(() => {
     return watchedValues.currentPassword.trim() !== "" && 
