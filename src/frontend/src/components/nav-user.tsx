@@ -2,10 +2,8 @@
 
 import {
   IconLogout,
-  IconUserCircle,
   IconSun,
   IconMoon,
-  IconSettings,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -37,7 +34,7 @@ import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { Loader2 } from "lucide-react";
 import { User } from "next-auth";
-import Link from "next/link";
+
 
 export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
