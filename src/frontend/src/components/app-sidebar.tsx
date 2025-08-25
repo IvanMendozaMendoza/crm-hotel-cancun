@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { User } from "next-auth";
+import { NavigationData } from "@/types/navigation";
 
 export const AppSidebar = ({
   user,
   data,
   ...props
-}: { user: User; data: { navMain: Array<{ title: string; url: string; icon?: string; items?: Array<{ title: string; url: string }> }> } } & React.ComponentProps<typeof Sidebar>) => {
+}: { user: User; data: NavigationData } & React.ComponentProps<typeof Sidebar>) => {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

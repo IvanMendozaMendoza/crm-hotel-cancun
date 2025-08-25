@@ -13,10 +13,10 @@ import {
   NavigationSubItems, 
   QuickCreateButton 
 } from "@/components/navigation";
-import type { NavigationItem } from "@/types/navigation";
+import type { NavigationItemType } from "@/types/navigation";
 
 interface NavMainProps {
-  items: NavigationItem[];
+  items: NavigationItemType[];
 }
 
 export function NavMain({ items }: NavMainProps) {
@@ -34,8 +34,8 @@ export function NavMain({ items }: NavMainProps) {
             const Icon = getIcon(item.icon);
             const hasSubItems = Boolean(item.items && item.items.length > 0);
             const expanded = helpers.getExpandedState(item);
-            // Parent items (dropdown triggers) are never highlighted - only actual page items get highlighted
-            const isActive = false; // Parent items are never active
+            // Use isParentActive for items without URLs, isItemActive for items with URLs
+            const isActive = 'url' in item && item.url ? helpers.isItemActive(item.url) : helpers.isParentActive(item);
 
             return (
               <div key={item.title}>

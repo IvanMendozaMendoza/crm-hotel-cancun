@@ -6,10 +6,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import type { NavigationItem } from "@/types/navigation";
+import type { NavigationItemType } from "@/types/navigation";
 
 interface NavigationSubItemsProps {
-  item: NavigationItem;
+  item: NavigationItemType;
   isExpanded: boolean;
   isSubItemActive: (url: string) => boolean;
   onNavigationClick: () => void;

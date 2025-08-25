@@ -5,10 +5,10 @@ import Link from "next/link";
 import { IconChevronRight } from "@tabler/icons-react";
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { useNavigationItemRendering } from "@/hooks/use-shared-navigation";
-import type { NavigationItem } from "@/types/navigation";
+import type { NavigationItemType } from "@/types/navigation";
 
 interface NavigationItemProps {
-  item: NavigationItem;
+  item: NavigationItemType;
   icon: React.ComponentType<{ className?: string }> | null;
   isExpanded: boolean;
   isActive: boolean;
@@ -51,7 +51,7 @@ export const NavigationItemComponent = ({
             </div>
           </div>
         ) : (
-          <Link href={item.url} className="flex items-center gap-2" onClick={onNavigationClick}>
+          <Link href={('url' in item && item.url) ? item.url : '#'} className="flex items-center gap-2" onClick={onNavigationClick}>
             {Icon && <Icon />}
             <span>{item.title}</span>
           </Link>

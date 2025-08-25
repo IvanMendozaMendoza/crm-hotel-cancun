@@ -4,12 +4,12 @@ import { useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/components/ui/sidebar";
 import type {
-  NavigationItem,
+  NavigationItemType,
   NavigationState,
   NavigationActions,
 } from "@/types/navigation";
 
-export const useNavigation = (items: NavigationItem[]) => {
+export const useNavigation = (items: NavigationItemType[]) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -21,7 +21,7 @@ export const useNavigation = (items: NavigationItem[]) => {
 
     // Find active item and sub-item
     for (const item of items) {
-      if (pathname === item.url) {
+      if ('url' in item && pathname === item.url) {
         activeItem = item.url;
         break;
       }
@@ -30,7 +30,7 @@ export const useNavigation = (items: NavigationItem[]) => {
         for (const subItem of item.items) {
           if (pathname === subItem.url) {
             activeSubItem = subItem.url;
-            activeItem = item.url;
+            activeItem = subItem.url;
             break;
           }
         }
@@ -80,18 +80,11 @@ export const useNavigation = (items: NavigationItem[]) => {
 
   const isItemActive = useCallback(
     (url: string) => {
-      // Check if this item is the active parent (has active sub-item)
-      if (navigationState.activeSubItem) {
-        // Find the parent item that contains the active sub-item
-        const parentItem = items.find(item => 
-          item.items?.some(subItem => subItem.url === navigationState.activeSubItem)
-        );
-        return parentItem?.url === url;
-      }
-      // If no active sub-item, check if this item is directly active
-      return navigationState.activeItem === url;
+      return (
+        navigationState.activeItem === url && !navigationState.activeSubItem
+      );
     },
-    [navigationState.activeItem, navigationState.activeSubItem, items]
+    [navigationState.activeItem, navigationState.activeSubItem]
   );
 
   const isSubItemActive = useCallback(
@@ -102,7 +95,7 @@ export const useNavigation = (items: NavigationItem[]) => {
   );
 
   const shouldExpandParent = useCallback(
-    (item: NavigationItem) => {
+    (item: NavigationItemType) => {
       if (!item.items) return false;
       return item.items.some((subItem) => isSubItemActive(subItem.url));
     },
@@ -110,10 +103,19 @@ export const useNavigation = (items: NavigationItem[]) => {
   );
 
   const getExpandedState = useCallback(
-    (item: NavigationItem) => {
+    (item: NavigationItemType) => {
       return isExpanded(item.title) || shouldExpandParent(item);
     },
     [isExpanded, shouldExpandParent]
+  );
+
+  // Helper to check if a parent item should be highlighted
+  const isParentActive = useCallback(
+    (item: NavigationItemType) => {
+      if (!item.items) return false;
+      return item.items.some((subItem) => isSubItemActive(subItem.url));
+    },
+    [isSubItemActive]
   );
 
   const actions: NavigationActions = {
@@ -132,6 +134,7 @@ export const useNavigation = (items: NavigationItem[]) => {
       isSubItemActive,
       shouldExpandParent,
       getExpandedState,
+      isParentActive,
     },
   };
 };

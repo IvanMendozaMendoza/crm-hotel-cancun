@@ -11,8 +11,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { User } from "next-auth";
+import { NavigationData } from "@/types/navigation";
 
-const dataAdmin = {
+const dataAdmin: NavigationData = {
   navMain: [
     {
       title: "Dashboard",
@@ -148,7 +149,7 @@ const dataAdmin = {
   ],
 };
 
-const dataUser = {
+const dataUser: NavigationData = {
   navMain: [
     {
       title: "Dashboard",
