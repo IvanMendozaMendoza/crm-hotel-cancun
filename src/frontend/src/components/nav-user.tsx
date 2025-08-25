@@ -43,9 +43,12 @@ export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
-  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  
+  const toggleTheme = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   return (
     <SidebarMenu>
@@ -113,12 +116,11 @@ export const NavUser = ({ user }: { user: User }) => {
           >
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-
               <DropdownMenuItem
-                onClick={() => toggleTheme()}
+                onClick={toggleTheme}
                 aria-label="Toggle theme"
               >
-                {isDark ? <IconSun /> : <IconMoon />}
+                {isDark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
                 {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </DropdownMenuItem>
             </DropdownMenuGroup>
