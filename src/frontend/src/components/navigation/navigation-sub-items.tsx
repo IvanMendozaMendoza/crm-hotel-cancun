@@ -45,7 +45,11 @@ export const NavigationSubItems = ({
               <SidebarMenuButton 
                 tooltip={subItem.title} 
                 asChild
-                className={`${isSubActive ? "bg-zinc-800/70 text-white" : ""}`}
+                className={`transition-all duration-200 ease-in-out ${
+                  isSubActive 
+                    ? "bg-zinc-800/70 text-white hover:bg-zinc-700/80 hover:text-white" 
+                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 hover:text-zinc-800 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200"
+                }`}
               >
                 <Link 
                   href={subItem.url} 

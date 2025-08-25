@@ -150,11 +150,20 @@ export const useNavigationItemRendering = () => {
    */
   const getNavigationItemClasses = useCallback(
     (isActive: boolean, hasSubItems: boolean) => {
-      const baseClasses = `transition-all duration-${ANIMATION.FAST} ease-in-out hover:bg-zinc-800/50`;
-      const activeClasses = isActive ? "bg-zinc-800/70 text-white" : "";
+      const baseClasses = `transition-all duration-${ANIMATION.FAST} ease-in-out`;
+      
+      // Enhanced hover effects using only zinc colors with better intensity
+      const hoverClasses = isActive 
+        ? "hover:bg-zinc-200/80 dark:hover:bg-zinc-700/90" // Active item hover - subtle but noticeable
+        : "hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60"; // Inactive item hover - gentle interaction
+      
+      const activeClasses = isActive 
+        ? "bg-zinc-100/80 text-zinc-900 dark:bg-zinc-800/80 dark:text-white" // Active state - balanced intensity
+        : "text-zinc-700 dark:text-zinc-300"; // Inactive state - good readability
+      
       const interactiveClasses = hasSubItems ? "cursor-pointer" : "";
 
-      return `${baseClasses} ${activeClasses} ${interactiveClasses}`.trim();
+      return `${baseClasses} ${hoverClasses} ${activeClasses} ${interactiveClasses}`.trim();
     },
     []
   );
@@ -175,7 +184,7 @@ export const useNavigationItemRendering = () => {
    * ```
    */
   const getExpansionIndicatorClasses = useCallback((isExpanded: boolean) => {
-    return `transition-transform duration-${ANIMATION.NORMAL} ease-in-out ${
+    return `transition-transform duration-${ANIMATION.NORMAL} ease-in-out text-zinc-600 dark:text-zinc-400 ${
       isExpanded ? "rotate-90" : "rotate-0"
     }`;
   }, []);
