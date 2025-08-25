@@ -287,7 +287,7 @@ const SearchAndFilters = ({
         autoComplete="off"
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 w-full sm:w-64 focus:border-blue-500 focus:ring-blue-500/20"
+        className="pl-10 bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-zinc-900 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 w-full sm:w-64 focus:border-blue-500 focus:ring-blue-500/20"
       />
     </div>
 
@@ -295,7 +295,7 @@ const SearchAndFilters = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800"
+          className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-zinc-900 dark:border-gray-700 dark:text-white dark:hover:bg-zinc-800"
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters

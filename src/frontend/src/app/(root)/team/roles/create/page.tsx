@@ -443,7 +443,7 @@ const CreateRoleGroupPage = () => {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                  <Button variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-zinc-800">
                     <Filter className="h-4 w-4 mr-2" />
                     {selectedCategory === "all" ? "All Categories" : selectedCategory}
                   </Button>
@@ -460,7 +460,7 @@ const CreateRoleGroupPage = () => {
                   {Object.keys(permissionCategories).map((category) => (
                     <DropdownMenuItem
                       key={category}
-                      className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${selectedCategory === category ? "bg-slate-100 dark:bg-gray-800/50" : ""}`}
+                      className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-zinc-800 ${selectedCategory === category ? "bg-slate-100 dark:bg-gray-800/50" : ""}`}
                       onClick={() => setSelectedCategory(category)}
                     >
                       {category}
@@ -470,10 +470,10 @@ const CreateRoleGroupPage = () => {
               </DropdownMenu>
 
               <div className="ml-auto flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={selectAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <Button variant="outline" size="sm" onClick={selectAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-zinc-800">
                   Select all
                 </Button>
-                <Button variant="outline" size="sm" onClick={clearAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <Button variant="outline" size="sm" onClick={clearAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-zinc-800">
                   Clear all
                 </Button>
               </div>
