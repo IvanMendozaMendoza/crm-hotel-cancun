@@ -47,7 +47,6 @@ const dataAdmin = {
 
     {
       title: "Settings",
-      url: "/settings",
       icon: "settings",
       items: [
         {

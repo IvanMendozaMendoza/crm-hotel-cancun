@@ -83,12 +83,12 @@ const PasswordInput = ({
   [key: string]: unknown;
 }) => (
   <FormItem>
-    <FormLabel className="text-gray-300">{label}</FormLabel>
+    <FormLabel className="text-slate-700 dark:text-gray-300">{label}</FormLabel>
     <FormControl>
       <div className="relative">
         <Input
           type={showPassword ? "text" : "password"}
-          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pr-10"
+          className="bg-white border-slate-200 text-slate-900 placeholder-slate-500 pr-10 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
           placeholder={placeholder}
           {...fieldProps}
         />
@@ -96,13 +96,13 @@ const PasswordInput = ({
           type="button"
           variant="ghost"
           size="sm"
-          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-slate-500 dark:text-gray-400"
           onClick={onTogglePassword}
         >
           {showPassword ? (
-            <EyeOff className="h-4 w-4 text-gray-400" />
+            <EyeOff className="h-4 w-4" />
           ) : (
-            <Eye className="h-4 w-4 text-gray-400" />
+            <Eye className="h-4 w-4" />
           )}
         </Button>
       </div>
@@ -122,13 +122,13 @@ const InfoCard = ({
   icon: React.ElementType;
   children: React.ReactNode;
 }) => (
-  <Card className="bg-stone-900 border-stone-700">
+  <Card className="bg-white border-slate-200 dark:bg-stone-900 dark:border-stone-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-white">
+      <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
         <Icon className="h-5 w-5" />
         {title}
       </CardTitle>
-      <CardDescription className="text-gray-400">{description}</CardDescription>
+      <CardDescription className="text-slate-600 dark:text-gray-400">{description}</CardDescription>
     </CardHeader>
     <CardContent>{children}</CardContent>
   </Card>
@@ -288,11 +288,11 @@ export const SecurityForm = ({}: SecurityFormProps) => {
               ))}
             </div>
 
-            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-2">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 dark:bg-gray-800/50 dark:border-gray-700">
+              <h4 className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                 Password Requirements
               </h4>
-              <ul className="text-sm text-gray-400 space-y-1">
+              <ul className="text-sm text-slate-600 dark:text-gray-400 space-y-1">
                 <li>• At least 8 characters long</li>
                 <li>• Must be different from your current password</li>
                 <li>• Consider using a mix of letters, numbers, and symbols</li>
@@ -303,7 +303,7 @@ export const SecurityForm = ({}: SecurityFormProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="bg-white hover:bg-gray-100 text-gray-900 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900"
               >
                 {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
                 {isPending ? "Updating..." : "Update Password"}
@@ -323,18 +323,18 @@ export const SecurityForm = ({}: SecurityFormProps) => {
             const statusStyling = status || getStatusStyling(value);
             return (
               <div key={label}>
-                <Label className="text-gray-400 text-sm">{label}</Label>
+                <Label className="text-slate-600 dark:text-gray-400 text-sm">{label}</Label>
                 {statusStyling ? (
                   <div className="flex items-center gap-2 mt-1">
                     <div
                       className={`w-2 h-2 ${statusStyling.indicator} rounded-full`}
                     ></div>
-                    <span className={`text-${statusStyling.color}-200 text-sm`}>
+                    <span className={`text-${statusStyling.color}-700 dark:text-${statusStyling.color}-200 text-sm`}>
                       {value}
                     </span>
                   </div>
                 ) : (
-                  <p className="text-white font-medium">{value}</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{value}</p>
                 )}
               </div>
             );
@@ -351,10 +351,10 @@ export const SecurityForm = ({}: SecurityFormProps) => {
           {SECURITY_TIPS.map((tip, index) => (
             <div key={index} className="flex items-start gap-4">
               <div className="relative flex-shrink-0 mt-1.5">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <div className="absolute inset-0 w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-slate-400 dark:bg-gray-400 rounded-full"></div>
+                <div className="absolute inset-0 w-2 h-2 bg-slate-200 dark:bg-white/40 rounded-full animate-pulse"></div>
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed">{tip}</p>
+              <p className="text-slate-700 dark:text-gray-300 text-sm leading-relaxed">{tip}</p>
             </div>
           ))}
         </div>

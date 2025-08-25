@@ -55,13 +55,13 @@ const InfoCard = ({
   icon: React.ElementType;
   children: React.ReactNode;
 }) => (
-  <Card className="bg-stone-900 border-stone-700">
+  <Card className="bg-white border-slate-200 dark:bg-stone-900 dark:border-stone-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-white">
+      <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
         <Icon className="h-5 w-5" />
         {title}
       </CardTitle>
-      <CardDescription className="text-gray-400">{description}</CardDescription>
+      <CardDescription className="text-slate-600 dark:text-gray-400">{description}</CardDescription>
     </CardHeader>
     <CardContent>{children}</CardContent>
   </Card>
@@ -85,11 +85,11 @@ const FormInput = ({
     name={name}
     render={({ field }) => (
       <FormItem>
-        <FormLabel className="text-gray-300">{label}</FormLabel>
+        <FormLabel className="text-slate-700 dark:text-gray-300">{label}</FormLabel>
         <FormControl>
           <Input
             type={type}
-            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
             placeholder={placeholder}
             {...field}
           />
@@ -204,13 +204,13 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
                   src={user.avatar || "/avatars/default.jpg"}
                   alt={user.username}
                 />
-                <AvatarFallback className="bg-gray-700 text-white text-lg">
+                <AvatarFallback className="bg-slate-700 text-white text-lg dark:bg-gray-700">
                   {user.username?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-medium text-white">{user.username}</h3>
-                <p className="text-sm text-gray-400">Profile picture</p>
+                <h3 className="font-medium text-slate-900 dark:text-white">{user.username}</h3>
+                <p className="text-sm text-slate-600 dark:text-gray-400">Profile picture</p>
               </div>
             </div>
 
@@ -231,7 +231,7 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="bg-white hover:bg-gray-100 text-gray-900 px-6"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-6 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900"
               >
                 {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
                 {isPending ? "Saving..." : "Save Changes"}
@@ -249,32 +249,32 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
         <div className="grid gap-4 md:grid-cols-2">
           {ACCOUNT_INFO.map(({ label, value, type }) => (
             <div key={label}>
-              <Label className="text-gray-400 text-sm">{label}</Label>
+              <Label className="text-slate-600 dark:text-gray-400 text-sm">{label}</Label>
               {type === "roles" ? (
                 <div className="flex gap-2 mt-1">
                   {user.roles?.map((role: string) => (
                     <span
                       key={role}
-                      className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded"
+                      className="px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
                     >
                       {role}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-white font-medium">
+                <p className="text-slate-900 dark:text-white font-medium">
                   {type === "text" ? value : user[value as keyof typeof user]}
                 </p>
               )}
             </div>
           ))}
           <div>
-            <Label className="text-gray-400 text-sm">Account Roles</Label>
+            <Label className="text-slate-600 dark:text-gray-400 text-sm">Account Roles</Label>
             <div className="flex gap-2 mt-1">
               {user.roles?.map((role: string) => (
                 <span
                   key={role}
-                  className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded"
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
                 >
                   {role}
                 </span>
