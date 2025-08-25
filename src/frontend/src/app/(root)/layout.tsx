@@ -32,7 +32,6 @@ const dataAdmin = {
     },
     {
       title: "Team",
-      url: "/team",
       icon: "users",
       items: [
         {

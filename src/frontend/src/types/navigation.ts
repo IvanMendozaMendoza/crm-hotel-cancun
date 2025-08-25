@@ -1,6 +1,6 @@
 export interface NavigationItem {
   title: string;
-  url: string;
+  url?: string;
   icon?: string;
   items?: NavigationSubItem[];
 }

@@ -161,20 +161,20 @@ const PermissionTable = ({
   formData: RoleFormData;
   onTogglePermission: (permissionId: string) => void;
 }) => (
-  <div className="overflow-hidden rounded-lg border border-gray-700">
+  <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-gray-700">
     <Table>
-      <TableHeader className="bg-stone-900">
-        <TableRow className="border-gray-700">
-          <TableHead className="text-gray-300 font-medium w-12">Select</TableHead>
-          <TableHead className="text-gray-300 font-medium">Permission</TableHead>
-          <TableHead className="text-gray-300 font-medium">Category</TableHead>
-          <TableHead className="text-gray-300 font-medium">Key</TableHead>
+      <TableHeader className="bg-slate-50 dark:bg-stone-900">
+        <TableRow className="border-slate-200 dark:border-gray-700">
+          <TableHead className="text-slate-800 dark:text-gray-300 font-medium w-12">Select</TableHead>
+          <TableHead className="text-slate-800 dark:text-gray-300 font-medium">Permission</TableHead>
+          <TableHead className="text-slate-800 dark:text-gray-300 font-medium">Category</TableHead>
+          <TableHead className="text-slate-800 dark:text-gray-300 font-medium">Key</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {currentPageRows.length ? (
           currentPageRows.map((row) => (
-            <TableRow key={`${row.category}:${row.key}`} className="border-gray-700 hover:bg-gray-800/60">
+            <TableRow key={`${row.category}:${row.key}`} className="border-slate-200 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/60">
               <TableCell>
                 <Checkbox
                   checked={formData.permissions.includes(row.key)}
@@ -182,14 +182,14 @@ const PermissionTable = ({
                 />
               </TableCell>
               <TableCell>
-                <div className="font-medium">{row.label}</div>
-                <div className="text-xs text-muted-foreground">{row.key}</div>
+                <div className="font-medium text-slate-900 dark:text-foreground">{row.label}</div>
+                <div className="text-xs text-slate-600 dark:text-muted-foreground">{row.key}</div>
               </TableCell>
               <TableCell>
-                <span className="text-gray-300">{row.category}</span>
+                <span className="text-slate-800 dark:text-gray-300">{row.category}</span>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="text-gray-300 border-gray-700">
+                <Badge variant="outline" className="text-slate-700 border-slate-200 dark:text-gray-300 dark:border-gray-700">
                   {row.key}
                 </Badge>
               </TableCell>
@@ -197,7 +197,7 @@ const PermissionTable = ({
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={4} className="h-24 text-center text-gray-400">
+            <TableCell colSpan={4} className="h-24 text-center text-slate-500 dark:text-gray-400">
               No permissions found.
             </TableCell>
           </TableRow>
@@ -217,17 +217,17 @@ const Pagination = ({
   onPageChange: (page: number) => void;
 }) => (
   <div className="flex items-center justify-between px-4 mt-6">
-    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+    <div className="text-slate-600 dark:text-muted-foreground hidden flex-1 text-sm lg:flex">
       Page {pageIndex + 1} of {pageCount}
     </div>
     <div className="flex w-full items-center gap-8 lg:w-fit">
-      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-slate-700 dark:text-gray-300">
         Page {pageIndex + 1} of {pageCount}
       </div>
       <div className="ml-auto flex items-center gap-2 lg:ml-0">
         <Button
           variant="outline"
-          className="hidden h-8 w-8 p-0 lg:flex"
+          className="hidden h-8 w-8 p-0 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           onClick={() => onPageChange(0)}
           disabled={pageIndex === 0}
         >
@@ -236,7 +236,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => onPageChange(Math.max(0, pageIndex - 1))}
           disabled={pageIndex === 0}
@@ -246,7 +246,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => onPageChange(Math.min(pageCount - 1, pageIndex + 1))}
           disabled={pageIndex >= pageCount - 1}
@@ -256,7 +256,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="hidden size-8 lg:flex"
+          className="hidden size-8 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => onPageChange(pageCount - 1)}
           disabled={pageIndex >= pageCount - 1}
@@ -432,27 +432,27 @@ const CreateRoleGroupPage = () => {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search permissions"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
                 />
               </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="">
+                  <Button variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                     <Filter className="h-4 w-4 mr-2" />
                     {selectedCategory === "all" ? "All Categories" : selectedCategory}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-zinc-900 border-gray-700 w-56">
-                  <DropdownMenuLabel className="text-gray-300">Filter by Category</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuContent align="start" className="bg-white border-slate-200 dark:bg-zinc-900 dark:border-gray-700 w-56">
+                  <DropdownMenuLabel className="text-slate-700 dark:text-gray-300">Filter by Category</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-200 dark:bg-gray-700" />
                   <DropdownMenuItem
-                    className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === "all" ? "bg-gray-800/50" : ""}`}
+                    className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${selectedCategory === "all" ? "bg-slate-100 dark:bg-gray-800/50" : ""}`}
                     onClick={() => setSelectedCategory("all")}
                   >
                     All Categories
@@ -460,7 +460,7 @@ const CreateRoleGroupPage = () => {
                   {Object.keys(permissionCategories).map((category) => (
                     <DropdownMenuItem
                       key={category}
-                      className={`text-gray-300 hover:text-black hover:bg-stone-300 ${selectedCategory === category ? "bg-gray-800/50" : ""}`}
+                      className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${selectedCategory === category ? "bg-slate-100 dark:bg-gray-800/50" : ""}`}
                       onClick={() => setSelectedCategory(category)}
                     >
                       {category}
@@ -470,10 +470,10 @@ const CreateRoleGroupPage = () => {
               </DropdownMenu>
 
               <div className="ml-auto flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={selectAll}>
+                <Button variant="outline" size="sm" onClick={selectAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Select all
                 </Button>
-                <Button variant="outline" size="sm" onClick={clearAll}>
+                <Button variant="outline" size="sm" onClick={clearAll} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Clear all
                 </Button>
               </div>
@@ -504,12 +504,12 @@ const CreateRoleGroupPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium">Role name</Label>
-                    <p className="text-sm text-muted-foreground mt-1">{formData.name}</p>
+                    <p className="text-sm text-slate-600 dark:text-muted-foreground mt-1">{formData.name}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Permissions</Label>
                     <div className="mt-1">
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="border-slate-200 text-slate-700 dark:border-gray-700 dark:text-gray-300">
                         {formData.permissions.length} selected
                       </Badge>
                     </div>
@@ -517,7 +517,7 @@ const CreateRoleGroupPage = () => {
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Description</Label>
-                  <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+                  <p className="text-sm text-slate-600 dark:text-muted-foreground mt-1 whitespace-pre-wrap">
                     {formData.description || "No description"}
                   </p>
                 </div>
@@ -554,14 +554,14 @@ const CreateRoleGroupPage = () => {
             <div className="lg:sticky lg:top-6">
               <div className="mb-8 mt-8">
                 <Progress value={(currentStep / steps.length) * 100} className="h-1" />
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <div className="flex justify-between text-xs text-slate-600 dark:text-muted-foreground mt-2">
                   <span>Step {currentStep}</span>
                   <span>of {steps.length}</span>
                 </div>
               </div>
 
               <div className="relative">
-                <div className="absolute left-3 top-8 bottom-8 w-0.5 bg-border" />
+                <div className="absolute left-3 top-8 bottom-8 w-0.5 bg-slate-200 dark:bg-border" />
 
                 <div className="space-y-6 sm:space-y-8">
                   {steps.map((step) => (
@@ -573,7 +573,7 @@ const CreateRoleGroupPage = () => {
           </div>
 
           <div className="lg:col-span-3 order-1 lg:order-2">
-            <Card className="bg-background border-border">
+            <Card className="bg-background border-slate-200 dark:border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {(() => {
@@ -592,14 +592,14 @@ const CreateRoleGroupPage = () => {
                 variant="outline"
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
-                className="order-2 sm:order-1"
+                className="order-2 sm:order-1 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
               </Button>
 
               <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" onClick={handleCancel} className="border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Cancel
                 </Button>
 

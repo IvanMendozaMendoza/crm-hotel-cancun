@@ -39,6 +39,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -201,13 +202,13 @@ const UserAvatar = ({ user }: { user: User }) => (
   <div className="flex items-center gap-3">
     <Avatar className="h-8 w-8">
       <AvatarImage src={user.avatar} alt={user.name} />
-      <AvatarFallback className="bg-gray-700 text-white">
+      <AvatarFallback className="bg-slate-700 text-white dark:bg-gray-700">
         {user.name[0]}
       </AvatarFallback>
     </Avatar>
     <div>
-      <div className="font-medium text-white">{user.name}</div>
-      <div className="text-sm text-gray-400">{user.email}</div>
+      <div className="font-medium text-slate-900 dark:text-white">{user.name}</div>
+      <div className="text-sm text-slate-600 dark:text-gray-400">{user.email}</div>
     </div>
   </div>
 );
@@ -221,10 +222,10 @@ const AccessBadge = ({ user }: { user: User }) => {
       variant="outline"
       className={`${
         isCurrentUser
-          ? "bg-green-500/20 text-green-400 border-green-500/30"
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30"
           : isDisabled
-          ? "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"
-          : "bg-blue-500/20 text-blue-400 border-blue-500/30"
+          ? "bg-slate-50 text-slate-600 border-slate-200 dark:bg-zinc-500/20 dark:text-zinc-400 dark:border-zinc-500/30"
+          : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
       } border`}
     >
       {user.access}
@@ -279,14 +280,14 @@ const SearchAndFilters = ({
 }) => (
   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-gray-400 h-4 w-4" />
       <Input
         placeholder="Search"
         type="search"
         autoComplete="off"
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
+        className="pl-10 bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 w-full sm:w-64 focus:border-blue-500 focus:ring-blue-500/20"
       />
     </div>
 
@@ -294,7 +295,7 @@ const SearchAndFilters = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800"
+          className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800"
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters
@@ -302,15 +303,15 @@ const SearchAndFilters = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="bg-zinc-900 border-gray-700 w-56"
+        className="bg-white border-slate-200 dark:bg-zinc-900 dark:border-gray-700 w-56"
       >
-        <DropdownMenuLabel className="text-gray-300">
+        <DropdownMenuLabel className="text-slate-700 dark:text-gray-300">
           Filter by Access Level
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator className="bg-slate-200 dark:bg-gray-700" />
         <DropdownMenuItem
-          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
-            selectedAccessFilter === "all" ? "bg-gray-800/50" : ""
+          className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${
+            selectedAccessFilter === "all" ? "bg-slate-100 dark:bg-gray-800/50" : ""
           }`}
           onClick={() => onAccessFilterChange("all")}
         >
@@ -319,22 +320,22 @@ const SearchAndFilters = ({
         {Object.keys(accessCategories).map((accessLevel) => (
           <DropdownMenuItem
             key={accessLevel}
-            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
-              selectedAccessFilter === accessLevel ? "bg-gray-800/50" : ""
+            className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${
+              selectedAccessFilter === accessLevel ? "bg-slate-100 dark:bg-gray-800/50" : ""
             }`}
             onClick={() => onAccessFilterChange(accessLevel)}
           >
             {accessLevel}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuLabel className="text-gray-300">Sort by</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator className="bg-slate-200 dark:bg-gray-700" />
+        <DropdownMenuLabel className="text-slate-700 dark:text-gray-300">Sort by</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-slate-200 dark:bg-gray-700" />
         {sortOptions.map((sortOption) => (
           <DropdownMenuItem
             key={sortOption.value}
-            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
-              selectedSort === sortOption.value ? "bg-gray-800/50" : ""
+            className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${
+              selectedSort === sortOption.value ? "bg-slate-100 dark:bg-gray-800/50" : ""
             }`}
             onClick={() => onSortChange(sortOption.value)}
           >
@@ -352,14 +353,14 @@ const Pagination = ({
   table: ReturnType<typeof useReactTable<User>>;
 }) => (
   <div className="flex items-center justify-between px-4 mt-6">
-    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+    <div className="text-slate-600 dark:text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} user(s) total.
     </div>
     <div className="flex w-full items-center gap-8 lg:w-fit">
       <div className="hidden items-center gap-2 lg:flex">
         <Label
           htmlFor="rows-per-page"
-          className="text-sm font-medium text-gray-300"
+          className="text-sm font-medium text-slate-700 dark:text-gray-300"
         >
           Rows per page
         </Label>
@@ -371,17 +372,17 @@ const Pagination = ({
         >
           <SelectTrigger
             size="sm"
-            className="w-20 bg-stone-900 border-gray-700 text-gray-300"
+            className="w-20 bg-white border-slate-200 text-slate-700 dark:bg-stone-900 dark:border-gray-700 dark:text-gray-300"
             id="rows-per-page"
           >
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
-          <SelectContent side="top" className="bg-stone-900 border-gray-700">
+          <SelectContent side="top" className="bg-white border-slate-200 dark:bg-stone-900 dark:border-gray-700">
             {[10, 20, 30, 40, 50].map((pageSize) => (
               <SelectItem
                 key={pageSize}
                 value={`${pageSize}`}
-                className="text-gray-300"
+                className="text-slate-700 dark:text-gray-300"
               >
                 {pageSize}
               </SelectItem>
@@ -389,14 +390,14 @@ const Pagination = ({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-slate-700 dark:text-gray-300">
         Page {table.getState().pagination.pageIndex + 1} of{" "}
         {table.getPageCount()}
       </div>
       <div className="ml-auto flex items-center gap-2 lg:ml-0">
         <Button
           variant="outline"
-          className="hidden h-8 w-8 p-0 lg:flex"
+          className="hidden h-8 w-8 p-0 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
@@ -405,7 +406,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
@@ -415,7 +416,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
@@ -425,7 +426,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="hidden size-8 lg:flex"
+          className="hidden size-8 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
@@ -448,11 +449,11 @@ const EmptyState = ({
   onAddUser: () => void;
 }) => (
   <div className="text-center py-12">
-    <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Search className="h-8 w-8 text-gray-400" />
+    <div className="w-16 h-16 bg-slate-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Search className="h-8 w-8 text-slate-400 dark:text-gray-400" />
     </div>
-    <h3 className="text-lg font-medium text-gray-300 mb-2">No users found</h3>
-    <p className="text-gray-400 mb-4">
+    <h3 className="text-lg font-medium text-slate-700 dark:text-gray-300 mb-2">No users found</h3>
+    <p className="text-slate-500 dark:text-gray-400 mb-4">
       {searchTerm || selectedAccessFilter !== "all"
         ? "Try adjusting your search or filter criteria"
         : "Get started by adding your first user"}
@@ -528,14 +529,14 @@ const TeamPage = () => {
         accessorKey: "lastActive",
         header: "Last active",
         cell: ({ row }) => (
-          <span className="text-gray-300">{row.original.lastActive}</span>
+          <span className="text-slate-800 dark:text-gray-300">{row.original.lastActive}</span>
         ),
       },
       {
         accessorKey: "dateAdded",
         header: "Date added",
         cell: ({ row }) => (
-          <span className="text-gray-300">{row.original.dateAdded}</span>
+          <span className="text-slate-800 dark:text-gray-300">{row.original.dateAdded}</span>
         ),
       },
       {
@@ -546,7 +547,7 @@ const TeamPage = () => {
           return (
             <span
               className={
-                user.status === "active" ? "text-gray-300" : "text-gray-400"
+                user.status === "active" ? "text-slate-900 dark:text-gray-300" : "text-slate-600 dark:text-gray-400"
               }
             >
               {user.status === "active" ? "Active" : "Disabled"}
@@ -611,15 +612,15 @@ const TeamPage = () => {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-700">
+        <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-gray-700">
           <Table>
-            <TableHeader className="bg-stone-900">
+            <TableHeader className="bg-slate-50 dark:bg-stone-900">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-gray-700">
+                <TableRow key={headerGroup.id} className="border-slate-200 dark:border-gray-700">
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-gray-300 font-medium"
+                      className="text-slate-800 dark:text-gray-300 font-medium"
                     >
                       {header.isPlaceholder
                         ? null
@@ -637,7 +638,7 @@ const TeamPage = () => {
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    className="border-gray-700 hover:bg-gray-800/30"
+                    className="border-slate-200 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/30"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -653,7 +654,7 @@ const TeamPage = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center text-gray-400"
+                    className="h-24 text-center text-slate-500 dark:text-gray-400"
                   >
                     No users found.
                   </TableCell>

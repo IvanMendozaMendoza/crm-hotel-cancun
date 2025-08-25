@@ -34,7 +34,8 @@ export function NavMain({ items }: NavMainProps) {
             const Icon = getIcon(item.icon);
             const hasSubItems = Boolean(item.items && item.items.length > 0);
             const expanded = helpers.getExpandedState(item);
-            const isActive = helpers.isItemActive(item.url);
+            // Parent items (dropdown triggers) are never highlighted - only actual page items get highlighted
+            const isActive = false; // Parent items are never active
 
             return (
               <div key={item.title}>

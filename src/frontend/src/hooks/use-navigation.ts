@@ -80,11 +80,18 @@ export const useNavigation = (items: NavigationItem[]) => {
 
   const isItemActive = useCallback(
     (url: string) => {
-      return (
-        navigationState.activeItem === url && !navigationState.activeSubItem
-      );
+      // Check if this item is the active parent (has active sub-item)
+      if (navigationState.activeSubItem) {
+        // Find the parent item that contains the active sub-item
+        const parentItem = items.find(item => 
+          item.items?.some(subItem => subItem.url === navigationState.activeSubItem)
+        );
+        return parentItem?.url === url;
+      }
+      // If no active sub-item, check if this item is directly active
+      return navigationState.activeItem === url;
     },
-    [navigationState.activeItem, navigationState.activeSubItem]
+    [navigationState.activeItem, navigationState.activeSubItem, items]
   );
 
   const isSubItemActive = useCallback(

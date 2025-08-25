@@ -368,20 +368,20 @@ const PermissionPopover = ({
           variant="link"
           role="combobox"
           aria-expanded={open}
-          className="-ml-6"
+          className="-ml-6 text-slate-700 dark:text-gray-300"
         >
           <span className="truncate">
             {roleGroup.permissions.length} permissions
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0 bg-stone-900 border-gray-700">
+      <PopoverContent className="w-[400px] p-0 bg-white border-slate-200 dark:bg-stone-900 dark:border-gray-700">
         <Command>
           <CommandInput
             placeholder="Search permissions..."
             value={searchValue}
             onValueChange={setSearchValue}
-            className="border-gray-700"
+            className="border-slate-200 dark:border-gray-700"
           />
           <CommandList className="max-h-[300px]">
             <CommandEmpty>No permissions found.</CommandEmpty>
@@ -391,15 +391,15 @@ const PermissionPopover = ({
                   key={permission}
                   className={`flex items-center gap-2 ${
                     roleGroup.permissions.includes(permission)
-                      ? "bg-blue-500/20 text-blue-400"
-                      : "text-gray-300"
+                      ? "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
+                      : "text-slate-700 dark:text-gray-300"
                   }`}
                 >
                   <div
                     className={`w-2 h-2 rounded-full ${
                       roleGroup.permissions.includes(permission)
-                        ? "bg-blue-400"
-                        : "bg-gray-500"
+                        ? "bg-blue-500 dark:bg-blue-400"
+                        : "bg-slate-400 dark:bg-gray-500"
                     }`}
                   />
                   {getPermissionLabel(permission)}
@@ -426,14 +426,14 @@ const SearchAndFilters = ({
 }) => (
   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-gray-400 h-4 w-4" />
       <Input
         placeholder="Search"
         type="search"
         autoComplete="off"
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 w-full sm:w-64"
+        className="pl-10 bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 w-full sm:w-64 focus:border-blue-500 focus:ring-blue-500/20"
       />
     </div>
 
@@ -441,7 +441,7 @@ const SearchAndFilters = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800"
+          className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800"
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters
@@ -449,15 +449,15 @@ const SearchAndFilters = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="bg-zinc-900 border-gray-700 w-56"
+        className="bg-white border-slate-200 dark:bg-zinc-900 dark:border-gray-700 w-56"
       >
-        <DropdownMenuLabel className="text-gray-300">
+        <DropdownMenuLabel className="text-slate-700 dark:text-gray-300">
           Filter by Category
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator className="bg-slate-200 dark:bg-gray-700" />
         <DropdownMenuItem
-          className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
-            selectedCategory === "all" ? "bg-gray-800/50" : ""
+          className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${
+            selectedCategory === "all" ? "bg-slate-100 dark:bg-gray-800/50" : ""
           }`}
           onClick={() => onCategoryChange("all")}
         >
@@ -466,8 +466,8 @@ const SearchAndFilters = ({
         {Object.keys(permissionCategories).map((category) => (
           <DropdownMenuItem
             key={category}
-            className={`text-gray-300 hover:text-black hover:bg-stone-300 ${
-              selectedCategory === category ? "bg-gray-800/50" : ""
+            className={`text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-300 dark:hover:text-black dark:hover:bg-stone-300 ${
+              selectedCategory === category ? "bg-slate-100 dark:bg-gray-800/50" : ""
             }`}
             onClick={() => onCategoryChange(category)}
           >
@@ -485,14 +485,14 @@ const Pagination = ({
   table: ReturnType<typeof useReactTable<(typeof initialRoleGroups)[0]>>;
 }) => (
   <div className="flex items-center justify-between px-4 mt-6">
-    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+    <div className="text-slate-600 dark:text-muted-foreground hidden flex-1 text-sm lg:flex">
       {table.getFilteredRowModel().rows.length} role group(s) total.
     </div>
     <div className="flex w-full items-center gap-8 lg:w-fit">
       <div className="hidden items-center gap-2 lg:flex">
         <Label
           htmlFor="rows-per-page"
-          className="text-sm font-medium text-gray-300"
+          className="text-sm font-medium text-slate-700 dark:text-gray-300"
         >
           Rows per page
         </Label>
@@ -504,17 +504,17 @@ const Pagination = ({
         >
           <SelectTrigger
             size="sm"
-            className="w-20 bg-stone-900 border-gray-700 text-gray-300"
+            className="w-20 bg-white border-slate-200 text-slate-700 dark:bg-stone-900 dark:border-gray-700 dark:text-gray-300"
             id="rows-per-page"
           >
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
-          <SelectContent side="top" className="bg-stone-900 border-gray-700">
+          <SelectContent side="top" className="bg-white border-slate-200 dark:bg-stone-900 dark:border-gray-700">
             {[10, 20, 30, 40, 50].map((pageSize) => (
               <SelectItem
                 key={pageSize}
                 value={`${pageSize}`}
-                className="text-gray-300"
+                className="text-slate-700 dark:text-gray-300"
               >
                 {pageSize}
               </SelectItem>
@@ -522,14 +522,14 @@ const Pagination = ({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-fit items-center justify-center text-sm font-medium text-gray-300">
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-slate-700 dark:text-gray-300">
         Page {table.getState().pagination.pageIndex + 1} of{" "}
         {table.getPageCount()}
       </div>
       <div className="ml-auto flex items-center gap-2 lg:ml-0">
         <Button
           variant="outline"
-          className="hidden h-8 w-8 p-0 lg:flex"
+          className="hidden h-8 w-8 p-0 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
@@ -538,7 +538,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
@@ -548,7 +548,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="size-8"
+          className="size-8 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
@@ -558,7 +558,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="outline"
-          className="hidden size-8 lg:flex"
+          className="hidden size-8 lg:flex border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           size="icon"
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
@@ -589,7 +589,7 @@ function DraggableRow({ row }: { row: Row<(typeof initialRoleGroups)[0]> }) {
       data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 border-gray-700 hover:bg-gray-800/30"
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 border-slate-200 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/30"
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition,
@@ -606,9 +606,9 @@ function DraggableRow({ row }: { row: Row<(typeof initialRoleGroups)[0]> }) {
               {...listeners}
               variant="ghost"
               size="icon"
-              className="text-muted-foreground size-7 hover:bg-transparent"
+              className="text-slate-400 dark:text-muted-foreground size-7 hover:bg-transparent"
             >
-              <GripVertical className="text-muted-foreground size-3" />
+              <GripVertical className="text-slate-400 dark:text-muted-foreground size-3" />
               <span className="sr-only">Drag to reorder</span>
             </Button>
           ) : (
@@ -666,10 +666,10 @@ const TeamRolesPage = () => {
           const roleGroup = row.original;
           return (
             <div className="min-w-0">
-              <div className="font-medium text-white truncate">
+              <div className="font-medium text-slate-900 dark:text-white truncate">
                 {roleGroup.name}
               </div>
-              <div className="text-sm text-gray-400 truncate">
+              <div className="text-sm text-slate-600 dark:text-gray-400 truncate">
                 {roleGroup.description}
               </div>
             </div>
@@ -688,8 +688,8 @@ const TeamRolesPage = () => {
         header: "Users",
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-400" />
-            <span className="text-gray-300">{row.original.userCount}</span>
+            <Users className="h-4 w-4 text-slate-500 dark:text-gray-400" />
+            <span className="text-slate-800 dark:text-gray-300">{row.original.userCount}</span>
           </div>
         ),
         size: 100,
@@ -698,7 +698,7 @@ const TeamRolesPage = () => {
         accessorKey: "createdAt",
         header: "Created",
         cell: ({ row }) => (
-          <span className="text-gray-300">{row.original.createdAt}</span>
+          <span className="text-slate-800 dark:text-gray-300">{row.original.createdAt}</span>
         ),
         size: 120,
       },
@@ -815,7 +815,7 @@ const TeamRolesPage = () => {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-700">
+        <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-gray-700">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -823,13 +823,13 @@ const TeamRolesPage = () => {
             sensors={sensors}
           >
             <Table>
-              <TableHeader className="bg-stone-900">
+              <TableHeader className="bg-slate-50 dark:bg-stone-900">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="border-gray-700">
+                  <TableRow key={headerGroup.id} className="border-slate-200 dark:border-gray-700">
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className="text-gray-300 font-medium"
+                        className="text-slate-800 dark:text-gray-300 font-medium"
                       >
                         {header.isPlaceholder
                           ? null
@@ -856,7 +856,7 @@ const TeamRolesPage = () => {
                   <TableRow>
                     <TableCell
                       colSpan={columns.length}
-                      className="h-24 text-center text-gray-400"
+                      className="h-24 text-center text-slate-500 dark:text-gray-400"
                     >
                       No role groups found.
                     </TableCell>
