@@ -16,12 +16,16 @@ const dataAdmin = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
       icon: "dashboard",
+      items: [
+        {
+          title: "Overview",
+          url: "/dashboard",
+        },
+      ],
     },
     {
       title: "Analytics",
-      url: "/analytics",
       icon: "chart",
       items: [
         {
