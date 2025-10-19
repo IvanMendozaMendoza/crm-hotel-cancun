@@ -3,37 +3,40 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { ClientErrorBoundary } from "@/components/error-boundary/client-error-boundary";
 
-import {
-  IconHelp,
-} from "@tabler/icons-react";
+import { IconHelp } from "@tabler/icons-react";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { User } from "next-auth";
+import { NavigationData } from "@/types/navigation";
 
-const dataAdmin = {
+const dataAdmin: NavigationData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
       icon: "dashboard",
+      items: [
+        {
+          title: "Overview",
+          url: "/dashboard",
+        },
+      ],
     },
     {
       title: "Analytics",
-      url: "/analytics",
       icon: "chart",
       items: [
         {
           title: "Overview",
           url: "/analytics",
-        }
+        },
       ],
     },
     {
       title: "Team",
-      url: "/team",
       icon: "users",
       items: [
         {
@@ -49,7 +52,6 @@ const dataAdmin = {
 
     {
       title: "Settings",
-      url: "/settings",
       icon: "settings",
       items: [
         {
@@ -147,7 +149,7 @@ const dataAdmin = {
   ],
 };
 
-const dataUser = {
+const dataUser: NavigationData = {
   navMain: [
     {
       title: "Dashboard",
@@ -207,25 +209,27 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      {session.user.roles.includes("ADMIN") ? (
-        <AppSidebar variant="inset" user={user} data={dataAdmin} />
-      ) : (
-        <AppSidebar variant="inset" user={user} data={dataUser} />
-      )}
-      <SidebarInset>
-        <SiteHeader />
-        {children}
-      </SidebarInset>
-      <Toaster />
-    </SidebarProvider>
+    <ClientErrorBoundary>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        {session.user.roles.includes("ADMIN") ? (
+          <AppSidebar variant="inset" user={user} data={dataAdmin} />
+        ) : (
+          <AppSidebar variant="inset" user={user} data={dataUser} />
+        )}
+        <SidebarInset>
+          <SiteHeader />
+          <ClientErrorBoundary>{children}</ClientErrorBoundary>
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
+    </ClientErrorBoundary>
   );
 };
 

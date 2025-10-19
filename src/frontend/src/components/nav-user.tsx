@@ -2,10 +2,8 @@
 
 import {
   IconLogout,
-  IconUserCircle,
   IconSun,
   IconMoon,
-  IconSettings,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -37,15 +34,18 @@ import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { Loader2 } from "lucide-react";
 import { User } from "next-auth";
-import Link from "next/link";
+
 
 export const NavUser = ({ user }: { user: User }) => {
   const { isMobile } = useSidebar();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
-  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  
+  const toggleTheme = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   return (
     <SidebarMenu>
@@ -111,39 +111,13 @@ export const NavUser = ({ user }: { user: User }) => {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.username} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.email}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center gap-2">
-                  <IconUserCircle />
-                  Account Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/settings/security" className="flex items-center gap-2">
-                  <IconSettings />
-                  Security Settings
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => toggleTheme()}
+                onClick={toggleTheme}
                 aria-label="Toggle theme"
               >
-                {isDark ? <IconSun /> : <IconMoon />}
+                {isDark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
                 {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </DropdownMenuItem>
             </DropdownMenuGroup>

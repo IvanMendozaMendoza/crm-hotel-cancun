@@ -522,6 +522,10 @@ function FileUploadRoot(props: FileUploadRootProps) {
           onFileAccept?.(file);
         }
 
+        for (const { file, message } of rejectedFiles) {
+          onFileReject?.(file, message);
+        }
+
         if (onUpload) {
           requestAnimationFrame(() => {
             onFilesUpload(acceptedFiles);
@@ -535,6 +539,7 @@ function FileUploadRoot(props: FileUploadRootProps) {
       onValueChange,
       onAccept,
       onFileAccept,
+      onFileReject,
       onUpload,
       maxFiles,
       onFileValidate,

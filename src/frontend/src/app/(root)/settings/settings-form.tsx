@@ -18,7 +18,7 @@ import { z } from "zod";
 import { updateMe } from "@/app/actions/account";
 import { signOut } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Control, useForm } from "react-hook-form";
 import {
   Form,
   FormField,
@@ -55,13 +55,13 @@ const InfoCard = ({
   icon: React.ElementType;
   children: React.ReactNode;
 }) => (
-  <Card className="bg-stone-900 border-stone-700">
+  <Card className="bg-white border-slate-200 dark:bg-zinc-900 dark:border-zinc-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-white">
+      <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
         <Icon className="h-5 w-5" />
         {title}
       </CardTitle>
-      <CardDescription className="text-gray-400">{description}</CardDescription>
+      <CardDescription className="text-slate-600 dark:text-zinc-300">{description}</CardDescription>
     </CardHeader>
     <CardContent>{children}</CardContent>
   </Card>
@@ -75,22 +75,21 @@ const FormInput = ({
   control,
 }: {
   label: string;
-  name: string;
+  name: keyof ProfileFormData;
   placeholder: string;
   type?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
+  control: Control<ProfileFormData>;
 }) => (
   <FormField
     control={control}
     name={name}
     render={({ field }) => (
       <FormItem>
-        <FormLabel className="text-gray-300">{label}</FormLabel>
+        <FormLabel className="text-slate-700 dark:text-zinc-200">{label}</FormLabel>
         <FormControl>
           <Input
             type={type}
-            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder-slate-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-100 dark:placeholder-zinc-400 focus:border-blue-500 focus:ring-blue-500/20 dark:focus:border-zinc-400 dark:focus:ring-zinc-400/20"
             placeholder={placeholder}
             {...field}
           />
@@ -136,50 +135,54 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
     []
   );
 
-  const handleSubmit = useCallback(async (data: ProfileFormData) => {
-    setIsPending(true);
-    try {
-      // Only send fields that have actually changed from the original values
-      const updateData: { username?: string; email?: string } = {};
-      
-      if (data.username !== user.username) {
-        updateData.username = data.username;
-      }
-      
-      if (data.email !== user.email) {
-        updateData.email = data.email;
-      }
+  const handleSubmit = useCallback(
+    async (data: ProfileFormData) => {
+      setIsPending(true);
+      try {
+        const updateData: { username?: string; email?: string } = {};
 
-      // Only proceed if there are actual changes
-      if (Object.keys(updateData).length === 0) {
-        toast.info("No changes to save");
+        if (data.username !== user.username) {
+          updateData.username = data.username;
+        }
+
+        if (data.email !== user.email) {
+          updateData.email = data.email;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+          toast.info("No changes to save");
+          setIsPending(false);
+          return;
+        }
+
+        const meResult = await updateMe(updateData);
+
+        if (meResult) {
+          toast.success(
+            "Profile updated successfully. You need to log in again."
+          );
+          setTimeout(() => {
+            signOut({ callbackUrl: "/login" });
+          }, 3500);
+        }
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update profile";
+        toast.error(errorMessage);
+      } finally {
         setIsPending(false);
-        return;
       }
+    },
+    [user.username, user.email]
+  );
 
-      const meResult = await updateMe(updateData);
-
-      if (meResult) {
-        toast.success(
-          "Profile updated successfully. You need to log in again."
-        );
-        setTimeout(() => {
-          signOut({ callbackUrl: "/login" });
-        }, 3500);
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
-      toast.error(errorMessage);
-    } finally {
-      setIsPending(false);
-    }
-  }, [user.username, user.email]);
-
-  // Check if form has any changes from the original values
+  const watchedValues = form.watch();
   const hasChanges = useMemo(() => {
-    const values = form.getValues();
-    return values.username !== user.username || values.email !== user.email;
-  }, [form.watch(), user.username, user.email]);
+    return (
+      watchedValues.username !== user.username ||
+      watchedValues.email !== user.email
+    );
+  }, [watchedValues.username, watchedValues.email, user.username, user.email]);
 
   const isSubmitDisabled = isPending || !hasChanges;
 
@@ -201,13 +204,13 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
                   src={user.avatar || "/avatars/default.jpg"}
                   alt={user.username}
                 />
-                <AvatarFallback className="bg-gray-700 text-white text-lg">
+                <AvatarFallback className="bg-slate-700 text-white text-lg dark:bg-zinc-600 dark:text-zinc-100">
                   {user.username?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-medium text-white">{user.username}</h3>
-                <p className="text-sm text-gray-400">Profile picture</p>
+                <h3 className="font-medium text-slate-900 dark:text-zinc-100">{user.username}</h3>
+                <p className="text-sm text-slate-600 dark:text-zinc-400">Profile picture</p>
               </div>
             </div>
 
@@ -228,7 +231,7 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
-                className="bg-white hover:bg-gray-100 text-gray-900 px-6"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-6 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-100"
               >
                 {isPending && <Info className="animate-spin w-4 h-4 mr-2" />}
                 {isPending ? "Saving..." : "Save Changes"}
@@ -246,32 +249,32 @@ export const SettingsForm = ({ user }: SettingsFormProps) => {
         <div className="grid gap-4 md:grid-cols-2">
           {ACCOUNT_INFO.map(({ label, value, type }) => (
             <div key={label}>
-              <Label className="text-gray-400 text-sm">{label}</Label>
+              <Label className="text-slate-600 dark:text-zinc-400 text-sm">{label}</Label>
               {type === "roles" ? (
                 <div className="flex gap-2 mt-1">
                   {user.roles?.map((role: string) => (
                     <span
                       key={role}
-                      className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded"
+                      className="px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40"
                     >
                       {role}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-white font-medium">
+                <p className="text-slate-900 dark:text-zinc-100 font-medium">
                   {type === "text" ? value : user[value as keyof typeof user]}
                 </p>
               )}
             </div>
           ))}
           <div>
-            <Label className="text-gray-400 text-sm">Account Roles</Label>
+            <Label className="text-slate-600 dark:text-zinc-400 text-sm">Account Roles</Label>
             <div className="flex gap-2 mt-1">
               {user.roles?.map((role: string) => (
                 <span
                   key={role}
-                  className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded"
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40"
                 >
                   {role}
                 </span>
